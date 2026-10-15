@@ -17,16 +17,3 @@ To deploy Yamabiko, a Docker image is available, and a comprehensive example can
 ## License
 
 This project is licensed under the AGPL-3.0 License - see the [LICENSE](LICENSE) file for details.
-
-## Trademark Notice
-
-Endurain® is a trademark of João Vitória Silva.  
-
-You are welcome to self-host Endurain and use the name and logo, including for personal, educational, research, or community (non-commercial) use.  
-Commercial use of the Endurain name or logos (such as offering paid hosting, products, or services) is **not permitted without prior written permission**.
-
-See [`TRADEMARK.md`](./TRADEMARK.md) for full details.
-
-<div align="center">
-  <sub>Built with ❤️ from Portugal | Part of the <a href="https://github.com/endurain-project">Endurain</a> ecosystem</sub>
-</div>
