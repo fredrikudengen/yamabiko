@@ -318,6 +318,41 @@ def report_moving(tcx) -> None:
         print(f"    total {len(runs)} stops, {sum(d for _, d in runs):.0f} s, longest {max(d for _, d in runs):.0f} s")
 
 
+TIMELINE_BUCKET_S = 30
+
+
+def report_timeline(tcx) -> None:
+    """Per-30-second buckets: where distance accrues and what the pulse does.
+
+    A real stand-still shows as a bucket with Fitbit ~0 m and net ~0 m (GPS
+    path above that is jitter). Pulse often drops during it, independent of GPS.
+    """
+    series = _point_series(tcx)
+    if series is None:
+        return
+    hr_by_index = [
+        tp.hr_value
+        for tp in tcx.trackpoints
+        if tp.time is not None and tp.latitude is not None and tp.longitude is not None
+    ]
+    offsets = series["t"]
+    print("\nTIMELINE (30 s buckets; Fitbit = cumulative-distance gain, path/net = GPS)")
+    print("  from    Fitbit m   GPS path m   GPS net m   avg HR")
+    end = offsets[-1]
+    start = 0.0
+    while start < end:
+        idx = [i for i, x in enumerate(offsets) if start <= x < start + TIMELINE_BUCKET_S + 1]
+        if len(idx) >= 2:
+            lo, hi = idx[0], idx[-1]
+            fitbit = series["cum_distance"][hi] - series["cum_distance"][lo] if series["cum_distance"] else float("nan")
+            path = sum(geodesic(series["latlon"][i], series["latlon"][i + 1]).meters for i in range(lo, hi))
+            net = geodesic(series["latlon"][lo], series["latlon"][hi]).meters
+            hrs = [hr_by_index[i] for i in idx if hr_by_index[i] is not None]
+            avg_hr = f"{sum(hrs) / len(hrs):.0f}" if hrs else "-"
+            print(f"  {_mmss(start)}   {fitbit:8.1f}   {path:10.1f}   {net:9.1f}   {avg_hr:>6}")
+        start += TIMELINE_BUCKET_S
+
+
 def report_file(path: Path) -> None:
     """Print the full report for one TCX file."""
     print("=" * 72)
@@ -345,6 +380,7 @@ def report_file(path: Path) -> None:
     report_elevation(tcx, activity.elevation_gain)
     report_time(tcx)
     report_moving(tcx)
+    report_timeline(tcx)
     print()
 
 
