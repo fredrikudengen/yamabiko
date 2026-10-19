@@ -355,6 +355,66 @@ def report_timeline(tcx) -> None:
         start += TIMELINE_BUCKET_S
 
 
+LONG_STOP_RADII_M = (10, 20, 30)
+LONG_STOP_MIN_S = (60, 120, 180, 300)
+LONG_STOP_EXAMPLE = (20, 120)
+
+
+def _long_stops(series: dict, radius: float, min_seconds: float) -> list[tuple[float, float, float]]:
+    """Runs where every point stays within ``radius`` m of the run's first point.
+
+    Returns (start offset s, duration s, largest distance from the anchor m)
+    for runs of at least ``min_seconds``. Wrist jitter and arm movement stay
+    within a few metres, while walking leaves the radius within seconds, so
+    this needs no speed threshold. A gap (explicit pause) ends a run.
+    """
+    t, latlon, gap_cum = series["t"], series["latlon"], series["gap_cum"]
+    n = len(t)
+    stops: list[tuple[float, float, float]] = []
+    i = 0
+    while i < n - 1:
+        j = i
+        farthest = 0.0
+        while j + 1 < n and gap_cum[j + 1] == gap_cum[i]:
+            d = geodesic(latlon[i], latlon[j + 1]).meters
+            if d > radius:
+                break
+            farthest = max(farthest, d)
+            j += 1
+        if t[j] - t[i] >= min_seconds:
+            stops.append((t[i], t[j] - t[i], farthest))
+            i = j + 1
+        else:
+            i += 1
+    return stops
+
+
+def report_long_stops(tcx) -> None:
+    """Long stops (rest at a summit): position stays within a radius."""
+    series = _point_series(tcx)
+    if series is None:
+        return
+    elapsed = series["t"][-1]
+    print("\nLONG STOPS (position stays within R m of where the stop began)")
+    print("  not a recommendation; number of stops / total stopped seconds")
+    print("  R \\ min length   " + "".join(f"{m:>6} s     " for m in LONG_STOP_MIN_S))
+    for radius in LONG_STOP_RADII_M:
+        cells = []
+        for min_s in LONG_STOP_MIN_S:
+            runs = _long_stops(series, radius, min_s)
+            cells.append(f"{len(runs)} / {sum(r[1] for r in runs):>4.0f}".ljust(12))
+        print(f"  {radius:>3} m            " + "".join(cells))
+    radius, min_s = LONG_STOP_EXAMPLE
+    runs = _long_stops(series, radius, min_s)
+    print(f"\n  stops at R = {radius} m, >= {min_s} s")
+    if not runs:
+        print("    none")
+    for start, duration, farthest in runs:
+        print(f"    at {_mmss(start)}  {_mmss(duration)}   farthest from anchor {farthest:.1f} m")
+    stopped = sum(r[1] for r in runs)
+    print(f"  elapsed {_mmss(elapsed)}  stopped {_mmss(stopped)}  without long stops {_mmss(elapsed - stopped)}")
+
+
 def report_file(path: Path) -> None:
     """Print the full report for one TCX file."""
     print("=" * 72)
@@ -383,6 +443,7 @@ def report_file(path: Path) -> None:
     report_time(tcx)
     report_moving(tcx)
     report_timeline(tcx)
+    report_long_stops(tcx)
     print()
 
 
