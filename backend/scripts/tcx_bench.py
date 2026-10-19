@@ -330,14 +330,14 @@ def report_timeline(tcx) -> None:
     series = _point_series(tcx)
     if series is None:
         return
-    hr_by_index = [
-        tp.hr_value
-        for tp in tcx.trackpoints
-        if tp.time is not None and tp.latitude is not None and tp.longitude is not None
+    kept = [
+        tp for tp in tcx.trackpoints if tp.time is not None and tp.latitude is not None and tp.longitude is not None
     ]
+    hr_by_index = [tp.hr_value for tp in kept]
+    ele_by_index = [tp.elevation for tp in kept]
     offsets = series["t"]
     print("\nTIMELINE (30 s buckets; Fitbit = cumulative-distance gain, path/net = GPS)")
-    print("  from    Fitbit m   GPS path m   GPS net m   avg HR")
+    print("  from    Fitbit m   GPS path m   GPS net m   avg HR   ele start -> end (m)")
     end = offsets[-1]
     start = 0.0
     while start < end:
@@ -349,7 +349,9 @@ def report_timeline(tcx) -> None:
             net = geodesic(series["latlon"][lo], series["latlon"][hi]).meters
             hrs = [hr_by_index[i] for i in idx if hr_by_index[i] is not None]
             avg_hr = f"{sum(hrs) / len(hrs):.0f}" if hrs else "-"
-            print(f"  {_mmss(start)}   {fitbit:8.1f}   {path:10.1f}   {net:9.1f}   {avg_hr:>6}")
+            e0, e1 = ele_by_index[lo], ele_by_index[hi]
+            ele = f"{e0:6.1f} -> {e1:6.1f}" if e0 is not None and e1 is not None else "-"
+            print(f"  {_mmss(start)}   {fitbit:8.1f}   {path:10.1f}   {net:9.1f}   {avg_hr:>6}   {ele}")
         start += TIMELINE_BUCKET_S
 
 
