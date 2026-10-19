@@ -389,6 +389,26 @@ def _long_stops(series: dict, radius: float, min_seconds: float) -> list[tuple[f
     return stops
 
 
+LONG_STOP_TRIM_RADIUS_M = 10
+
+
+def _trim_stop(series: dict, start: float, duration: float) -> tuple[float, float]:
+    """Shrink a stop to the span where points are within a small radius of its median.
+
+    The anchored detection counts slow walking before and after the stop that
+    still lies inside the radius, so it overshoots. Trimming to the points
+    close to the stop's median position removes most of that.
+    """
+    idx = [i for i, x in enumerate(series["t"]) if start <= x <= start + duration]
+    lats = sorted(series["latlon"][i][0] for i in idx)
+    lons = sorted(series["latlon"][i][1] for i in idx)
+    centre = (lats[len(lats) // 2], lons[len(lons) // 2])
+    near = [i for i in idx if geodesic(series["latlon"][i], centre).meters <= LONG_STOP_TRIM_RADIUS_M]
+    if len(near) < 2:
+        return start, duration
+    return series["t"][near[0]], series["t"][near[-1]] - series["t"][near[0]]
+
+
 def report_long_stops(tcx) -> None:
     """Long stops (rest at a summit): position stays within a radius."""
     series = _point_series(tcx)
@@ -409,10 +429,17 @@ def report_long_stops(tcx) -> None:
     print(f"\n  stops at R = {radius} m, >= {min_s} s")
     if not runs:
         print("    none")
+    trimmed_total = 0.0
     for start, duration, farthest in runs:
-        print(f"    at {_mmss(start)}  {_mmss(duration)}   farthest from anchor {farthest:.1f} m")
+        t_start, t_duration = _trim_stop(series, start, duration)
+        trimmed_total += t_duration
+        print(
+            f"    at {_mmss(start)}  {_mmss(duration)}   farthest from anchor {farthest:.1f} m"
+            f"   | trimmed to {LONG_STOP_TRIM_RADIUS_M} m of median: at {_mmss(t_start)}  {_mmss(t_duration)}"
+        )
     stopped = sum(r[1] for r in runs)
     print(f"  elapsed {_mmss(elapsed)}  stopped {_mmss(stopped)}  without long stops {_mmss(elapsed - stopped)}")
+    print(f"  with trimmed stops: stopped {_mmss(trimmed_total)}  without {_mmss(elapsed - trimmed_total)}")
 
 
 def report_file(path: Path) -> None:
