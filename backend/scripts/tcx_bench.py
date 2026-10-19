@@ -8,6 +8,8 @@ geocoding are stubbed out) and prints, side by side:
 * elevation gain: what the parser stores vs. Endurain's smoothing function,
   plus a sensitivity sweep over the smoothing parameters
 * time: gaps in the trackpoint stream (pauses) and a naive active time
+* moving time: seconds above a speed threshold, swept over speed signal,
+  smoothing window and threshold, plus a list of example stops
 
 Only aggregates are printed, never coordinates, so the output is safe to
 paste into a chat even for real GPS files.
@@ -26,6 +28,7 @@ from types import SimpleNamespace
 from unittest.mock import patch
 
 from cryptography.fernet import Fernet
+from geopy.distance import geodesic
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "app"))
 
@@ -162,6 +165,135 @@ def report_time(tcx) -> None:
     print(f"  elapsed minus gaps (naive)     {elapsed - gap_total:.0f}")
 
 
+# Moving-time analysis. Windows are (first, last) point offsets around point i;
+# speed at i is the displacement across the window divided by its duration.
+# Using displacement (not summed step lengths) lets GPS jitter cancel out.
+MOVING_WINDOWS = {"1 s (raw step)": (-1, 0), "5 s": (-2, 2), "11 s": (-5, 5)}
+MOVING_THRESHOLDS_MS = (0.1, 0.2, 0.3, 0.5, 0.8)
+STOP_ILLUSTRATION = ("5 s", 0.3)  # window, m/s: only used to list example stops
+STOP_MIN_S = 20
+
+
+def _mmss(seconds: float) -> str:
+    """Format seconds as mm:ss."""
+    return f"{int(seconds) // 60:02d}:{int(seconds) % 60:02d}"
+
+
+def _point_series(tcx) -> dict | None:
+    """Trackpoint arrays for the moving-time analysis, or None without GPS."""
+    points = [
+        tp for tp in tcx.trackpoints if tp.time is not None and tp.latitude is not None and tp.longitude is not None
+    ]
+    if len(points) < 12:
+        return None
+
+    t0 = points[0].time
+    t = [(tp.time - t0).total_seconds() for tp in points]
+    # dt[i] = time since the previous point; 0 for the first point and for gaps
+    # (explicit pauses), so gaps count as neither moving nor stopped.
+    dt = [0.0] + [d if 0 < d <= GAP_THRESHOLD_S else 0.0 for d in (b - a for a, b in itertools.pairwise(t))]
+    # gap_cum[k] = number of gap intervals among the first k intervals
+    gap_cum = [0]
+    for a, b in itertools.pairwise(t):
+        gap_cum.append(gap_cum[-1] + (0 if 0 < b - a <= GAP_THRESHOLD_S else 1))
+
+    has_distance = all(tp.distance is not None for tp in points)
+    return {
+        "t": t,
+        "dt": dt,
+        "gap_cum": gap_cum,
+        "latlon": [(tp.latitude, tp.longitude) for tp in points],
+        "cum_distance": [tp.distance for tp in points] if has_distance else None,
+    }
+
+
+def _window_speeds(series: dict, signal: str, window: tuple[int, int]) -> list[float | None]:
+    """Speed (m/s) at every point over a window; None where undefined."""
+    n = len(series["t"])
+    first, last = window
+    speeds: list[float | None] = []
+    for i in range(n):
+        lo, hi = max(0, i + first), min(n - 1, i + last)
+        # undefined at the edges, and where the window spans a gap
+        if hi <= lo or series["gap_cum"][hi] - series["gap_cum"][lo] > 0:
+            speeds.append(None)
+            continue
+        duration = series["t"][hi] - series["t"][lo]
+        if signal == "gps":
+            metres = geodesic(series["latlon"][lo], series["latlon"][hi]).meters
+        else:
+            metres = series["cum_distance"][hi] - series["cum_distance"][lo]
+        speeds.append(metres / duration)
+    return speeds
+
+
+def _moving_seconds(dt: list[float], speeds: list[float | None], threshold: float) -> float:
+    """Seconds at or above ``threshold`` (points with undefined speed are skipped)."""
+    return sum(d for d, s in zip(dt, speeds, strict=True) if d > 0 and s is not None and s >= threshold)
+
+
+def _stop_runs(
+    t: list[float], dt: list[float], speeds: list[float | None], threshold: float
+) -> list[tuple[float, float]]:
+    """Contiguous runs below ``threshold`` as (start offset s, duration s)."""
+    runs: list[tuple[float, float]] = []
+    start = None
+    duration = 0.0
+    for offset, d, s in zip(t, dt, speeds, strict=True):
+        if d > 0 and s is not None and s < threshold:
+            if start is None:
+                start = offset - d
+            duration += d
+        elif start is not None:
+            runs.append((start, duration))
+            start, duration = None, 0.0
+    if start is not None:
+        runs.append((start, duration))
+    return runs
+
+
+def report_moving(tcx) -> None:
+    """Moving time vs elapsed time, derived from the trackpoint stream."""
+    series = _point_series(tcx)
+    if series is None:
+        print("\nMOVING TIME: too few trackpoints with GPS")
+        return
+
+    covered = sum(series["dt"])
+    signals = [("gps", "GPS displacement")]
+    if series["cum_distance"] is not None:
+        signals.insert(0, ("tp", "Fitbit cumulative distance (trackpoint)"))
+
+    print(f"\nMOVING TIME (s)   covered time (gaps excluded): {covered:.0f}")
+    print("  speed over a window; a second counts as moving when speed >= threshold (m/s)")
+    illustration = None
+    for signal, label in signals:
+        print(f"\n  signal: {label}")
+        print("  window            " + "".join(f"{v:<9}" for v in MOVING_THRESHOLDS_MS))
+        for name, window in MOVING_WINDOWS.items():
+            speeds = _window_speeds(series, signal, window)
+            cells = "".join(f"{_moving_seconds(series['dt'], speeds, v):<9.0f}" for v in MOVING_THRESHOLDS_MS)
+            print(f"  {name:<17} {cells}")
+            if illustration is None and name == STOP_ILLUSTRATION[0]:
+                illustration = (label, speeds)
+
+    if illustration is None:
+        return
+    label, speeds = illustration
+    window_name, threshold = STOP_ILLUSTRATION
+    runs = [r for r in _stop_runs(series["t"], series["dt"], speeds, threshold) if r[1] >= STOP_MIN_S]
+    print(f"\n  example stops (signal: {label}, window {window_name}, < {threshold} m/s, >= {STOP_MIN_S} s)")
+    print("  not a recommendation, only to show what the data contains")
+    if not runs:
+        print("  none")
+        return
+    for start, duration in runs[:15]:
+        print(f"  at {_mmss(start)}   {_mmss(duration)}")
+    if len(runs) > 15:
+        print(f"  ... {len(runs) - 15} more")
+    print(f"  total {len(runs)} stops, {sum(d for _, d in runs):.0f} s, longest {max(d for _, d in runs):.0f} s")
+
+
 def report_file(path: Path) -> None:
     """Print the full report for one TCX file."""
     print("=" * 72)
@@ -188,6 +320,7 @@ def report_file(path: Path) -> None:
     report_distance(tcx, activity.distance)
     report_elevation(tcx, activity.elevation_gain)
     report_time(tcx)
+    report_moving(tcx)
     print()
 
 
