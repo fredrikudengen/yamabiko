@@ -85,10 +85,25 @@ def test_identity_type_name_and_elevation(tmp_path, track):
     assert activity.googlehealth_activity_id == "5644645117879480480"
     assert activity.activity_type == 12  # Hike
     assert activity.name == "Gåing"
-    assert activity.elevation_gain == pytest.approx(107, abs=10)
-    assert activity.elevation_loss == 0
+    # Gain is the device figure; loss comes from the smoothed track.
+    assert activity.elevation_gain == 23
+    assert activity.import_info["elevation_gain_m"]["used"] == "device_summary"
+    assert activity.import_info["elevation_gain_m"]["endurain_smoothing"] == pytest.approx(107, abs=10)
     assert activity.import_info["elevation_gain_m"]["device_summary"] == pytest.approx(22.555)
     assert activity.import_info["import_source"] == "google_health"
+    assert activity.elevation_loss == 0
+
+
+def test_elevation_gain_falls_back_to_smoothing_without_a_device_figure(tmp_path, track):
+    path = write_tcx(tmp_path / "a.tcx", track)
+    stepped = [{"ele": 50 + i // 10} for i in range(len(track))]
+    parsed = _parsed_info(1079, stepped, summary_distance=1)
+
+    activity = overrides.apply_google_health_overrides(parsed, data_point(), str(path))["activity"]
+
+    assert activity.import_info["elevation_gain_m"]["used"] == "endurain_smoothing"
+    assert activity.elevation_gain == pytest.approx(107, abs=10)
+    assert activity.import_info["elevation_gain_m"]["device_summary"] is None
 
 
 @pytest.mark.parametrize(

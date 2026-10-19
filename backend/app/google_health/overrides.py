@@ -8,7 +8,8 @@ because for Fitbit TCX files three of its values are not what we want:
   trackpoint's cumulative distance (463.5 m) and the geodesic GPS path
   (464.8 m) were right and the summary (392.8 m) was not.
 - elevation: ``tcx_file.ascent`` is a naive sum of height changes (+8.6 %
-  on a 430 m climb); Endurain's smoothing is used instead.
+  on a 430 m climb). Gain is the device's own figure, with Endurain's smoothing
+  as the fallback and for loss.
 - timer time: the TCX importer sets it to the clock time. It is set to the
   clock time minus device pauses (PAUSE/RESUME events) and long stops (see
   ``stops.py``).
@@ -139,12 +140,25 @@ def apply_google_health_overrides(parsed_info: dict, exercise_data_point: dict, 
         laps[0]["total_distance"] = activity.distance
 
     # ---- elevation ------------------------------------------------------
+    # Gain is the device's own figure (what the Google Health app shows; it matched
+    # the smoothing on a 430 m climb and was 2-3 m lower on small walks). Loss
+    # exists only in the track, so it comes from Endurain's smoothing, which is
+    # also the fallback for gain when the summary has no elevation.
     ele_waypoints = parsed_info.get("ele_waypoints") or []
+    smoothed_gain: float | None = None
     if ele_waypoints:
-        gain, loss = activities_utils.compute_elevation_gain_and_loss(ele_waypoints)
-        activity.elevation_gain = round(gain)
+        smoothed_gain, loss = activities_utils.compute_elevation_gain_and_loss(ele_waypoints)
         activity.elevation_loss = round(loss)
     device_gain_mm = summary.get("elevationGainMillimeters")
+    device_gain_m = float(device_gain_mm) / 1000 if device_gain_mm is not None else None
+    if device_gain_m is not None:
+        activity.elevation_gain = round(device_gain_m)
+        gain_source = "device_summary"
+    elif smoothed_gain is not None:
+        activity.elevation_gain = round(smoothed_gain)
+        gain_source = "endurain_smoothing"
+    else:
+        gain_source = "none"
 
     # ---- time without long stops ---------------------------------------
     stops = google_health_stops.detect_long_stops(points) if points else []
@@ -174,8 +188,9 @@ def apply_google_health_overrides(parsed_info: dict, exercise_data_point: dict, 
             "summary": summary_m,
         },
         "elevation_gain_m": {
-            "used": "endurain_smoothing",
-            "device_summary": float(device_gain_mm) / 1000 if device_gain_mm is not None else None,
+            "used": gain_source,
+            "device_summary": device_gain_m,
+            "endurain_smoothing": smoothed_gain,
             "naive_tcx": tcx_file.ascent,
         },
         "long_stops": {

@@ -108,8 +108,10 @@ def print_result(result: dict) -> None:
     )
     elevation = info["elevation_gain_m"]
     print(
-        f"    elevation gain {after.elevation_gain} m (parser alone: {before.elevation_gain} m);"
-        f" device {fmt(elevation['device_summary'])}, naive {fmt(elevation['naive_tcx'])}"
+        f"    elevation gain {after.elevation_gain} m, loss {after.elevation_loss} m"
+        f" (gain from {elevation['used']}; parser alone: {before.elevation_gain} m;"
+        f" device {fmt(elevation['device_summary'])}, smoothing {fmt(elevation['endurain_smoothing'])},"
+        f" naive {fmt(elevation['naive_tcx'])})"
     )
     print(
         f"    time      clock {_mmss(after.total_elapsed_time)}, timer {_mmss(after.total_timer_time)}"
