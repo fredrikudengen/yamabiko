@@ -76,6 +76,13 @@ class Settings(BaseSettings):
 
     # --- Host / redirects ---
     ENDURAIN_HOST: str = "http://localhost:8080"
+    # --- Google Health (OAuth client from Google Cloud Console) ---
+    GOOGLE_HEALTH_CLIENT_ID: str | None = None
+    GOOGLE_HEALTH_CLIENT_SECRET: str | None = None
+    # Where Google sends the browser after consent. Must be registered as an
+    # authorized redirect URI. ``http://localhost`` is always accepted by Google;
+    # leave empty to use ``ENDURAIN_HOST`` + the callback path.
+    GOOGLE_HEALTH_REDIRECT_URI: str | None = None
     # NoDecode disables the default JSON pre-parsing for
     # complex types so the validators below see the raw
     # comma-separated env value (e.g. "a,b,c") rather than

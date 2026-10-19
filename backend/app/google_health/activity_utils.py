@@ -21,7 +21,9 @@ import google_health.client as google_health_client
 import google_health.crud as google_health_crud
 import google_health.filters as google_health_filters
 import google_health.overrides as google_health_overrides
+import google_health.token_utils as google_health_token_utils
 import websocket.manager as websocket_manager
+from core.database import SessionLocal
 
 # The band syncs in batches, sometimes a day or two after the session, and a
 # record can exist before the session has finished. Looking back a week and
@@ -126,3 +128,43 @@ async def fetch_and_process_exercises(
             imported.extend(stored)
 
     return imported or None
+
+
+async def sync_user(
+    user_id: int,
+    days: int,
+    ws_manager: websocket_manager.WebSocketManager,
+    db: Session,
+) -> list[activities_schema.Activity] | None:
+    """Import one user's new exercises from the last ``days`` days.
+
+    Returns None when the account is not linked, nothing new was found, or the
+    token was rejected (the account is then unlinked so the user can link again).
+    """
+    access_token = await google_health_token_utils.get_valid_access_token(user_id, db)
+    if access_token is None:
+        return None
+
+    start, end = lookback_range(days)
+    try:
+        async with google_health_client.GoogleHealthClient(access_token) as client:
+            return await fetch_and_process_exercises(client, start, end, user_id, ws_manager, db)
+    except google_health_client.GoogleHealthAuthError as err:
+        core_logger.print_to_log(
+            f"User {user_id}: Google Health rejected the access token; unlinking. The user must link again",
+            "warning",
+            exc=err,
+        )
+        google_health_crud.unlink(user_id, db)
+        return None
+    except Exception as err:
+        core_logger.print_to_log(f"User {user_id}: Google Health sync failed: {err}", "error", exc=err)
+        return None
+
+
+async def sync_all_users(days: int = DEFAULT_LOOKBACK_DAYS) -> None:
+    """Scheduled job: sync every linked user. One user's failure does not stop the others."""
+    ws_manager = websocket_manager.get_websocket_manager()
+    with SessionLocal() as db:
+        for user_id in google_health_crud.linked_user_ids(db):
+            await sync_user(user_id, days, ws_manager, db)
