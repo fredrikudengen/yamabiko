@@ -10,11 +10,13 @@ because for Fitbit TCX files three of its values are not what we want:
 - elevation: ``tcx_file.ascent`` is a naive sum of height changes (+8.6 %
   on a 430 m climb); Endurain's smoothing is used instead.
 - timer time: the TCX importer sets it to the clock time. It is set to the
-  time without long stops (see ``stops.py``).
+  clock time minus device pauses (PAUSE/RESUME events) and long stops (see
+  ``stops.py``).
 """
 
 from __future__ import annotations
 
+from datetime import datetime
 from itertools import pairwise
 from typing import Any
 
@@ -49,6 +51,30 @@ def choose_distance(
         if value:
             return float(value), source
     return 0.0, "none"
+
+
+def _paused_seconds(exercise: dict) -> float:
+    """Seconds the device was paused: the interval minus ``activeDuration``.
+
+    Real Charge 4 sessions contain PAUSE/RESUME events (and a PAUSE a few
+    seconds before STOP at the end), and the device subtracts them from
+    ``activeDuration``. It is not moving time (a stand-still without a pause
+    event is counted as active), but explicit pauses should not count as time.
+    """
+    interval = exercise.get("interval") or {}
+    try:
+        start = datetime.fromisoformat(interval["startTime"])
+        end = datetime.fromisoformat(interval["endTime"])
+        active = float(str(exercise["activeDuration"]).removesuffix("s"))
+    except (KeyError, TypeError, ValueError):
+        return 0.0
+    return max((end - start).total_seconds() - active, 0.0)
+
+
+def _stream_gaps(points: list[google_health_stops.TrackPoint]) -> tuple[int, float]:
+    """Number and total length of time gaps in the GPS stream (longer than the stop gap limit)."""
+    gaps = [b.t - a.t for a, b in pairwise(points) if b.t - a.t > google_health_stops.GAP_THRESHOLD_S]
+    return len(gaps), sum(gaps)
 
 
 def _track_points(tcx_file: Any) -> list[google_health_stops.TrackPoint]:
@@ -123,9 +149,11 @@ def apply_google_health_overrides(parsed_info: dict, exercise_data_point: dict, 
     # ---- time without long stops ---------------------------------------
     stops = google_health_stops.detect_long_stops(points) if points else []
     stopped_s = sum(stop.trimmed_duration for stop in stops)
+    paused_s = _paused_seconds(exercise)
+    gap_count, gap_seconds = _stream_gaps(points)
     elapsed = activity.total_elapsed_time
     if elapsed is not None:
-        activity.total_timer_time = max(elapsed - stopped_s, 0)
+        activity.total_timer_time = max(elapsed - paused_s - stopped_s, 0)
 
     # ---- identity, type, name ------------------------------------------
     activity.googlehealth_activity_id = google_health_filters.exercise_id(exercise_data_point)
@@ -165,5 +193,7 @@ def apply_google_health_overrides(parsed_info: dict, exercise_data_point: dict, 
             ],
         },
         "device_active_duration_s": exercise.get("activeDuration"),
+        "paused_seconds": round(paused_s),
+        "stream_gaps": {"count": gap_count, "seconds": round(gap_seconds)},
     }
     return parsed_info

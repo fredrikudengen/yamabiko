@@ -112,8 +112,10 @@ def print_result(result: dict) -> None:
         f" device {fmt(elevation['device_summary'])}, naive {fmt(elevation['naive_tcx'])}"
     )
     print(
-        f"    time      clock {_mmss(after.total_elapsed_time)}, without long stops {_mmss(after.total_timer_time)}"
-        f" (device activeDuration {info['device_active_duration_s']})"
+        f"    time      clock {_mmss(after.total_elapsed_time)}, timer {_mmss(after.total_timer_time)}"
+        f" = clock - paused {info['paused_seconds']} s - long stops {info['long_stops']['stopped_seconds']} s"
+        f" (device activeDuration {info['device_active_duration_s']};"
+        f" stream gaps: {info['stream_gaps']['count']}, {info['stream_gaps']['seconds']} s)"
     )
     print(f"    long stops: {len(stops)}")
     for stop in stops:

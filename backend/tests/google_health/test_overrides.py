@@ -102,3 +102,40 @@ def test_identity_type_name_and_elevation(tmp_path, track):
 )
 def test_choose_distance_priority(last, path, summary, expected):
     assert overrides.choose_distance(last, path, summary) == expected
+
+
+def test_device_pauses_are_subtracted_from_timer_time(tmp_path):
+    walk = make_track([("walk", 600)])
+    path = write_tcx(tmp_path / "a.tcx", walk)
+    parsed = _parsed_info(599, [{"ele": p["ele"]} for p in walk], summary_distance=1)
+    point = data_point()
+    point["exercise"]["activeDuration"] = "3588s"  # interval is 3600 s: 12 s paused
+
+    activity = overrides.apply_google_health_overrides(parsed, point, str(path))["activity"]
+
+    assert activity.import_info["paused_seconds"] == 12
+    assert activity.total_elapsed_time == 599
+    assert activity.total_timer_time == 599 - 12
+
+
+def test_missing_or_malformed_active_duration_means_no_pause(tmp_path):
+    walk = make_track([("walk", 600)])
+    path = write_tcx(tmp_path / "a.tcx", walk)
+    for broken in (None, "n/a"):
+        parsed = _parsed_info(599, [{"ele": p["ele"]} for p in walk], summary_distance=1)
+        point = data_point()
+        point["exercise"]["activeDuration"] = broken
+        activity = overrides.apply_google_health_overrides(parsed, point, str(path))["activity"]
+        assert activity.import_info["paused_seconds"] == 0
+        assert activity.total_timer_time == 599
+
+
+def test_stream_gap_is_reported(tmp_path):
+    walk = make_track([("walk", 600)])
+    cut = [p for p in walk if not 200 <= (p["time"] - walk[0]["time"]).total_seconds() < 260]
+    path = write_tcx(tmp_path / "a.tcx", cut)
+    parsed = _parsed_info(599, [{"ele": p["ele"]} for p in cut], summary_distance=1)
+
+    activity = overrides.apply_google_health_overrides(parsed, data_point(), str(path))["activity"]
+
+    assert activity.import_info["stream_gaps"] == {"count": 1, "seconds": 61}
