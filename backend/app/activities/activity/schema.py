@@ -133,6 +133,7 @@ class Activity(BaseModel):
     strava_activity_id: int | None = None
     garminconnect_activity_id: int | None = None
     garminconnect_gear_id: str | None = Field(default=None, max_length=45)
+    googlehealth_activity_id: str | None = Field(default=None, max_length=32)
     import_info: dict | None = None
     is_hidden: bool = False
     hide_start_time: bool | None = None
