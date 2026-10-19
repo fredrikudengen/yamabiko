@@ -170,7 +170,9 @@ def report_time(tcx) -> None:
 # Using displacement (not summed step lengths) lets GPS jitter cancel out.
 MOVING_WINDOWS = {"1 s (raw step)": (-1, 0), "5 s": (-2, 2), "11 s": (-5, 5)}
 MOVING_THRESHOLDS_MS = (0.1, 0.2, 0.3, 0.5, 0.8)
-STOP_ILLUSTRATION = ("5 s", 0.3)  # window, m/s: only used to list example stops
+# (window name, m/s) per signal; only used to list example stops. GPS needs a
+# longer window than Fitbit's distance because jitter does not cancel in short ones.
+STOP_DETECTION = {"tp": ("5 s", 0.3), "gps": ("11 s", 0.3)}
 STOP_MIN_S = 20
 
 
@@ -252,6 +254,25 @@ def _stop_runs(
     return runs
 
 
+def _distance_during(series: dict, start: float, duration: float) -> tuple[float | None, float, float]:
+    """Distance added between ``start`` and ``start + duration`` (metres).
+
+    Returns (Fitbit cumulative distance or None, GPS path length, GPS net
+    displacement). Jitter while standing still inflates the GPS path but not
+    the net displacement; if Fitbit's cumulative distance also grows during a
+    stop, a "last trackpoint" distance includes that drift.
+    """
+    offsets = series["t"]
+    inside = [i for i, x in enumerate(offsets) if start - 0.5 <= x <= start + duration + 0.5]
+    lo, hi = inside[0], inside[-1]
+    fitbit = None
+    if series["cum_distance"] is not None:
+        fitbit = series["cum_distance"][hi] - series["cum_distance"][lo]
+    path = sum(geodesic(series["latlon"][i], series["latlon"][i + 1]).meters for i in range(lo, hi))
+    net = geodesic(series["latlon"][lo], series["latlon"][hi]).meters
+    return fitbit, path, net
+
+
 def report_moving(tcx) -> None:
     """Moving time vs elapsed time, derived from the trackpoint stream."""
     series = _point_series(tcx)
@@ -266,7 +287,6 @@ def report_moving(tcx) -> None:
 
     print(f"\nMOVING TIME (s)   covered time (gaps excluded): {covered:.0f}")
     print("  speed over a window; a second counts as moving when speed >= threshold (m/s)")
-    illustration = None
     for signal, label in signals:
         print(f"\n  signal: {label}")
         print("  window            " + "".join(f"{v:<9}" for v in MOVING_THRESHOLDS_MS))
@@ -274,24 +294,28 @@ def report_moving(tcx) -> None:
             speeds = _window_speeds(series, signal, window)
             cells = "".join(f"{_moving_seconds(series['dt'], speeds, v):<9.0f}" for v in MOVING_THRESHOLDS_MS)
             print(f"  {name:<17} {cells}")
-            if illustration is None and name == STOP_ILLUSTRATION[0]:
-                illustration = (label, speeds)
 
-    if illustration is None:
-        return
-    label, speeds = illustration
-    window_name, threshold = STOP_ILLUSTRATION
-    runs = [r for r in _stop_runs(series["t"], series["dt"], speeds, threshold) if r[1] >= STOP_MIN_S]
-    print(f"\n  example stops (signal: {label}, window {window_name}, < {threshold} m/s, >= {STOP_MIN_S} s)")
+    print(f"\n  example stops (>= {STOP_MIN_S} s), found separately by each signal")
     print("  not a recommendation, only to show what the data contains")
-    if not runs:
-        print("  none")
-        return
-    for start, duration in runs[:15]:
-        print(f"  at {_mmss(start)}   {_mmss(duration)}")
-    if len(runs) > 15:
-        print(f"  ... {len(runs) - 15} more")
-    print(f"  total {len(runs)} stops, {sum(d for _, d in runs):.0f} s, longest {max(d for _, d in runs):.0f} s")
+    print("  accrued = distance added during the stop: Fitbit cumulative / GPS path / GPS net displacement")
+    for signal, label in signals:
+        window_name, threshold = STOP_DETECTION[signal]
+        speeds = _window_speeds(series, signal, MOVING_WINDOWS[window_name])
+        runs = [r for r in _stop_runs(series["t"], series["dt"], speeds, threshold) if r[1] >= STOP_MIN_S]
+        print(f"\n  stops by {label} (window {window_name}, < {threshold} m/s)")
+        if not runs:
+            print("    none")
+            continue
+        for start, duration in runs[:15]:
+            fitbit, path, net = _distance_during(series, start, duration)
+            fitbit_text = "n/a" if fitbit is None else f"{fitbit:.1f}"
+            print(
+                f"    at {_mmss(start)}  {_mmss(duration)}   accrued: Fitbit {fitbit_text} m"
+                f" / GPS path {path:.1f} m / net {net:.1f} m"
+            )
+        if len(runs) > 15:
+            print(f"    ... {len(runs) - 15} more")
+        print(f"    total {len(runs)} stops, {sum(d for _, d in runs):.0f} s, longest {max(d for _, d in runs):.0f} s")
 
 
 def report_file(path: Path) -> None:
