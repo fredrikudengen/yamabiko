@@ -11,7 +11,7 @@ from collections.abc import Callable
 from typing import Annotated
 
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Security, status
-from fastapi.responses import HTMLResponse
+from fastapi.responses import HTMLResponse, RedirectResponse
 from sqlalchemy.orm import Session
 
 import auth.dependencies as auth_dependencies
@@ -25,6 +25,10 @@ import google_health.token_utils as google_health_token_utils
 import websocket.manager as websocket_manager
 
 router = APIRouter()
+
+# Where the browser goes after the Google consent screen. The path is relative, so it
+# resolves against the host the callback was opened on (the redirect URI's host).
+SETTINGS_REDIRECT = "/settings/integrations?googlehealth="
 
 _PAGE = (
     "<!doctype html><html lang='no'><meta charset='utf-8'>"
@@ -77,14 +81,14 @@ async def googlehealth_auth_url(
     return {"url": url}
 
 
-@router.get("/callback", response_class=HTMLResponse)
+@router.get("/callback", response_model=None)
 async def googlehealth_callback(
     db: Annotated[Session, Depends(core_database.get_db)],
     state: str | None = None,
     code: str | None = None,
     error: str | None = None,
-):
-    """Where Google sends the browser after consent."""
+) -> HTMLResponse | RedirectResponse:
+    """Where Google sends the browser after consent; sends it on to the settings page."""
     row = google_health_crud.get_integrations_by_state(state or "", db)
     if row is None:
         return _page("Ugyldig forespørsel", "Ukjent eller allerede brukt state. Start koblingen på nytt.", 400)
@@ -94,7 +98,7 @@ async def googlehealth_callback(
     google_health_crud.set_state(user_id, None, db)
 
     if error or not code:
-        return _page("Ikke koblet", "Google ga ingen tilgang. Start koblingen på nytt.", 400)
+        return RedirectResponse(SETTINGS_REDIRECT + "denied", status_code=status.HTTP_303_SEE_OTHER)
 
     settings = core_config.settings
     try:
@@ -106,11 +110,12 @@ async def googlehealth_callback(
         )
     except google_health_oauth.GoogleHealthOAuthError as err:
         core_logger.print_to_log(f"User {user_id}: Google Health linking failed: {err}", "error", exc=err)
-        return _page("Kobling feilet", f"{err}. Start koblingen på nytt.", 502)
+        reason = "scopes" if "permissions" in str(err) else "error"
+        return RedirectResponse(SETTINGS_REDIRECT + reason, status_code=status.HTTP_303_SEE_OTHER)
 
     google_health_crud.link(user_id, tokens, db)
     core_logger.print_to_log(f"User {user_id}: Google Health linked")
-    return _page("Koblet til Google Health", "Du kan lukke denne fanen og gå tilbake til Yamabiko.")
+    return RedirectResponse(SETTINGS_REDIRECT + "linked", status_code=status.HTTP_303_SEE_OTHER)
 
 
 @router.delete("/link", status_code=status.HTTP_204_NO_CONTENT)

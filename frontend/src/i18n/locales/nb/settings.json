@@ -761,6 +761,25 @@
       "unlinkBody": "Endurain vil slutte å importere fra Garmin Connect. De eksisterende dataene dine beholdes.",
       "unlinkSuccess": "Garmin Connect frakoblet",
       "unlinkError": "Kunne ikke koble fra Garmin Connect. Vennligst prøv igjen."
+    },
+    "googleHealth": {
+      "title": "Google Health",
+      "subtitle": "Importer fjellturer og gåturer registrert av Fitbit",
+      "connectError": "Kunne ikke koble til Google Health. Prøv igjen.",
+      "linkSuccess": "Google Health er koblet til",
+      "linkDenied": "Google Health ble ikke koblet til: tilgang ble ikke gitt.",
+      "linkScopes": "Google Health ble ikke koblet til: tillat begge tillatelsene på samtykkesiden.",
+      "syncing": "Importerer Google Health-øktene dine i bakgrunnen…",
+      "syncError": "Kunne ikke starte importen. Prøv igjen.",
+      "syncRecent": "Importer siste {days} dager",
+      "syncLong": "Importer siste {days} dager",
+      "unlinkTitle": "Koble fra Google Health?",
+      "unlinkBody": "Yamabiko slutter å importere fra Google Health. Eksisterende aktiviteter beholdes.",
+      "unlinkSuccess": "Google Health er koblet fra",
+      "unlinkError": "Kunne ikke koble fra Google Health. Prøv igjen.",
+      "statusError": "Kunne ikke lese Google Health-statusen.",
+      "notConfigured": "Serveren har ingen Google OAuth-klient. Sett GOOGLE_HEALTH_CLIENT_ID og GOOGLE_HEALTH_CLIENT_SECRET og start på nytt.",
+      "redirectHint": "Redirect-URI som må registreres i Google Cloud: {uri}"
     }
   },
   "import": {

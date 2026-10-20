@@ -50,7 +50,8 @@ async def test_callback_links_the_user_and_consumes_the_state(db):
     with patch("google_health.oauth.exchange_code", AsyncMock(return_value=_tokens())) as exchange:
         response = await router.googlehealth_callback(db, state="st", code="the-code")
 
-    assert response.status_code == 200
+    assert response.status_code == 303
+    assert response.headers["location"] == "/settings/integrations?googlehealth=linked"
     exchange.assert_awaited_once_with("the-code", "cid", "secret", "http://localhost/cb")
     assert crud.linked_user_ids(db) == [7]
     assert crud.get_integrations_by_state("st", db) is None
@@ -79,7 +80,8 @@ async def test_callback_when_user_denies_access_links_nothing(db):
     with patch("google_health.oauth.exchange_code", AsyncMock()) as exchange:
         response = await router.googlehealth_callback(db, state="st", error="access_denied")
 
-    assert response.status_code == 400
+    assert response.status_code == 303
+    assert response.headers["location"].endswith("googlehealth=denied")
     exchange.assert_not_awaited()
     assert crud.linked_user_ids(db) == []
     assert crud.get_integrations_by_state("st", db) is None
@@ -92,8 +94,18 @@ async def test_callback_failed_exchange_links_nothing_and_does_not_leak(db):
     with patch("google_health.oauth.exchange_code", failing):
         response = await router.googlehealth_callback(db, state="st", code="c")
 
-    assert response.status_code == 502
-    assert b"permissions" in response.body
+    assert response.status_code == 303
+    assert response.headers["location"].endswith("googlehealth=scopes")
+    assert crud.linked_user_ids(db) == []
+
+
+async def test_callback_other_exchange_failure_redirects_with_a_generic_error(db):
+    crud.set_state(7, "st", db)
+
+    with patch("google_health.oauth.exchange_code", AsyncMock(side_effect=oauth.GoogleHealthOAuthError("boom"))):
+        response = await router.googlehealth_callback(db, state="st", code="c")
+
+    assert response.headers["location"].endswith("googlehealth=error")
     assert crud.linked_user_ids(db) == []
 
 
