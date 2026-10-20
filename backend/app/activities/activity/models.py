@@ -69,6 +69,7 @@ class Activity(Base):
         strava_gear_id: Strava gear ID.
         strava_activity_id: Strava activity ID.
         garminconnect_activity_id: Garmin Connect activity ID.
+        googlehealth_activity_id: Google Health exercise data point ID.
         garminconnect_gear_id: Garmin Connect gear ID.
         import_info: Additional import metadata.
         is_hidden: Whether the activity is hidden.
@@ -270,6 +271,12 @@ class Activity(Base):
         String(45),
         nullable=True,
         comment="Garmin Connect gear ID",
+    )
+    googlehealth_activity_id: Mapped[str | None] = mapped_column(
+        String(32),
+        nullable=True,
+        index=True,
+        comment="Google Health exercise data point ID",
     )
     import_info: Mapped[dict | None] = mapped_column(
         JSON,

@@ -9,6 +9,7 @@ import shutil
 import statistics
 import time
 import uuid
+from collections.abc import Callable
 from datetime import datetime
 from pathlib import Path
 from statistics import mean
@@ -297,6 +298,7 @@ def transform_schema_activity_to_model_activity(
         strava_activity_id=activity.strava_activity_id,
         garminconnect_activity_id=activity.garminconnect_activity_id,
         garminconnect_gear_id=activity.garminconnect_gear_id,
+        googlehealth_activity_id=activity.googlehealth_activity_id,
         import_info=activity.import_info,
         is_hidden=activity.is_hidden if activity.is_hidden is not None else False,
         hide_start_time=activity.hide_start_time,
@@ -526,6 +528,7 @@ async def parse_and_store_activity_from_file(
     import_initiated_time: str | None = None,
     users_existing_gear_nickname_to_id: dict | None = None,
     activity_name: str | None = None,
+    parsed_info_hook: Callable[[dict], dict] | None = None,
 ):
     """
     Parse an activity file and persist the result to the database.
@@ -550,6 +553,9 @@ async def parse_and_store_activity_from_file(
         users_existing_gear_nickname_to_id: Mapping of gear nickname to
             internal gear ID, used during Strava bulk imports.
         activity_name: Optional override for the activity name.
+        parsed_info_hook: Optional callable that receives the parsed payload
+            and returns the (corrected) payload to store. Used by importers
+            such as Google Health that correct values after parsing.
 
     Returns:
         List of created activity schema objects, or None if the file could not
@@ -629,6 +635,9 @@ async def parse_and_store_activity_from_file(
                     activity_name,
                 )
             )
+
+            if parsed_info is not None and parsed_info_hook is not None:
+                parsed_info = await run_in_threadpool(parsed_info_hook, parsed_info)
 
             # Gather supplemental metadata. Check if a Strava bulk import is in
             # progress, and if so check to see if any additional information

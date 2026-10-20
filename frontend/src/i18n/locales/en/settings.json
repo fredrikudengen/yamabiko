@@ -709,6 +709,25 @@
       "startDate": "Start date",
       "endDate": "End date"
     },
+    "googleHealth": {
+      "title": "Google Health",
+      "subtitle": "Import hikes and walks recorded by your Fitbit",
+      "connectError": "Couldn't connect to Google Health. Please try again.",
+      "linkSuccess": "Google Health connected",
+      "linkDenied": "Google Health was not connected: access was not granted.",
+      "linkScopes": "Google Health was not connected: allow both permissions on the consent page.",
+      "syncing": "Importing your Google Health exercises in the background\u2026",
+      "syncError": "Couldn't start the import. Please try again.",
+      "syncRecent": "Import last {days} days",
+      "syncLong": "Import last {days} days",
+      "unlinkTitle": "Disconnect Google Health?",
+      "unlinkBody": "Yamabiko will stop importing from Google Health. Your existing activities are kept.",
+      "unlinkSuccess": "Google Health disconnected",
+      "unlinkError": "Couldn't disconnect Google Health. Please try again.",
+      "statusError": "Couldn't read the Google Health status.",
+      "notConfigured": "The server has no Google OAuth client. Set GOOGLE_HEALTH_CLIENT_ID and GOOGLE_HEALTH_CLIENT_SECRET and restart.",
+      "redirectHint": "Redirect URI to register in Google Cloud: {uri}"
+    },
     "strava": {
       "title": "Strava",
       "subtitle": "Import your activities and gear from Strava",

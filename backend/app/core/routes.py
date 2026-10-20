@@ -26,6 +26,7 @@ import followers.router as followers_router
 import garmin.router as garmin_router
 import gears.gear.router as gears_router
 import gears.gear_components.router as gear_components_router
+import google_health.router as google_health_router
 import health.health_fasting.router as health_fasting_router
 import health.health_poop.router as health_poop_router
 import health.health_sleep.router as health_sleep_router
@@ -252,6 +253,11 @@ router.include_router(
     sign_up_tokens_router.router,
     prefix=core_config.ROOT_PATH,
     tags=["sign_up_tokens"],
+)
+router.include_router(
+    google_health_router.router,
+    prefix=core_config.ROOT_PATH + "/googlehealth",
+    tags=["googlehealth"],
 )
 router.include_router(
     strava_router.router,

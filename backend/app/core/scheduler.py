@@ -10,6 +10,7 @@ import core.logger as core_logger
 import core.network as core_network
 import garmin.activity_utils as garmin_activity_utils
 import garmin.health_utils as garmin_health_utils
+import google_health.activity_utils as google_health_activity_utils
 import strava.activity_utils as strava_activity_utils
 import strava.utils as strava_utils
 
@@ -54,6 +55,14 @@ def start_scheduler() -> None:
         60,
         [1],
         "retrieve last day Garmin Connect users activities",
+    )
+
+    add_scheduler_job(
+        google_health_activity_utils.sync_all_users,
+        "interval",
+        60,
+        [],
+        "import new Google Health exercises every 60 minutes",
     )
 
     add_scheduler_job(

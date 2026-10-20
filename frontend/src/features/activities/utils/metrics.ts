@@ -7,6 +7,7 @@ import {
   activityTypeIsJumpRope,
   activityTypeIsRunning,
   activityTypeIsSailing,
+  activityTypeIsWalking,
   activityTypeIsWindsurf,
   activityTypeUsesPace,
 } from './activityType'
@@ -44,6 +45,12 @@ export interface MetricTile {
   accent: NonNullable<MetricPillVariants['accent']>
 }
 
+/**
+ * Show the moving-time tile only when it is at least this much shorter than elapsed
+ * time: the same length as a "long stop" in the Google Health importer (5 min).
+ */
+const MOVING_TIME_MIN_DIFFERENCE_S = 300
+
 /** Whether a numeric metric is present and finite. */
 function has(value: number | null | undefined): value is number {
   return value !== null && value !== undefined && Number.isFinite(value)
@@ -69,6 +76,8 @@ export function buildActivityMetrics(
   const tiles: MetricTile[] = []
 
   // v1 uses elapsed time for the summary "Time" stat (falls back to moving time).
+  // Yamabiko: when the timer time is clearly shorter (device pauses and long rests
+  // such as a summit break are removed from it), it is shown as a second tile.
   const pushTime = (): void => {
     const elapsed = activity.totalElapsedTime ?? activity.totalTimerTime
     if (has(elapsed)) {
@@ -76,6 +85,16 @@ export function buildActivityMetrics(
         key: 'time',
         labelKey: 'activities.metrics.time',
         value: formatHmsDuration(elapsed),
+        unit: '',
+        accent: 'ink',
+      })
+    }
+    const moving = activity.totalTimerTime
+    if (has(elapsed) && has(moving) && elapsed - moving >= MOVING_TIME_MIN_DIFFERENCE_S) {
+      tiles.push({
+        key: 'movingTime',
+        labelKey: 'activities.metrics.movingTime',
+        value: formatHmsDuration(moving),
         unit: '',
         accent: 'ink',
       })
@@ -150,6 +169,31 @@ export function buildActivityMetrics(
       })
     }
   }
+  const pushMaxSpeed = (): void => {
+    if (visibility.speed && has(activity.maxSpeed)) {
+      const speed = formatSpeed(activity.maxSpeed, type, units)
+      tiles.push({
+        key: 'maxSpeed',
+        labelKey: 'activities.metrics.maxSpeed',
+        value: speed.value,
+        unit: speed.unit,
+        accent: 'info',
+      })
+    }
+  }
+  // Step count from the importer (Google Health), kept in `import_info`.
+  const pushSteps = (): void => {
+    const steps = activity.importInfo?.steps
+    if (typeof steps === 'number' && Number.isFinite(steps)) {
+      tiles.push({
+        key: 'steps',
+        labelKey: 'activities.metrics.steps',
+        value: Math.round(steps).toLocaleString(),
+        unit: '',
+        accent: 'brand',
+      })
+    }
+  }
   const pushMaxHr = (): void => {
     if (visibility.hr && has(activity.maxHr)) {
       tiles.push({
@@ -214,8 +258,19 @@ export function buildActivityMetrics(
     pushAvgHr()
     pushMaxHr()
     pushCalories()
+  } else if (activityTypeIsWalking(type)) {
+    // Yamabiko: walking/hiking show climb, both speeds, heart rate and steps too
+    // (more than the usual six tiles).
+    pushElevationGain()
+    pushPace()
+    pushAvgSpeed()
+    pushMaxSpeed()
+    pushAvgHr()
+    pushMaxHr()
+    pushCalories()
+    pushSteps()
   } else {
-    // swimming/walking/hiking/rowing/…: distance, time, pace, avg HR, max HR, calories
+    // swimming/rowing/…: distance, time, pace, avg HR, max HR, calories
     pushPace()
     pushAvgHr()
     pushMaxHr()

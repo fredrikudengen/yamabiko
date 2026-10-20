@@ -419,6 +419,11 @@ export const queryKeys = {
    * separate from {@link queryKeys.currentUser} (the narrow shell model): the
    * profile zone needs the full field set, and its edits invalidate both keys.
    */
+  /** Google Health link status (settings → integrations). */
+  googleHealth: {
+    status: () => ['google-health', 'status'] as const,
+  },
+
   profile: {
     /** Broad prefix; invalidating this cascades to every profile query. */
     all: () => ['profile'] as const,

@@ -2,6 +2,7 @@
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 
+import GoogleHealthCard from '@/features/integrations/components/GoogleHealthCard.vue'
 import GarminCard from '@/features/integrations/components/GarminCard.vue'
 import StravaCard from '@/features/integrations/components/StravaCard.vue'
 import { Button } from '@/components/ui/button'
@@ -24,6 +25,8 @@ const profile = computed(() => profileQuery.data.value ?? null)
       <h1 class="text-page-title">{{ t('settings.integrations.title') }}</h1>
       <p class="text-body">{{ t('settings.integrations.subtitle') }}</p>
     </div>
+
+    <GoogleHealthCard />
 
     <!-- Loading -->
     <div v-if="profileQuery.isPending.value" class="flex flex-col gap-3" aria-busy="true">

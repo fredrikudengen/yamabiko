@@ -248,6 +248,9 @@ export interface Activity {
   stravaActivityId: number | null
   garminActivityId: number | null
 
+  /** Importer metadata (source, derived-value details, step count for Google Health imports). */
+  importInfo: Record<string, unknown> | null
+
   /**
    * Path to the pre-rendered static map thumbnail, when one exists. The home
    * feed renders this lightweight image instead of mounting a live map per card.

@@ -35,6 +35,7 @@ import core.scheduler as core_scheduler
 import core.tracing as core_tracing
 import garmin.activity_utils as garmin_activity_utils
 import garmin.health_utils as garmin_health_utils
+import google_health.activity_utils as google_health_activity_utils
 import server_settings.schema as server_settings_schema
 import server_settings.utils as server_settings_utils
 import strava.activity_utils as strava_activity_utils
@@ -117,6 +118,11 @@ async def _retrieve_recent_strava_activities() -> None:
         1,
         True,
     )
+
+
+async def _sync_google_health() -> None:
+    """Import new Google Health exercises from the last week."""
+    await google_health_activity_utils.sync_all_users()
 
 
 async def _retrieve_recent_garmin_health() -> None:
@@ -211,6 +217,9 @@ async def startup_event(fastapi_app: FastAPI) -> None:
 
     core_logger.print_to_log_and_console("Retrieving last day activities from Strava on startup")
     await _safe_run_async("retrieve_recent_strava_activities", _retrieve_recent_strava_activities)
+
+    core_logger.print_to_log_and_console("Importing recent Google Health exercises on startup")
+    await _safe_run_async("sync_google_health", _sync_google_health)
 
     core_logger.print_to_log_and_console("Retrieving last day health stats from Garmin Connect on startup")
     await _safe_run_async(

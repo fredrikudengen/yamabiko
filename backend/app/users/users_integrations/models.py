@@ -27,6 +27,13 @@ class UsersIntegrations(Base):
         strava_token_expires_at: Strava token expiration
             timestamp.
         strava_sync_gear: Enable Strava gear synchronization.
+        googlehealth_state: Temporary state for Google Health
+            OAuth flow.
+        googlehealth_token: Encrypted Google Health access token.
+        googlehealth_refresh_token: Encrypted Google Health
+            refresh token.
+        googlehealth_token_expires_at: Google Health access token
+            expiration timestamp.
         garminconnect_token: Garmin Connect token
             data.
         garminconnect_sync_gear: Enable Garmin Connect gear
@@ -87,6 +94,31 @@ class UsersIntegrations(Base):
         nullable=False,
         default=False,
         comment="Whether Strava gear is to be synced",
+    )
+    googlehealth_state: Mapped[str | None] = mapped_column(
+        String(length=64),
+        default=None,
+        nullable=True,
+        index=True,
+        comment="Google Health temporary state for link process",
+    )
+    googlehealth_token: Mapped[str | None] = mapped_column(
+        String(length=2048),
+        default=None,
+        nullable=True,
+        comment="Google Health access token encrypted at rest with Fernet key",
+    )
+    googlehealth_refresh_token: Mapped[str | None] = mapped_column(
+        String(length=2048),
+        default=None,
+        nullable=True,
+        comment="Google Health refresh token encrypted at rest with Fernet key",
+    )
+    googlehealth_token_expires_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True),
+        default=None,
+        nullable=True,
+        comment="Google Health access token expiration date",
     )
     garminconnect_token: Mapped[dict | None] = mapped_column(
         JSON,
