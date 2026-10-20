@@ -1,5 +1,7 @@
 """Tests for google_health.stops on synthetic wrist-GPS tracks."""
 
+import random
+
 import pytest
 
 import google_health.stops as stops
@@ -52,3 +54,30 @@ def test_gap_ends_a_run():
 def test_empty_and_single_point():
     assert stops.detect_long_stops([]) == []
     assert stops.detect_long_stops([stops.TrackPoint(0, 60.0, 5.0)]) == []
+
+
+def test_dropped_points_do_not_split_a_stop():
+    """Real band: 10-25 % of points go missing while sitting still, in gaps of 6-11 s."""
+    walk = [stops.TrackPoint(float(t), 60.0 + t * 1e-5, 5.0) for t in range(120)]
+    start = walk[-1].t + 1
+    rng = random.Random(1)  # noqa: S311 - synthetic test data
+    rest = []
+    t = start
+    while t < start + 1080:
+        rest.append(stops.TrackPoint(t, 60.0012 + rng.uniform(-3e-5, 3e-5), 5.0 + rng.uniform(-5e-5, 5e-5)))
+        t += rng.choice([1, 1, 1, 1, 2, 7, 11])
+    points = walk + rest
+
+    found = stops.detect_long_stops(points)
+
+    assert len(found) == 1
+    assert found[0].duration == pytest.approx(1080, abs=30)
+
+
+def test_gap_longer_than_the_limit_ends_the_stop():
+    still = [stops.TrackPoint(float(t), 60.0, 5.0) for t in range(0, 400)]
+    after_gap = [stops.TrackPoint(float(t), 60.0, 5.0) for t in range(500, 900)]
+
+    found = stops.detect_long_stops(still + after_gap)
+
+    assert [round(stop.duration) for stop in found] == [399, 399]
