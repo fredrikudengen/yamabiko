@@ -28,6 +28,8 @@ TOKEN_URL = "https://oauth2.googleapis.com/token"  # noqa: S105 - public endpoin
 SCOPES = (
     "https://www.googleapis.com/auth/googlehealth.activity_and_fitness.readonly",
     "https://www.googleapis.com/auth/googlehealth.location.readonly",
+    # Heart rate: the TCX export left it out when this scope was not granted.
+    "https://www.googleapis.com/auth/googlehealth.health_metrics_and_measurements.readonly",
 )
 TIMEOUT_S = 30.0
 
