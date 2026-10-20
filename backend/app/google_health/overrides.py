@@ -141,6 +141,11 @@ def _track_points(tcx_file: Any) -> list[google_health_stops.TrackPoint]:
     return [google_health_stops.TrackPoint((tp.time - t0).total_seconds(), tp.latitude, tp.longitude) for tp in raw]
 
 
+def _heart_rates(tcx_file: Any) -> list[int]:
+    """Heart-rate samples (bpm) from the trackpoints."""
+    return [int(tp.hr_value) for tp in tcx_file.trackpoints if getattr(tp, "hr_value", None)]
+
+
 def _last_trackpoint_distance(tcx_file: Any) -> float | None:
     """Cumulative distance of the last trackpoint that has one."""
     for tp in reversed(tcx_file.trackpoints):
@@ -168,6 +173,14 @@ def apply_google_health_overrides(parsed_info: dict, exercise_data_point: dict, 
 
     tcx_file = tcxreader.TCXReader().read(tcx_path)
     points = _track_points(tcx_file)
+
+    # ---- heart rate: Endurain's parser fills this; recompute if it did not ----
+    hr_samples = _heart_rates(tcx_file)
+    hr_filled = False
+    if hr_samples and (activity.average_hr is None or activity.max_hr is None):
+        activity.average_hr = round(sum(hr_samples) / len(hr_samples))
+        activity.max_hr = max(hr_samples)
+        hr_filled = True
 
     # ---- distance -------------------------------------------------------
     summary_mm = summary.get("distanceMillimeters")
@@ -274,6 +287,7 @@ def apply_google_health_overrides(parsed_info: dict, exercise_data_point: dict, 
             ],
         },
         "steps": _steps(summary),
+        "heart_rate": {"samples": len(hr_samples), "filled_by_override": hr_filled},
         "pace": {"basis": pace_basis, "elapsed_s_per_m": elapsed_pace},
         "speed": {
             "average_m_s": activity.average_speed,
