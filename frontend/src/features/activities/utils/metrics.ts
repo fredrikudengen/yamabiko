@@ -7,6 +7,7 @@ import {
   activityTypeIsJumpRope,
   activityTypeIsRunning,
   activityTypeIsSailing,
+  activityTypeIsWalking,
   activityTypeIsWindsurf,
   activityTypeUsesPace,
 } from './activityType'
@@ -168,6 +169,31 @@ export function buildActivityMetrics(
       })
     }
   }
+  const pushMaxSpeed = (): void => {
+    if (visibility.speed && has(activity.maxSpeed)) {
+      const speed = formatSpeed(activity.maxSpeed, type, units)
+      tiles.push({
+        key: 'maxSpeed',
+        labelKey: 'activities.metrics.maxSpeed',
+        value: speed.value,
+        unit: speed.unit,
+        accent: 'info',
+      })
+    }
+  }
+  // Step count from the importer (Google Health), kept in `import_info`.
+  const pushSteps = (): void => {
+    const steps = activity.importInfo?.steps
+    if (typeof steps === 'number' && Number.isFinite(steps)) {
+      tiles.push({
+        key: 'steps',
+        labelKey: 'activities.metrics.steps',
+        value: Math.round(steps).toLocaleString(),
+        unit: '',
+        accent: 'brand',
+      })
+    }
+  }
   const pushMaxHr = (): void => {
     if (visibility.hr && has(activity.maxHr)) {
       tiles.push({
@@ -232,8 +258,19 @@ export function buildActivityMetrics(
     pushAvgHr()
     pushMaxHr()
     pushCalories()
+  } else if (activityTypeIsWalking(type)) {
+    // Yamabiko: walking/hiking show climb, both speeds, heart rate and steps too
+    // (more than the usual six tiles).
+    pushElevationGain()
+    pushPace()
+    pushAvgSpeed()
+    pushMaxSpeed()
+    pushAvgHr()
+    pushMaxHr()
+    pushCalories()
+    pushSteps()
   } else {
-    // swimming/walking/hiking/rowing/…: distance, time, pace, avg HR, max HR, calories
+    // swimming/rowing/…: distance, time, pace, avg HR, max HR, calories
     pushPace()
     pushAvgHr()
     pushMaxHr()

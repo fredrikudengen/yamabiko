@@ -13,6 +13,10 @@ because for Fitbit TCX files three of its values are not what we want:
 - timer time: the TCX importer sets it to the clock time. It is set to the
   clock time minus device pauses (PAUSE/RESUME events) and long stops (see
   ``stops.py``).
+
+It also adds what the TCX file lacks: pace and average speed on timer time, the
+fastest minute as max speed, the step count, and Hike instead of Walk for walks
+with a real climb.
 """
 
 from __future__ import annotations
@@ -29,12 +33,58 @@ import google_health.stops as google_health_stops
 
 IMPORT_SOURCE = "google_health"
 # Bump when the way values are derived changes, so old rows can be told apart.
-IMPORT_VERSION = 1
+IMPORT_VERSION = 2
+
+# A Fitbit "walk" that climbs at least this much (metres of gain) is a hike. The
+# band has no hike/walk switch of its own for sessions started as a plain walk.
+HIKE_MIN_GAIN_M = 100.0
+HIKE_NAME = "Hike"
+# Max speed is the fastest stretch of this length: a single GPS step of a wrist
+# tracker says more about jitter than about speed.
+MAX_SPEED_WINDOW_S = 60.0
 
 
 def _gps_path_m(points: list[google_health_stops.TrackPoint]) -> float:
     """Sum of distances between consecutive GPS points (includes jitter)."""
     return sum(google_health_stops.distance_m(a, b) for a, b in pairwise(points))
+
+
+def fastest_speed_m_s(
+    points: list[google_health_stops.TrackPoint], window_s: float = MAX_SPEED_WINDOW_S
+) -> float | None:
+    """Speed over the fastest stretch of at least ``window_s`` seconds, in m/s.
+
+    Stretches that contain a gap in the GPS stream longer than the stop gap limit
+    are skipped. Returns None when no stretch is long enough.
+    """
+    if len(points) < 2:
+        return None
+    # cumulative[i] = GPS path length up to point i; gap_before[i] = a long gap ends at i
+    cumulative = [0.0]
+    gap_count = [0]
+    for a, b in pairwise(points):
+        cumulative.append(cumulative[-1] + google_health_stops.distance_m(a, b))
+        gap_count.append(gap_count[-1] + (1 if b.t - a.t > google_health_stops.GAP_THRESHOLD_S else 0))
+    best: float | None = None
+    j = 0
+    for i in range(len(points)):
+        j = max(j, i)
+        while j < len(points) - 1 and points[j].t - points[i].t < window_s:
+            j += 1
+        duration = points[j].t - points[i].t
+        if duration < window_s or gap_count[j] - gap_count[i] > 0:
+            continue
+        speed = (cumulative[j] - cumulative[i]) / duration
+        best = speed if best is None else max(best, speed)
+    return best
+
+
+def _steps(summary: dict) -> int | None:
+    """The step count from the summary (the API may send 64-bit integers as strings)."""
+    try:
+        return int(summary["steps"])
+    except (KeyError, TypeError, ValueError):
+        return None
 
 
 def choose_distance(
@@ -127,13 +177,6 @@ def apply_google_health_overrides(parsed_info: dict, exercise_data_point: dict, 
     distance_m, distance_source = choose_distance(last_trackpoint_m, gps_path_m, summary_m)
     activity.distance = round(distance_m)
 
-    first_time, last_time = None, None
-    timed = [tp for tp in tcx_file.trackpoints if tp.time is not None]
-    if timed:
-        first_time, last_time = timed[0].time, timed[-1].time
-    if first_time and last_time and activity.distance:
-        activity.pace = activities_utils.calculate_pace(activity.distance, first_time, last_time)
-
     # A single-lap file: keep the lap's distance consistent with the activity.
     laps = parsed_info.get("laps") or []
     if len(laps) == 1 and activity.distance:
@@ -169,6 +212,18 @@ def apply_google_health_overrides(parsed_info: dict, exercise_data_point: dict, 
     if elapsed is not None:
         activity.total_timer_time = max(elapsed - paused_s - stopped_s, 0)
 
+    # ---- pace and speed (on timer time, so a long rest does not slow them) ----
+    moving_s = activity.total_timer_time or elapsed
+    pace_basis = "none"
+    if activity.distance and moving_s:
+        activity.pace = moving_s / activity.distance
+        activity.average_speed = activity.distance / moving_s
+        pace_basis = "timer_time"
+    max_speed = fastest_speed_m_s(points)
+    if max_speed is not None:
+        activity.max_speed = max_speed
+    elapsed_pace = elapsed / activity.distance if elapsed and activity.distance else None
+
     # ---- identity, type, name ------------------------------------------
     activity.googlehealth_activity_id = google_health_filters.exercise_id(exercise_data_point)
     exercise_type = exercise.get("exerciseType")
@@ -177,6 +232,17 @@ def apply_google_health_overrides(parsed_info: dict, exercise_data_point: dict, 
     display_name = exercise.get("displayName")
     if display_name:
         activity.name = display_name
+    climb_m = device_gain_m if device_gain_m is not None else smoothed_gain
+    remapped_to_hike = False
+    if (
+        exercise_type
+        and activity.activity_type == activities_utils.define_activity_type("WALKING")
+        and climb_m is not None
+        and climb_m >= HIKE_MIN_GAIN_M
+    ):
+        activity.activity_type = activities_utils.define_activity_type("HIKING")
+        activity.name = HIKE_NAME
+        remapped_to_hike = True
 
     activity.import_info = {
         "import_source": IMPORT_SOURCE,
@@ -206,6 +272,18 @@ def apply_google_health_overrides(parsed_info: dict, exercise_data_point: dict, 
                 }
                 for stop in stops
             ],
+        },
+        "steps": _steps(summary),
+        "pace": {"basis": pace_basis, "elapsed_s_per_m": elapsed_pace},
+        "speed": {
+            "average_m_s": activity.average_speed,
+            "max_m_s": max_speed,
+            "max_window_s": MAX_SPEED_WINDOW_S,
+        },
+        "activity_type": {
+            "google_health": exercise_type,
+            "remapped_to_hike": remapped_to_hike,
+            "hike_min_gain_m": HIKE_MIN_GAIN_M,
         },
         "device_active_duration_s": exercise.get("activeDuration"),
         "paused_seconds": round(paused_s),

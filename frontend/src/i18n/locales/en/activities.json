@@ -74,6 +74,7 @@
     "avgPace": "Avg pace",
     "avgSpeed": "Avg speed",
     "maxSpeed": "Max speed",
+    "steps": "Steps",
     "elevationGain": "Elevation gain",
     "elevationLoss": "Elevation loss",
     "avgHr": "Avg heart rate",

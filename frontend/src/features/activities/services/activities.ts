@@ -80,6 +80,7 @@ export function mapActivity(dto: ActivityDto): Activity {
 
     stravaActivityId: dto.strava_activity_id ?? null,
     garminActivityId: dto.garminconnect_activity_id ?? null,
+    importInfo: dto.import_info ?? null,
 
     mapThumbnailPath: dto.map_thumbnail_path ?? null,
 

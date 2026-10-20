@@ -56,6 +56,7 @@ export function makeActivity(overrides: Partial<Activity> = {}): Activity {
     totalCycles: null,
     stravaActivityId: null,
     garminActivityId: null,
+    importInfo: null,
     mapThumbnailPath: null,
     ...overrides,
     privacy: { ...NO_PRIVACY, ...overrides.privacy },

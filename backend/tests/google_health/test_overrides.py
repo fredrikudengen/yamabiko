@@ -45,7 +45,9 @@ def test_distance_uses_last_trackpoint_not_the_lower_summary(tmp_path, track):
     assert info["gps_path"] == pytest.approx(track[-1]["distance"], rel=0.01)
     # The single lap follows the activity.
     assert result["laps"][0]["total_distance"] == activity.distance
-    assert activity.pace == pytest.approx(1079 / activity.distance, rel=0.01)
+    # Pace follows timer time (here the 8 min rest is removed), not the clock.
+    assert activity.pace == pytest.approx(activity.total_timer_time / activity.distance)
+    assert activity.pace < 1079 / activity.distance
 
 
 def test_timer_time_excludes_long_stop_but_elapsed_is_clock_time(tmp_path, track):
@@ -154,3 +156,71 @@ def test_stream_gap_is_reported(tmp_path):
     activity = overrides.apply_google_health_overrides(parsed, data_point(), str(path))["activity"]
 
     assert activity.import_info["stream_gaps"] == {"count": 1, "seconds": 61}
+
+
+def test_average_speed_and_pace_use_timer_time_and_max_speed_is_the_fastest_minute(tmp_path, track):
+    path = write_tcx(tmp_path / "a.tcx", track)
+    parsed = _parsed_info(1079, [{"ele": p["ele"]} for p in track], summary_distance=1)
+
+    activity = overrides.apply_google_health_overrides(parsed, data_point(), str(path))["activity"]
+
+    assert activity.average_speed == pytest.approx(activity.distance / activity.total_timer_time)
+    assert activity.pace == pytest.approx(1 / activity.average_speed)
+    # The fastest minute is a stretch of the walking segments, not the rest.
+    assert activity.max_speed == pytest.approx(2.64, rel=0.05)
+    info = activity.import_info
+    assert info["pace"]["basis"] == "timer_time"
+    assert info["pace"]["elapsed_s_per_m"] == pytest.approx(1079 / activity.distance)
+    assert info["speed"]["max_window_s"] == 60.0
+
+
+def test_fastest_speed_skips_windows_with_gaps_and_short_tracks():
+    flat = [overrides.google_health_stops.TrackPoint(float(t), 60.0, 5.0) for t in range(120)]
+    assert overrides.fastest_speed_m_s(flat) == pytest.approx(0.0)
+    assert overrides.fastest_speed_m_s(flat[:30]) is None
+    assert overrides.fastest_speed_m_s([]) is None
+    # A 90 s hole in the stream: no 60 s window without a gap is long enough to count.
+    gapped = flat[:40] + [
+        overrides.google_health_stops.TrackPoint(p.t + 90.0, p.lat + 0.01, p.lon) for p in flat[40:80]
+    ]
+    assert overrides.fastest_speed_m_s(gapped) is None
+
+
+@pytest.mark.parametrize(("raw", "expected"), [("14803", 14803), (9000, 9000), (None, None), ("x", None)])
+def test_steps_are_stored_in_import_info(tmp_path, raw, expected):
+    walk = make_track([("walk", 600)])
+    path = write_tcx(tmp_path / "a.tcx", walk)
+    parsed = _parsed_info(599, [{"ele": p["ele"]} for p in walk], summary_distance=1)
+    point = data_point()
+    if raw is not None:
+        point["exercise"]["metricsSummary"]["steps"] = raw
+
+    activity = overrides.apply_google_health_overrides(parsed, point, str(path))["activity"]
+
+    assert activity.import_info["steps"] == expected
+
+
+@pytest.mark.parametrize(
+    ("exercise_type", "gain_mm", "hike"),
+    [
+        ("WALKING", 430_000, True),
+        ("WALKING", 99_000, False),
+        ("WALKING", None, False),
+        ("RUNNING", 430_000, False),
+        ("HIKING", 5_000, False),  # already a hike per the band; nothing to remap
+    ],
+)
+def test_walks_with_a_real_climb_become_hikes(tmp_path, exercise_type, gain_mm, hike):
+    walk = make_track([("walk", 600)])
+    path = write_tcx(tmp_path / "a.tcx", walk)
+    parsed = _parsed_info(599, [{"ele": 50} for _ in walk], summary_distance=1)
+    point = data_point(exercise_type=exercise_type, elevation_gain_mm=gain_mm)
+
+    activity = overrides.apply_google_health_overrides(parsed, point, str(path))["activity"]
+
+    expected_type = overrides.activities_utils.define_activity_type(
+        "HIKING" if hike or exercise_type == "HIKING" else exercise_type
+    )
+    assert activity.activity_type == expected_type
+    assert (activity.name == overrides.HIKE_NAME) is hike
+    assert activity.import_info["activity_type"]["remapped_to_hike"] is hike
