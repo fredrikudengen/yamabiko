@@ -98,6 +98,33 @@ describe('buildActivityMetrics', () => {
     expect(keys).not.toContain('pace')
   })
 
+  it('adds a moving-time tile when long stops make it much shorter than elapsed time', () => {
+    const tiles = buildActivityMetrics(
+      makeActivity({ activityType: 1, totalElapsedTime: 12408, totalTimerTime: 11264 }),
+      'metric',
+      visible,
+    )
+    const keys = tiles.map((tile) => tile.key)
+    expect(keys.slice(0, 3)).toEqual(['distance', 'time', 'movingTime'])
+    expect(tiles.find((tile) => tile.key === 'time')?.value).toBe('3:26:48')
+    expect(tiles.find((tile) => tile.key === 'movingTime')?.value).toBe('3:07:44')
+  })
+
+  it('omits the moving-time tile when the difference is small or the time is missing', () => {
+    const small = buildActivityMetrics(
+      makeActivity({ activityType: 1, totalElapsedTime: 3600, totalTimerTime: 3400 }),
+      'metric',
+      visible,
+    )
+    expect(small.map((tile) => tile.key)).not.toContain('movingTime')
+    const missing = buildActivityMetrics(
+      makeActivity({ activityType: 1, totalElapsedTime: 3600, totalTimerTime: null }),
+      'metric',
+      visible,
+    )
+    expect(missing.map((tile) => tile.key)).not.toContain('movingTime')
+  })
+
   it('shows only calories/time/HR for non-distance activities (e.g. strength)', () => {
     const tiles = buildActivityMetrics(makeActivity({ activityType: 19 }), 'metric', visible)
     const keys = tiles.map((tile) => tile.key)

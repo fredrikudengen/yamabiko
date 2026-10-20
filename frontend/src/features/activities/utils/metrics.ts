@@ -44,6 +44,12 @@ export interface MetricTile {
   accent: NonNullable<MetricPillVariants['accent']>
 }
 
+/**
+ * Show the moving-time tile only when it is at least this much shorter than elapsed
+ * time: the same length as a "long stop" in the Google Health importer (5 min).
+ */
+const MOVING_TIME_MIN_DIFFERENCE_S = 300
+
 /** Whether a numeric metric is present and finite. */
 function has(value: number | null | undefined): value is number {
   return value !== null && value !== undefined && Number.isFinite(value)
@@ -69,6 +75,8 @@ export function buildActivityMetrics(
   const tiles: MetricTile[] = []
 
   // v1 uses elapsed time for the summary "Time" stat (falls back to moving time).
+  // Yamabiko: when the timer time is clearly shorter (device pauses and long rests
+  // such as a summit break are removed from it), it is shown as a second tile.
   const pushTime = (): void => {
     const elapsed = activity.totalElapsedTime ?? activity.totalTimerTime
     if (has(elapsed)) {
@@ -76,6 +84,16 @@ export function buildActivityMetrics(
         key: 'time',
         labelKey: 'activities.metrics.time',
         value: formatHmsDuration(elapsed),
+        unit: '',
+        accent: 'ink',
+      })
+    }
+    const moving = activity.totalTimerTime
+    if (has(elapsed) && has(moving) && elapsed - moving >= MOVING_TIME_MIN_DIFFERENCE_S) {
+      tiles.push({
+        key: 'movingTime',
+        labelKey: 'activities.metrics.movingTime',
+        value: formatHmsDuration(moving),
         unit: '',
         accent: 'ink',
       })
