@@ -22,6 +22,7 @@ import google_health.crud as google_health_crud
 import google_health.filters as google_health_filters
 import google_health.overrides as google_health_overrides
 import google_health.token_utils as google_health_token_utils
+import segments.service as segments_service
 import websocket.manager as websocket_manager
 from core.database import SessionLocal
 
@@ -82,6 +83,9 @@ async def import_exercise(
             "warning",
         )
         file_uploads.safe_remove_within(tcx_path, base_dir=core_config.settings.FILES_DIR)
+    else:
+        # Find the user's segments this activity passes. Never raises: a failure is logged.
+        segments_service.refresh_efforts_after_import(stored, user_id, db)
     return stored
 
 

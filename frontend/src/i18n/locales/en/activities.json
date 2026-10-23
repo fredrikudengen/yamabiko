@@ -274,5 +274,89 @@
     "inlineSkating": "Inline skating",
     "hiit": "HIIT",
     "jumpRope": "Jump rope"
+  },
+  "segments": {
+    "title": "Segments",
+    "subtitle": "A segment is a stretch between two circles, for example the car park and the summit. Every tour that passes both gets a comparable time.",
+    "new": "New segment",
+    "loadError": "Could not load your segments.",
+    "empty": {
+      "title": "No segments yet",
+      "description": "Place a start and an end on the map to compare your tours on the same stretch."
+    },
+    "efforts": "{count} tours | {count} tour | {count} tours",
+    "untitled": "Untitled tour",
+    "radiusSummary": "Start radius {start} m, end radius {end} m",
+    "onActivity": "Segments on this tour",
+    "fields": {
+      "date": "Date",
+      "moving": "Moving time",
+      "behind": "Behind best",
+      "stopped": "Stopped",
+      "hr": "Avg HR",
+      "bpm": "bpm",
+      "gain": "Ascent",
+      "best": "best",
+      "total": "Total time",
+      "totalShort": "total",
+      "compareBy": "Compare by"
+    },
+    "map": {
+      "label": "Map for placing the start and end of a segment"
+    },
+    "editor": {
+      "titleNew": "New segment",
+      "titleEdit": "Edit segment",
+      "subtitle": "Click the map to place a node, drag it to move it, and drag the square on the circle's edge to change the radius. Your tours are drawn underneath.",
+      "placing": "Which node a click places",
+      "placeStart": "Place start",
+      "placeEnd": "Place end",
+      "mapHint": "Click the map to place.",
+      "name": "Name",
+      "nameRequired": "Give the segment a name.",
+      "start": "Start",
+      "end": "End",
+      "coordinates": "Coordinates",
+      "coordinatesHint": "Latitude, longitude – for example 60.39, 5.32",
+      "coordinatesInvalid": "Could not read the coordinates.",
+      "radius": "Radius (m)",
+      "save": "Save segment",
+      "cancel": "Cancel",
+      "saved": "Segment saved.",
+      "saveError": "Could not save the segment."
+    },
+    "preview": {
+      "title": "Which tours match",
+      "needNodes": "Place both a start and an end to see which tours match.",
+      "radiusTooSmall": "The radius must be larger than 25 m.",
+      "overlap": "The two circles overlap. Move them apart or make the radii smaller.",
+      "loading": "Checking your tours…",
+      "summary": "{matches} match, {misses} came close.",
+      "closest": "Came within {start} m of the start and {end} m of the end – a radius of that size would just catch it.",
+      "endVisits": "Visited the end {count} times; the first visit ends the segment.",
+      "nearMisses": "Almost",
+      "similar": "Looks like an existing segment: {names}.",
+      "reason": {
+        "start_not_reached": "Missed the start circle.",
+        "end_not_reached": "Missed the end circle.",
+        "both_not_reached": "Missed both circles.",
+        "wrong_order": "Passed both, but the end before the start."
+      }
+    },
+    "detail": {
+      "edit": "Edit",
+      "refresh": "Recompute",
+      "delete": "Delete",
+      "close": "Close",
+      "compare": "Your tours on this segment",
+      "noEfforts": "No tours have passed this segment yet.",
+      "loadError": "Could not load the segment.",
+      "refreshed": "Efforts recomputed.",
+      "refreshError": "Could not recompute.",
+      "deleted": "Segment deleted.",
+      "deleteError": "Could not delete the segment.",
+      "deleteTitle": "Delete segment?",
+      "deleteDescription": "\"{name}\" and its times are removed. Your tours are not touched."
+    }
   }
 }

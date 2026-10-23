@@ -36,6 +36,7 @@ import health.health_water.router as health_water_router
 import health.health_weight.router as health_weight_router
 import health.router as health_router
 import notifications.router as notifications_router
+import segments.router as segments_router
 import server_settings.public_router as server_settings_public_router
 import server_settings.router as server_settings_router
 import strava.router as strava_router
@@ -258,6 +259,11 @@ router.include_router(
     google_health_router.router,
     prefix=core_config.ROOT_PATH + "/googlehealth",
     tags=["googlehealth"],
+)
+router.include_router(
+    segments_router.router,
+    prefix=core_config.ROOT_PATH + "/segments",
+    tags=["segments"],
 )
 router.include_router(
     strava_router.router,

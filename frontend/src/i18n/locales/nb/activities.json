@@ -268,5 +268,89 @@
     "snowShoeing": "Truging",
     "inlineSkating": "Rulleskøyter",
     "hiit": "HIIT"
+  },
+  "segments": {
+    "title": "Segmenter",
+    "subtitle": "Et segment er en strekning mellom to sirkler, for eksempel parkeringen og toppen. Hver tur som passerer begge får en sammenlignbar tid.",
+    "new": "Nytt segment",
+    "loadError": "Kunne ikke laste segmentene dine.",
+    "empty": {
+      "title": "Ingen segmenter ennå",
+      "description": "Sett en start og en slutt på kartet for å sammenligne turene dine på samme strekning."
+    },
+    "efforts": "{count} turer | {count} tur | {count} turer",
+    "untitled": "Tur uten navn",
+    "radiusSummary": "Startradius {start} m, sluttradius {end} m",
+    "onActivity": "Segmenter på denne turen",
+    "fields": {
+      "date": "Dato",
+      "moving": "Bevegelsestid",
+      "behind": "Bak beste",
+      "stopped": "Stopp",
+      "hr": "Snittpuls",
+      "bpm": "slag/min",
+      "gain": "Stigning",
+      "best": "best",
+      "total": "Totaltid",
+      "totalShort": "totalt",
+      "compareBy": "Sammenlign på"
+    },
+    "map": {
+      "label": "Kart for å plassere start og slutt på et segment"
+    },
+    "editor": {
+      "titleNew": "Nytt segment",
+      "titleEdit": "Rediger segment",
+      "subtitle": "Klikk på kartet for å sette en node, dra den for å flytte, og dra firkanten på kanten av sirkelen for å endre radius. Turene dine er tegnet under.",
+      "placing": "Hvilken node et klikk setter",
+      "placeStart": "Sett start",
+      "placeEnd": "Sett slutt",
+      "mapHint": "Klikk på kartet for å plassere.",
+      "name": "Navn",
+      "nameRequired": "Gi segmentet et navn.",
+      "start": "Start",
+      "end": "Slutt",
+      "coordinates": "Koordinater",
+      "coordinatesHint": "Breddegrad, lengdegrad – for eksempel 60.39, 5.32",
+      "coordinatesInvalid": "Kunne ikke lese koordinatene.",
+      "radius": "Radius (m)",
+      "save": "Lagre segment",
+      "cancel": "Avbryt",
+      "saved": "Segmentet er lagret.",
+      "saveError": "Kunne ikke lagre segmentet."
+    },
+    "preview": {
+      "title": "Hvilke turer som treffer",
+      "needNodes": "Sett både start og slutt for å se hvilke turer som treffer.",
+      "radiusTooSmall": "Radius må være større enn 25 m.",
+      "overlap": "De to sirklene overlapper. Flytt dem fra hverandre eller gjør radiusene mindre.",
+      "loading": "Sjekker turene dine…",
+      "summary": "{matches} treff, {misses} kom nær.",
+      "closest": "Kom innenfor {start} m fra start og {end} m fra slutt – en radius så stor ville akkurat fanget den.",
+      "endVisits": "Besøkte slutten {count} ganger; første besøk avslutter segmentet.",
+      "nearMisses": "Nesten",
+      "similar": "Ligner et eksisterende segment: {names}.",
+      "reason": {
+        "start_not_reached": "Bommet på startsirkelen.",
+        "end_not_reached": "Bommet på sluttsirkelen.",
+        "both_not_reached": "Bommet på begge sirklene.",
+        "wrong_order": "Passerte begge, men slutten før starten."
+      }
+    },
+    "detail": {
+      "edit": "Rediger",
+      "refresh": "Beregn på nytt",
+      "delete": "Slett",
+      "close": "Lukk",
+      "compare": "Turene dine på dette segmentet",
+      "noEfforts": "Ingen turer har passert dette segmentet ennå.",
+      "loadError": "Kunne ikke laste segmentet.",
+      "refreshed": "Tidene er beregnet på nytt.",
+      "refreshError": "Kunne ikke beregne på nytt.",
+      "deleted": "Segmentet er slettet.",
+      "deleteError": "Kunne ikke slette segmentet.",
+      "deleteTitle": "Slette segmentet?",
+      "deleteDescription": "«{name}» og tidene fjernes. Turene dine røres ikke."
+    }
   }
 }

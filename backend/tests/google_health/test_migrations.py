@@ -23,5 +23,7 @@ def test_yamabiko_migrations_come_last_in_order():
     script = _script()
     (head,) = script.get_heads()
     chain = [revision.revision for revision in script.walk_revisions()]  # newest first
-    assert chain[0] == head == "8b1d4e6a2c97"
-    assert chain[1] == "5f3a9c1d7b42"
+    # Newest first: segments (003), Google Health OAuth (002), activity id (001).
+    assert chain[0] == head == "c3e8a5f1b6d4"
+    assert chain[1] == "8b1d4e6a2c97"
+    assert chain[2] == "5f3a9c1d7b42"

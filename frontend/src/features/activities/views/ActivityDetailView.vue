@@ -17,6 +17,7 @@ import ActivityDetailHeader from '@/features/activities/components/ActivityDetai
 import ActivityGallery from '@/features/activities/components/ActivityGallery.vue'
 import ActivityGearCard from '@/features/activities/components/ActivityGearCard.vue'
 import ActivityHrZones from '@/features/activities/components/ActivityHrZones.vue'
+import ActivitySegments from '@/features/segments/components/ActivitySegments.vue'
 import ActivityLapsTable from '@/features/activities/components/ActivityLapsTable.vue'
 import ActivityMetricsGrid from '@/features/activities/components/ActivityMetricsGrid.vue'
 import ActivityPrivacyAlerts from '@/features/activities/components/ActivityPrivacyAlerts.vue'
@@ -296,6 +297,8 @@ const notFound = computed(() => !isPending.value && !isError.value && activity.v
       />
 
       <ActivityGearCard v-if="isOwner" :activity="activity" />
+
+      <ActivitySegments v-if="isOwner" :activity-id="activity.id" />
 
       <div v-if="chartPanels.length > 0" class="grid gap-3 lg:grid-cols-2">
         <template v-for="panel in chartPanels" :key="panel.key">

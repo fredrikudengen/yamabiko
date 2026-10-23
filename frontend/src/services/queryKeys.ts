@@ -463,6 +463,26 @@ export const queryKeys = {
   },
 
   /**
+   * Segments (a start and an end node) and the efforts of activities on them.
+   * `all()` is the broad prefix: a segment write also changes effort counts and
+   * the efforts shown on activities, so it invalidates everything here.
+   */
+  segments: {
+    /** Broad prefix; invalidating this cascades to every segment query. */
+    all: () => ['segments'] as const,
+    /** The user's segments. */
+    list: () => ['segments', 'list'] as const,
+    /** @param id - Segment identifier. */
+    detail: (id: number) => ['segments', 'detail', id] as const,
+    /** @param id - Segment identifier. */
+    efforts: (id: number) => ['segments', 'efforts', id] as const,
+    /** @param activityId - Activity identifier. */
+    activityEfforts: (activityId: number) => ['segments', 'activity-efforts', activityId] as const,
+    /** @param activityId - Activity identifier. */
+    track: (activityId: number) => ['segments', 'track', activityId] as const,
+  },
+
+  /**
    * The authenticated user's account security state (MFA, backup codes, active
    * sessions). `all()` is the broad prefix the security mutations invalidate so
    * the affected cards refetch the server-authoritative state.

@@ -76,10 +76,14 @@ describe('googleHealth service', () => {
 
 const status = ref<GoogleHealthStatus | undefined>()
 const refetch = vi.fn<() => Promise<void>>()
-const startMutate = vi.fn()
+const startMutate = vi.fn<(...args: unknown[]) => void>()
 const routeQuery = ref<Record<string, string>>({})
-const replace = vi.fn()
-const toasts = { success: vi.fn(), error: vi.fn(), info: vi.fn() }
+const replace = vi.fn<(...args: unknown[]) => void>()
+const toasts = {
+  success: vi.fn<(...args: unknown[]) => void>(),
+  error: vi.fn<(...args: unknown[]) => void>(),
+  info: vi.fn<(...args: unknown[]) => void>(),
+}
 
 vi.mock('@/features/integrations/composables/useIntegrations', () => ({
   useGoogleHealthStatusQuery: () => ({
@@ -89,8 +93,14 @@ vi.mock('@/features/integrations/composables/useIntegrations', () => ({
     refetch,
   }),
   useStartGoogleHealthLinkMutation: () => ({ mutate: startMutate, isPending: ref(false) }),
-  useSyncGoogleHealthMutation: () => ({ mutate: vi.fn(), isPending: ref(false) }),
-  useUnlinkGoogleHealthMutation: () => ({ mutate: vi.fn(), isPending: ref(false) }),
+  useSyncGoogleHealthMutation: () => ({
+    mutate: vi.fn<(...args: unknown[]) => void>(),
+    isPending: ref(false),
+  }),
+  useUnlinkGoogleHealthMutation: () => ({
+    mutate: vi.fn<(...args: unknown[]) => void>(),
+    isPending: ref(false),
+  }),
 }))
 
 vi.mock('vue-router', () => ({

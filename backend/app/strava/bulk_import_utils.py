@@ -238,6 +238,7 @@ def queue_bulk_export_activities_for_import(
     # Iterate over each importable file and queue import
     filenumber = 0
     queuedforprocessingcount = 0
+    failed_files: list[str] = []
     for filename in importable_files:
         filenumber += 1
         file_path = os.path.join(strava_activities_import_dir, filename)
@@ -246,25 +247,43 @@ def queue_bulk_export_activities_for_import(
             core_logger.print_to_log_and_console(
                 f"Strava bulk import: Processing file {filenumber} of {number_of_importable_files} - {file_path}"
             )
-            # Parse and store the activity
-            asyncio.run(
-                activities_utils.parse_and_store_activity_from_file(
-                    token_user_id,
-                    file_path,
-                    websocket_manager,
-                    db,
-                    is_bulk_import=True,
-                    strava_activities=strava_activities_dict,
-                    import_initiated_time=import_time,
-                    users_existing_gear_nickname_to_id=users_existing_gear_nickname_to_id,
+            # Parse and store the activity. One unreadable file (for example a TCX without a start
+            # time) must not end the whole import: this runs in a worker thread whose exceptions
+            # nobody retrieves, so an uncaught error would silently drop every remaining file.
+            try:
+                asyncio.run(
+                    activities_utils.parse_and_store_activity_from_file(
+                        token_user_id,
+                        file_path,
+                        websocket_manager,
+                        db,
+                        is_bulk_import=True,
+                        strava_activities=strava_activities_dict,
+                        import_initiated_time=import_time,
+                        users_existing_gear_nickname_to_id=users_existing_gear_nickname_to_id,
+                    )
                 )
-            )
+            except Exception as err:
+                failed_files.append(filename)
+                # Roll back so a half-finished transaction does not poison the next file.
+                db.rollback()
+                core_logger.print_to_log_and_console(
+                    f"Strava bulk import: File {filename} failed and was skipped: {type(err).__name__}: {err}",
+                    "error",
+                    exc=err,
+                )
             # Small delay between files
             time.sleep(0.1)
 
     core_logger.print_to_log_and_console(
         f"Strava bulk import: Import complete! A total of {filenumber} files were processed."
     )
+    if failed_files:
+        core_logger.print_to_log_and_console(
+            f"Strava bulk import: {len(failed_files)} of {filenumber} files failed and were skipped: "
+            f"{', '.join(failed_files)}",
+            "warning",
+        )
 
     return queuedforprocessingcount
 
