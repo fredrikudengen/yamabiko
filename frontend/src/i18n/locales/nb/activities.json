@@ -290,7 +290,10 @@
       "hr": "Snittpuls",
       "bpm": "slag/min",
       "gain": "Stigning",
-      "best": "best"
+      "best": "best",
+      "total": "Totaltid",
+      "totalShort": "totalt",
+      "compareBy": "Sammenlign på"
     },
     "map": {
       "label": "Kart for å plassere start og slutt på et segment"

@@ -296,7 +296,10 @@
       "hr": "Avg HR",
       "bpm": "bpm",
       "gain": "Ascent",
-      "best": "best"
+      "best": "best",
+      "total": "Total time",
+      "totalShort": "total",
+      "compareBy": "Compare by"
     },
     "map": {
       "label": "Map for placing the start and end of a segment"

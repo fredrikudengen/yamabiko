@@ -258,6 +258,42 @@ describe('comparing efforts', () => {
     expect(compareEfforts([])).toEqual([])
   })
 
+  it('can rank by total time, where stops count against an effort', () => {
+    // The user's point: a tour with many rests has lower moving time but is not faster overall.
+    const restful = effort(1, '2026-10-01T08:00:00', 2000, { elapsedS: 2900, stoppedS: 900 })
+    const steady = effort(2, '2026-10-20T08:00:00', 2300, { elapsedS: 2300 })
+
+    const byMoving = compareEfforts([restful, steady], 'moving')
+    expect(byMoving.find((r) => r.isBest)?.effort.id).toBe(1)
+
+    const byTotal = compareEfforts([restful, steady], 'total')
+    expect(byTotal.find((r) => r.isBest)?.effort.id).toBe(2)
+    expect(byTotal.find((r) => !r.isBest)?.behindBestS).toBe(600)
+  })
+
+  it('shows total time and switches the ranking with the toggle', async () => {
+    const wrapper = mount(EffortsTable, {
+      props: {
+        efforts: [
+          effort(1, '2026-10-01T08:00:00', 2000, { elapsedS: 2900, stoppedS: 900 }),
+          effort(2, '2026-10-20T08:00:00', 2300, { elapsedS: 2300 }),
+        ],
+      },
+      global: { plugins: [i18n], stubs: { 'router-link': true } },
+    })
+    const badgeRow = () =>
+      wrapper
+        .findAll('[data-testid="effort-row"]')
+        .findIndex((r) => r.find('[data-testid="best-badge"]').exists())
+
+    expect(wrapper.text()).toContain('48:20') // 2900 s total
+    // Rows are newest first: index 0 is the steady tour, index 1 the restful one.
+    expect(badgeRow()).toBe(1)
+
+    await wrapper.find('[data-testid="basis-total"]').trigger('click')
+    expect(badgeRow()).toBe(0)
+  })
+
   it('shows the best badge only when there is something to compare with', () => {
     const mountTable = (efforts: SegmentEffort[]) =>
       mount(EffortsTable, {

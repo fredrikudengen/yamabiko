@@ -71,6 +71,10 @@ function dateOf(iso: string): string {
               <dt class="inline">{{ t('activities.segments.fields.moving') }}:</dt>
               <dd class="ml-1 inline font-medium">{{ formatSeconds(m.movingS) }}</dd>
             </div>
+            <div v-if="m.elapsedS - m.movingS >= 1">
+              <dt class="inline">{{ t('activities.segments.fields.total') }}:</dt>
+              <dd class="ml-1 inline">{{ formatSeconds(m.elapsedS) }}</dd>
+            </div>
             <div v-if="m.stoppedS + m.gapS > 0">
               <dt class="inline">{{ t('activities.segments.fields.stopped') }}:</dt>
               <dd class="ml-1 inline">{{ formatSeconds(m.stoppedS + m.gapS) }}</dd>

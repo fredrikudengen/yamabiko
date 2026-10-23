@@ -30,6 +30,9 @@ const efforts = computed(() => query.data.value ?? [])
         </router-link>
         <span class="text-meta tabular-nums">
           {{ formatSeconds(effort.movingS) }}
+          <template v-if="effort.elapsedS - effort.movingS >= 1">
+            ({{ t('activities.segments.fields.totalShort') }} {{ formatSeconds(effort.elapsedS) }})
+          </template>
           <template v-if="effort.averageHr !== null">
             · {{ Math.round(effort.averageHr) }} {{ t('activities.segments.fields.bpm') }}</template
           >
