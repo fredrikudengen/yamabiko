@@ -1,6 +1,7 @@
 """Tests for the segment database layer and service, on an in-memory SQLite database."""
 
 from datetime import UTC, datetime, timedelta
+from types import SimpleNamespace
 
 import pytest
 from sqlalchemy import select
@@ -304,3 +305,33 @@ def test_latlon_helper_round_trip():
     lat, lon = latlon(0, 111.32)
     assert lat == pytest.approx(60.001)
     assert lon == pytest.approx(5.0)
+
+
+class TestRefreshAfterImport:
+    def test_matches_each_imported_activity(self, db):
+        segment = _segment(db)
+        first = _add_activity(db, build_route(ASCENT), day=0)
+        second = _add_activity(db, build_route(ASCENT), day=1)
+
+        service.refresh_efforts_after_import([SimpleNamespace(id=first), SimpleNamespace(id=second)], USER, db)
+
+        assert sorted(e.activity_id for e in crud.get_efforts_for_segment(segment.id, db)) == [first, second]
+
+    def test_a_failure_is_logged_and_never_raised(self, db, monkeypatch):
+        calls = []
+
+        def boom(activity_id, user_id, session):
+            calls.append(activity_id)
+            raise RuntimeError("stream data is broken")
+
+        monkeypatch.setattr(service, "refresh_activity_efforts", boom)
+        rolled_back = []
+        monkeypatch.setattr(db, "rollback", lambda: rolled_back.append(True))
+
+        service.refresh_efforts_after_import([SimpleNamespace(id=1), SimpleNamespace(id=2)], USER, db)
+
+        assert calls == [1, 2]  # the second one is still tried
+        assert rolled_back == [True, True]
+
+    def test_nothing_to_do_for_no_activities(self, db):
+        service.refresh_efforts_after_import([], USER, db)

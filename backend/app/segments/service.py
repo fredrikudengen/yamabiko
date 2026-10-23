@@ -2,8 +2,10 @@
 
 from __future__ import annotations
 
+from collections.abc import Sequence
 from dataclasses import dataclass
 from datetime import UTC, datetime, timedelta
+from typing import Any
 
 from sqlalchemy import delete, select
 from sqlalchemy.orm import Session
@@ -11,8 +13,10 @@ from sqlalchemy.orm import Session
 import activities.activity.models as activities_models
 import activities.activity_streams.constants as streams_constants
 import activities.activity_streams.models as streams_models
+import core.logger as core_logger
 import google_health.stops as google_health_stops
 import segments.crud as segments_crud
+import segments.geo as segments_geo
 import segments.matching as segments_matching
 import segments.models as segments_models
 
@@ -38,6 +42,7 @@ class PreviewMatch:
     """An activity that passes a (possibly unsaved) segment."""
 
     activity_id: int
+    activity_name: str | None
     start_time: datetime
     end_time: datetime
     match: segments_matching.SegmentMatch
@@ -145,13 +150,59 @@ def build_effort(
     )
 
 
-def _user_activity_ids(user_id: int, db: Session) -> list[int]:
+def _user_activities(user_id: int, db: Session) -> list[tuple[int, str | None]]:
+    """(id, name) of the user's activities, oldest first."""
     stmt = (
-        select(activities_models.Activity.id)
+        select(activities_models.Activity.id, activities_models.Activity.name)
         .where(activities_models.Activity.user_id == user_id)
         .order_by(activities_models.Activity.start_time)
     )
-    return list(db.execute(stmt).scalars())
+    return [(row.id, row.name) for row in db.execute(stmt)]
+
+
+def _user_activity_ids(user_id: int, db: Session) -> list[int]:
+    return [activity_id for activity_id, _ in _user_activities(user_id, db)]
+
+
+def activity_names(activity_ids: list[int], db: Session) -> dict[int, str | None]:
+    """Names of the given activities."""
+    if not activity_ids:
+        return {}
+    stmt = select(activities_models.Activity.id, activities_models.Activity.name).where(
+        activities_models.Activity.id.in_(activity_ids)
+    )
+    return {row.id: row.name for row in db.execute(stmt)}
+
+
+def activity_owner(activity_id: int, db: Session) -> int | None:
+    """The user id that owns the activity, or None when it does not exist."""
+    stmt = select(activities_models.Activity.user_id).where(activities_models.Activity.id == activity_id)
+    return db.execute(stmt).scalar_one_or_none()
+
+
+def find_similar_segments(
+    user_id: int,
+    start: segments_matching.Node,
+    end: segments_matching.Node,
+    db: Session,
+    exclude_id: int | None = None,
+) -> list[segments_models.Segment]:
+    """The user's segments that look like these nodes: both ends within the smaller radius of each other.
+
+    This is a hint for the editor, not a rule: two segments may share a start or an
+    end (or both, with different radii) on purpose.
+    """
+    similar = []
+    for segment in segments_crud.get_user_segments(user_id, db):
+        if segment.id == exclude_id:
+            continue
+        other_start, other_end = segments_crud.nodes_of(segment)
+        if all(
+            segments_geo.distance_m(new.lat, new.lon, old.lat, old.lon) <= min(new.radius_m, old.radius_m)
+            for new, old in ((start, other_start), (end, other_end))
+        ):
+            similar.append(segment)
+    return similar
 
 
 def preview_matches(
@@ -168,7 +219,7 @@ def preview_matches(
     if problems:
         raise ValueError("; ".join(problems))
     hits: list[PreviewMatch] = []
-    for activity_id in _user_activity_ids(user_id, db):
+    for activity_id, activity_name in _user_activities(user_id, db):
         track = load_track(activity_id, db)
         if track is None:
             continue
@@ -179,6 +230,7 @@ def preview_matches(
             hits.append(
                 PreviewMatch(
                     activity_id=activity_id,
+                    activity_name=activity_name,
                     start_time=track.start + timedelta(seconds=match.start_s),
                     end_time=track.start + timedelta(seconds=match.end_s),
                     match=match,
@@ -229,3 +281,23 @@ def refresh_activity_efforts(activity_id: int, user_id: int, db: Session) -> lis
     db.add_all(efforts)
     db.commit()
     return efforts
+
+
+def refresh_efforts_after_import(activities: Sequence[Any], user_id: int, db: Session) -> None:
+    """Match freshly imported activities against the user's segments; never raises.
+
+    Called by the importers after an activity is stored. A failure here must not
+    undo or hide the import, so it is logged and the session is rolled back. The
+    efforts can be recomputed any time (``POST /segments/{id}/refresh``).
+    """
+    for activity in activities:
+        try:
+            refresh_activity_efforts(activity.id, user_id, db)
+        except Exception as err:
+            db.rollback()
+            core_logger.print_to_log(
+                f"User {user_id}: matching activity {getattr(activity, 'id', None)} against segments failed: "
+                f"{type(err).__name__}",
+                "error",
+                exc=err,
+            )
