@@ -19,6 +19,7 @@ import {
   useCreateSegmentMutation,
   useSegmentPreviewQuery,
   useSegmentQuery,
+  useSegmentsQuery,
   useTrackLines,
   useUpdateSegmentMutation,
 } from '@/features/segments/composables/useSegments'
@@ -34,6 +35,10 @@ const toasts = useToasts()
 const { data: currentUser } = useCurrentUser()
 
 const editingId = computed(() => (route.params.id ? Number(route.params.id) : null))
+const allSegmentsQuery = useSegmentsQuery()
+const otherSegments = computed(() =>
+  (allSegmentsQuery.data.value ?? []).filter((segment) => segment.id !== editingId.value),
+)
 const segmentQuery = useSegmentQuery(() => editingId.value ?? Number.NaN)
 
 const name = ref('')
@@ -265,6 +270,7 @@ function save(): void {
             v-model:end="end"
             :placing="placing"
             :tracks="tracks"
+            :others="otherSegments"
           />
         </div>
       </Card>

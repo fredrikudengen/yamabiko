@@ -27,7 +27,7 @@ import {
 import 'leaflet/dist/leaflet.css'
 import { onBeforeUnmount, onMounted, ref, watch } from 'vue'
 
-import type { SegmentNode, TrackLine } from '@/features/segments/types'
+import type { Segment, SegmentNode, TrackLine } from '@/features/segments/types'
 
 import { useAppConfig } from '@/features/config/composables/useAppConfig'
 import { DEFAULT_NODE_RADIUS_M } from '@/features/segments/types'
@@ -42,6 +42,8 @@ const props = defineProps<{
   /** Which node a click on the map places. `null` leaves clicks alone. */
   placing: Which | null
   tracks: TrackLine[]
+  /** The user's other segments, drawn faintly so new ones can be placed relative to them. */
+  others?: Segment[]
 }>()
 
 const emit = defineEmits<{
@@ -54,6 +56,8 @@ const container = ref<HTMLElement | null>(null)
 
 let map: LeafletMap | null = null
 let trackLayer: LayerGroup | null = null
+let othersLayer: LayerGroup | null = null
+let resizeObserver: ResizeObserver | null = null
 let fitted = false
 
 const markers: Partial<Record<Which, Marker>> = {}
@@ -179,6 +183,36 @@ function syncNode(which: Which): void {
   }
 }
 
+/** Existing segments: dashed circles in the node colours, named at the end node. */
+function drawOthers(): void {
+  if (!othersLayer) {
+    return
+  }
+  othersLayer.clearLayers()
+  for (const segment of props.others ?? []) {
+    for (const which of ['start', 'end'] as const) {
+      const node = segment[which]
+      const color = colorOf(which)
+      const ring = createCircle([node.lat, node.lon], {
+        radius: node.radiusM,
+        color,
+        weight: 1.5,
+        dashArray: '4 4',
+        fillColor: color,
+        fillOpacity: 0.06,
+        interactive: false,
+      }).addTo(othersLayer)
+      if (which === 'end') {
+        ring.bindTooltip(segment.name, {
+          permanent: true,
+          direction: 'top',
+          className: 'segment-name-tip',
+        })
+      }
+    }
+  }
+}
+
 function drawTracks(): void {
   if (!map || !trackLayer) {
     return
@@ -248,7 +282,15 @@ onMounted(() => {
     attribution: config.value.map.attribution,
     maxZoom: 19,
   }).addTo(map)
+  othersLayer = layerGroup().addTo(map)
   trackLayer = layerGroup().addTo(map)
+  // The layout around the map changes (e.g. when the preview list grows), and Leaflet
+  // only learns its new size if told; otherwise tiles stop loading and the map greys out.
+  if (typeof ResizeObserver !== 'undefined') {
+    resizeObserver = new ResizeObserver(() => map?.invalidateSize())
+    resizeObserver.observe(container.value)
+  }
+  drawOthers()
   map.on('click', onMapClick)
   drawTracks()
   syncNode('start')
@@ -257,6 +299,8 @@ onMounted(() => {
 })
 
 onBeforeUnmount(() => {
+  resizeObserver?.disconnect()
+  resizeObserver = null
   map?.remove()
   map = null
 })
@@ -271,6 +315,7 @@ watch(
   () => syncNode('end'),
   { deep: true },
 )
+watch(() => props.others, drawOthers)
 watch(
   () => props.tracks,
   () => {
@@ -299,3 +344,20 @@ defineExpose({ fitAll })
     />
   </div>
 </template>
+
+<style>
+.segment-name-tip {
+  background: transparent;
+  border: 0;
+  box-shadow: none;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--color-foreground, #222);
+  text-shadow:
+    0 0 3px #fff,
+    0 0 3px #fff;
+}
+.segment-name-tip::before {
+  display: none;
+}
+</style>

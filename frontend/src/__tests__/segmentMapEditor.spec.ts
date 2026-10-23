@@ -42,4 +42,25 @@ describe('SegmentMapEditor', () => {
     expect(wrapper.find('[role="application"]').classes()).not.toContain('cursor-crosshair')
     wrapper.unmount()
   })
+
+  it('draws existing segments faintly and names them', async () => {
+    const wrapper = mountEditor({
+      others: [
+        {
+          id: 1,
+          name: 'Old route',
+          start: { lat: 60.39, lon: 5.32, radiusM: 50 },
+          end: { lat: 60.4, lon: 5.33, radiusM: 50 },
+          effortCount: 1,
+          createdAt: '',
+          updatedAt: '',
+        },
+      ],
+    })
+
+    expect(wrapper.element.querySelectorAll('path.leaflet-interactive').length).toBe(0)
+    expect(wrapper.element.querySelectorAll('.segment-name-tip')).toHaveLength(1)
+    expect(wrapper.element.textContent).toContain('Old route')
+    wrapper.unmount()
+  })
 })
