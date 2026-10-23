@@ -288,6 +288,15 @@
     "untitled": "Untitled tour",
     "radiusSummary": "Start radius {start} m, end radius {end} m",
     "onActivity": "Segments on this tour",
+    "source": {
+      "label": "Source",
+      "google_health": "Fitbit",
+      "strava": "Strava",
+      "garmin": "Garmin",
+      "other": "Other",
+      "mixedNotice": "These tours come from different sources. Times are computed from the GPS track in the same way for all of them and can be compared. Heart rate and ascent are measured by different devices and cannot be compared across sources.",
+      "tooltip": "Where the tour was imported from. Heart rate and ascent are only comparable within the same source."
+    },
     "fields": {
       "date": "Date",
       "moving": "Moving time",

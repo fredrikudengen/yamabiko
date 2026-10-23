@@ -8,6 +8,7 @@ import type { Units } from '@/features/activities/utils/format'
 
 import { ActivityTypeBadge } from '@/components/ui/activity-type-badge'
 import { Badge } from '@/components/ui/badge'
+import { activitySourceOf, sourceLabelKey } from '@/features/segments/utils/source'
 import { SafeHtml } from '@/components/federation'
 import UserAvatar from '@/components/UserAvatar.vue'
 import ActivityActionsMenu from '@/features/activities/components/ActivityActionsMenu.vue'
@@ -85,6 +86,9 @@ const garminUrl = computed(() =>
 
 const isOwner = computed(() => isActivityOwner(props.activity, props.currentUserId))
 
+// Where the tour was imported from; `other` (manual upload) is not worth a badge.
+const source = computed(() => activitySourceOf(props.activity))
+
 const showPrivateNotes = computed(
   () => isActivityOwner(props.activity, props.currentUserId) && !!props.activity.privateNotes,
 )
@@ -117,6 +121,14 @@ const showPrivateNotes = computed(
             <Badge v-if="activity.isHidden" variant="destructive">{{
               t('activities.hidden')
             }}</Badge>
+            <Badge
+              v-if="isOwner && source !== 'other'"
+              variant="outline"
+              :title="t('activities.segments.source.tooltip')"
+              data-testid="activity-source"
+            >
+              {{ t(sourceLabelKey(source)) }}
+            </Badge>
           </div>
           <p v-if="dateTimeLabel || locationLabel" class="text-caption mt-1.5">
             <span v-if="dateTimeLabel">{{ dateTimeLabel }}</span>

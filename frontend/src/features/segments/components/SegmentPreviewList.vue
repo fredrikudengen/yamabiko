@@ -4,7 +4,9 @@ import { useI18n } from 'vue-i18n'
 import type { NearMiss, PreviewMatch } from '@/features/segments/types'
 
 import { Alert } from '@/components/ui/alert'
+import { Badge } from '@/components/ui/badge'
 import { formatSeconds } from '@/features/segments/utils/geo'
+import { sourceLabelKey } from '@/features/segments/utils/source'
 
 defineProps<{
   matches: PreviewMatch[]
@@ -64,7 +66,16 @@ function dateOf(iso: string): string {
             >
               {{ m.activityName ?? t('activities.segments.untitled') }}
             </router-link>
-            <span class="text-meta">{{ dateOf(m.startTime) }}</span>
+            <span class="flex items-center gap-2 text-meta">
+              <Badge
+                variant="outline"
+                :title="t('activities.segments.source.tooltip')"
+                data-testid="preview-source"
+              >
+                {{ t(sourceLabelKey(m.source)) }}
+              </Badge>
+              {{ dateOf(m.startTime) }}
+            </span>
           </div>
           <dl class="mt-1 flex flex-wrap gap-x-4 gap-y-1 text-meta">
             <div>

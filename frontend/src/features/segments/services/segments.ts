@@ -18,6 +18,7 @@ import type {
   TrackLine,
 } from '@/features/segments/types'
 
+import { toActivitySource } from '@/features/segments/utils/source'
 import { apiFetch } from '@/services/http'
 
 /**
@@ -71,6 +72,7 @@ export function mapEffort(dto: SegmentEffortDto): SegmentEffort {
     segmentName: dto.segment_name,
     activityId: dto.activity_id,
     activityName: dto.activity_name,
+    source: toActivitySource(dto.source),
     startTime: dto.start_time,
     endTime: dto.end_time,
     elapsedS: dto.elapsed_s,
@@ -90,6 +92,7 @@ function mapPreviewMatch(dto: PreviewMatchDto): PreviewMatch {
   return {
     activityId: dto.activity_id,
     activityName: dto.activity_name,
+    source: toActivitySource(dto.source),
     startTime: dto.start_time,
     endTime: dto.end_time,
     elapsedS: dto.elapsed_s,

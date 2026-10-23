@@ -4,9 +4,11 @@ import { useI18n } from 'vue-i18n'
 
 import type { SegmentEffort } from '@/features/segments/types'
 
+import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { compareEfforts, type EffortBasis } from '@/features/segments/utils/efforts'
 import { formatSeconds } from '@/features/segments/utils/geo'
+import { hasMixedSources, sourceLabelKey } from '@/features/segments/utils/source'
 
 const props = defineProps<{
   efforts: SegmentEffort[]
@@ -17,6 +19,8 @@ const props = defineProps<{
 const { t, locale } = useI18n()
 const basis = ref<EffortBasis>('moving')
 const rows = computed(() => compareEfforts(props.efforts, basis.value))
+// Times come from the GPS track for every source; heart rate and ascent do not.
+const mixedSources = computed(() => hasMixedSources(props.efforts))
 
 function dateOf(iso: string): string {
   return new Date(iso).toLocaleDateString(locale.value, { dateStyle: 'medium' })
@@ -53,12 +57,19 @@ function signed(seconds: number): string {
       </Button>
     </div>
 
+    <p v-if="mixedSources" class="text-meta" role="note" data-testid="mixed-sources-notice">
+      {{ t('activities.segments.source.mixedNotice') }}
+    </p>
+
     <div class="overflow-x-auto">
       <table class="w-full text-left text-body" data-testid="efforts-table">
         <thead class="text-meta">
           <tr>
             <th scope="col" class="py-1 pr-3 font-medium">
               {{ t('activities.segments.fields.date') }}
+            </th>
+            <th scope="col" class="py-1 pr-3 font-medium">
+              {{ t('activities.segments.source.label') }}
             </th>
             <th scope="col" class="py-1 pr-3 font-medium">
               {{ t('activities.segments.fields.moving') }}
@@ -91,6 +102,15 @@ function signed(seconds: number): string {
                 {{ dateOf(row.effort.startTime) }}
               </router-link>
               <span v-else>{{ dateOf(row.effort.startTime) }}</span>
+            </td>
+            <td class="py-1.5 pr-3">
+              <Badge
+                variant="outline"
+                :title="t('activities.segments.source.tooltip')"
+                data-testid="effort-source"
+              >
+                {{ t(sourceLabelKey(row.effort.source)) }}
+              </Badge>
             </td>
             <td class="py-1.5 pr-3 tabular-nums" :class="{ 'font-medium': basis === 'moving' }">
               {{ formatSeconds(row.effort.movingS) }}

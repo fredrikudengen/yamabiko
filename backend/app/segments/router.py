@@ -19,6 +19,7 @@ import segments.crud as segments_crud
 import segments.models as segments_models
 import segments.schema as segments_schema
 import segments.service as segments_service
+import segments.source as segments_source
 
 router = APIRouter()
 
@@ -63,7 +64,7 @@ def _similar_out(segments: list[segments_models.Segment]) -> list[segments_schem
 
 
 def _effort_out(
-    effort: segments_models.SegmentEffort, segment_name: str, activity_name: str | None
+    effort: segments_models.SegmentEffort, segment_name: str, activity_name: str | None, source: str
 ) -> segments_schema.EffortOut:
     return segments_schema.EffortOut(
         id=effort.id,
@@ -71,6 +72,7 @@ def _effort_out(
         segment_name=segment_name,
         activity_id=effort.activity_id,
         activity_name=activity_name,
+        source=source,
         start_time=effort.start_time,
         end_time=effort.end_time,
         elapsed_s=effort.elapsed_s,
@@ -135,11 +137,13 @@ def preview_segment(
     except ValueError as err:
         raise _unprocessable(err) from err
     similar = segments_service.find_similar_segments(token_user_id, start, end, db)
+    sources = segments_service.activity_sources([hit.activity_id for hit in result.matches], db)
     return segments_schema.PreviewOut(
         matches=[
             segments_schema.PreviewMatchOut(
                 activity_id=hit.activity_id,
                 activity_name=hit.activity_name,
+                source=sources.get(hit.activity_id, segments_source.SOURCE_OTHER),
                 start_time=hit.start_time,
                 end_time=hit.end_time,
                 elapsed_s=hit.match.elapsed_s,
@@ -198,9 +202,15 @@ def get_activity_efforts(
     if segments_service.activity_owner(activity_id, db) != token_user_id:
         raise _not_found("Activity")
     names = segments_service.activity_names([activity_id], db)
+    sources = segments_service.activity_sources([activity_id], db)
     segment_names = {s.id: s.name for s in segments_crud.get_user_segments(token_user_id, db)}
     return [
-        _effort_out(effort, segment_names[effort.segment_id], names.get(activity_id))
+        _effort_out(
+            effort,
+            segment_names[effort.segment_id],
+            names.get(activity_id),
+            sources.get(activity_id, segments_source.SOURCE_OTHER),
+        )
         for effort in segments_crud.get_efforts_for_activity(activity_id, db)
         if effort.segment_id in segment_names
     ]
@@ -252,8 +262,18 @@ def get_segment_efforts(
     """All passes of the segment, oldest first, for comparing tours."""
     segment = _own_segment(segment_id, token_user_id, db)
     efforts = segments_crud.get_efforts_for_segment(segment.id, db)
-    names = segments_service.activity_names([e.activity_id for e in efforts], db)
-    return [_effort_out(effort, segment.name, names.get(effort.activity_id)) for effort in efforts]
+    activity_ids = [e.activity_id for e in efforts]
+    names = segments_service.activity_names(activity_ids, db)
+    sources = segments_service.activity_sources(activity_ids, db)
+    return [
+        _effort_out(
+            effort,
+            segment.name,
+            names.get(effort.activity_id),
+            sources.get(effort.activity_id, segments_source.SOURCE_OTHER),
+        )
+        for effort in efforts
+    ]
 
 
 @router.post("/{segment_id}/refresh", response_model=segments_schema.SegmentOut)

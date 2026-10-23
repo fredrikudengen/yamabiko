@@ -282,6 +282,15 @@
     "untitled": "Tur uten navn",
     "radiusSummary": "Startradius {start} m, sluttradius {end} m",
     "onActivity": "Segmenter på denne turen",
+    "source": {
+      "label": "Kilde",
+      "google_health": "Fitbit",
+      "strava": "Strava",
+      "garmin": "Garmin",
+      "other": "Annen",
+      "mixedNotice": "Turene kommer fra ulike kilder. Tidene er regnet fra GPS-sporet på samme måte for alle og kan sammenlignes. Puls og stigning er målt av ulike enheter og kan ikke sammenlignes mellom kilder.",
+      "tooltip": "Hvor turen ble importert fra. Puls og stigning kan bare sammenlignes innenfor samme kilde."
+    },
     "fields": {
       "date": "Dato",
       "moving": "Bevegelsestid",

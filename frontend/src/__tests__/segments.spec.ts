@@ -130,6 +130,7 @@ describe('segments service', () => {
         {
           activity_id: 7,
           activity_name: 'Hike',
+          source: 'strava',
           start_time: '2026-10-20T08:12:00',
           end_time: '2026-10-20T08:43:06',
           elapsed_s: 1866,
@@ -170,6 +171,7 @@ describe('segments service', () => {
     expect(JSON.parse(options?.body as string).start).toEqual({ lat: 1, lon: 2, radius_m: 50 })
     expect(preview.matches[0]).toMatchObject({
       activityId: 7,
+      source: 'strava',
       movingS: 1866,
       endVisits: 2,
       closestEndM: 8.7,
@@ -229,6 +231,7 @@ const effort = (id: number, startTime: string, movingS: number, extra = {}): Seg
   segmentName: 'To the top',
   activityId: id + 100,
   activityName: 'Hike',
+  source: 'google_health',
   startTime,
   endTime: startTime,
   elapsedS: movingS,
@@ -323,6 +326,7 @@ describe('SegmentPreviewList', () => {
   const match: PreviewMatch = {
     activityId: 7,
     activityName: 'Hike',
+    source: 'google_health',
     startTime: '2026-10-20T08:12:00',
     endTime: '2026-10-20T08:43:06',
     elapsedS: 1866,
