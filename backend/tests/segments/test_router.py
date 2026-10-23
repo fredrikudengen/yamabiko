@@ -308,6 +308,9 @@ class TestPreview:
         assert match["activity_name"] == "Tur 1"
         assert match["moving_s"] == pytest.approx(1700 / 1.2, abs=10)
         assert match["end_visits"] == 1
+        assert len(match["end_visit_times"]) == 1
+        assert match["closest_start_m"] < 10
+        assert match["closest_end_m"] < 10
         assert db.query(models.Segment).count() == 0
         assert db.query(models.SegmentEffort).count() == 0
 
@@ -326,6 +329,22 @@ class TestPreview:
 
         assert preview(50) == []
         assert len(preview(70)) == 1
+
+    def test_near_misses_are_listed_with_the_radius_that_would_catch_them(self, client, db):
+        missed = _add_activity(db, build_route([("walk", (90, 1800))], start=(90, -150)), name="Litt ved siden av")
+        n0, n1 = node(0, 0), node(0, 1800)
+
+        body = client.post(
+            "/segments/preview",
+            json={"start": {"lat": n0.lat, "lon": n0.lon}, "end": {"lat": n1.lat, "lon": n1.lon}},
+        ).json()
+
+        assert body["matches"] == []
+        (miss,) = body["near_misses"]
+        assert miss["activity_id"] == missed
+        assert miss["activity_name"] == "Litt ved siden av"
+        assert miss["reason"] == "both_not_reached"
+        assert miss["closest_start_m"] == pytest.approx(90, abs=3)
 
     def test_bad_nodes_are_422(self, client):
         n0 = node(0, 0)

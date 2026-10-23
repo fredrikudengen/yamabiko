@@ -131,7 +131,7 @@ def preview_segment(
     """Which of the user's activities would pass these nodes, with times. Nothing is saved."""
     start, end = body.start.to_node(), body.end.to_node()
     try:
-        hits = segments_service.preview_matches(token_user_id, start, end, db)
+        result = segments_service.preview(token_user_id, start, end, db)
     except ValueError as err:
         raise _unprocessable(err) from err
     similar = segments_service.find_similar_segments(token_user_id, start, end, db)
@@ -154,8 +154,23 @@ def preview_segment(
                 max_hr=hit.match.max_hr,
                 start_visits=hit.match.start_visits,
                 end_visits=hit.match.end_visits,
+                closest_start_m=hit.closest_start_m,
+                closest_end_m=hit.closest_end_m,
+                start_visit_times=list(hit.start_visit_times),
+                end_visit_times=list(hit.end_visit_times),
             )
-            for hit in hits
+            for hit in result.matches
+        ],
+        near_misses=[
+            segments_schema.NearMissOut(
+                activity_id=miss.activity_id,
+                activity_name=miss.activity_name,
+                start_time=miss.start_time,
+                reason=miss.reason,
+                closest_start_m=miss.closest_start_m,
+                closest_end_m=miss.closest_end_m,
+            )
+            for miss in result.near_misses
         ],
         similar_segments=_similar_out(similar),
     )

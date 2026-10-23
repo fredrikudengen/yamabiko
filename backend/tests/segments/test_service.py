@@ -335,3 +335,56 @@ class TestRefreshAfterImport:
 
     def test_nothing_to_do_for_no_activities(self, db):
         service.refresh_efforts_after_import([], USER, db)
+
+
+class TestPreviewDetails:
+    def test_matches_carry_the_closest_approach_and_visit_times(self, db):
+        _add_activity(db, build_route([("walk", (0, 1800)), ("walk", (0, 1000)), ("walk", (0, 1800))]))
+
+        (hit,) = service.preview(USER, START, SUMMIT, db).matches
+
+        assert hit.closest_start_m < 5
+        assert hit.closest_end_m < 5
+        assert len(hit.end_visit_times) == 2
+        assert hit.end_visit_times[0] == hit.end_time
+        assert hit.end_visit_times[0] < hit.end_visit_times[1]
+
+    def test_near_misses_say_how_large_a_radius_would_have_caught_them(self, db):
+        # 90 m east of both nodes: a 50 m circle misses it, a 100 m circle catches it.
+        missed = _add_activity(db, build_route([("walk", (90, 1800))], start=(90, -150)))
+
+        result = service.preview(USER, START, SUMMIT, db)
+
+        assert result.matches == []
+        (miss,) = result.near_misses
+        assert miss.activity_id == missed
+        assert miss.reason == matching.MISS_BOTH_NOT_REACHED
+        assert miss.closest_start_m == pytest.approx(90, abs=3)
+        assert miss.closest_end_m == pytest.approx(90, abs=3)
+        assert len(service.preview(USER, node(0, 0, 100), node(0, 1800, 100), db).matches) == 1
+
+    def test_the_reason_names_the_missed_node(self, db):
+        _add_activity(db, build_route([("walk", (0, 1800))], start=(0, 300)))  # starts beyond the start node
+        _add_activity(db, build_route([("walk", (0, 1500))]), day=1)  # stops 300 m short of the top
+
+        reasons = [miss.reason for miss in service.preview(USER, START, SUMMIT, db).near_misses]
+
+        assert reasons == [matching.MISS_START_NOT_REACHED, matching.MISS_END_NOT_REACHED]
+
+    def test_a_descent_is_a_wrong_order_near_miss(self, db):
+        _add_activity(db, build_route([("walk", (0, -150))], start=(0, 1900)))
+
+        (miss,) = service.preview(USER, START, SUMMIT, db).near_misses
+
+        assert miss.reason == matching.MISS_WRONG_ORDER
+
+    def test_tours_far_from_the_nodes_are_not_near_misses(self, db):
+        _add_activity(db, build_route([("walk", (3000, 1800))], start=(3000, -150)))
+
+        assert service.preview(USER, START, SUMMIT, db).near_misses == []
+
+    def test_only_the_owners_tours_and_only_tours_with_gps_are_listed(self, db):
+        _add_activity(db, build_route([("walk", (90, 1800))], start=(90, -150)), user_id=OTHER_USER)
+        _add_activity(db, build_route([("walk", (90, 1800))], start=(90, -150)), day=1, streams={})
+
+        assert service.preview(USER, START, SUMMIT, db).near_misses == []

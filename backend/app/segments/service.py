@@ -46,6 +46,31 @@ class PreviewMatch:
     start_time: datetime
     end_time: datetime
     match: segments_matching.SegmentMatch
+    # Closest the track came to each node's centre (m): the radius that would just catch it.
+    closest_start_m: float
+    closest_end_m: float
+    start_visit_times: tuple[datetime, ...] = ()
+    end_visit_times: tuple[datetime, ...] = ()
+
+
+@dataclass(frozen=True)
+class NearMiss:
+    """An activity that came near both nodes but does not match them."""
+
+    activity_id: int
+    activity_name: str | None
+    start_time: datetime
+    reason: str
+    closest_start_m: float
+    closest_end_m: float
+
+
+@dataclass(frozen=True)
+class PreviewResult:
+    """The user's activities that match two nodes, and those that nearly do."""
+
+    matches: list[PreviewMatch]
+    near_misses: list[NearMiss]
 
 
 def _parse_time(value: str) -> datetime:
@@ -205,38 +230,77 @@ def find_similar_segments(
     return similar
 
 
-def preview_matches(
+def preview(
     user_id: int,
     start: segments_matching.Node,
     end: segments_matching.Node,
     db: Session,
-) -> list[PreviewMatch]:
-    """Which of the user's activities pass these nodes, with times. Nothing is stored.
+) -> PreviewResult:
+    """Which of the user's activities pass these nodes (with times), and which nearly do. Nothing is stored.
+
+    A near miss came within ``NEAR_MISS_MARGIN_M`` of both circles. Its closest-approach
+    distances tell how large a radius would have caught it. Both lists are oldest first.
 
     Raises ValueError when the nodes are not acceptable.
     """
     problems = segments_matching.validate_nodes(start, end)
     if problems:
         raise ValueError("; ".join(problems))
-    hits: list[PreviewMatch] = []
+    matches: list[PreviewMatch] = []
+    near_misses: list[NearMiss] = []
     for activity_id, activity_name in _user_activities(user_id, db):
         track = load_track(activity_id, db)
         if track is None:
+            continue
+        closest_start = segments_geo.closest_approach_m(track.points, start.lat, start.lon)
+        closest_end = segments_geo.closest_approach_m(track.points, end.lat, end.lon)
+        if closest_start is None or closest_end is None:
             continue
         match = segments_matching.match_segment(
             track.points, start, end, heart_rate=track.heart_rate, elevation=track.elevation
         )
         if match is not None:
-            hits.append(
+            matches.append(
                 PreviewMatch(
                     activity_id=activity_id,
                     activity_name=activity_name,
                     start_time=track.start + timedelta(seconds=match.start_s),
                     end_time=track.start + timedelta(seconds=match.end_s),
                     match=match,
+                    closest_start_m=closest_start,
+                    closest_end_m=closest_end,
+                    start_visit_times=tuple(track.start + timedelta(seconds=s) for s in match.start_visit_s),
+                    end_visit_times=tuple(track.start + timedelta(seconds=s) for s in match.end_visit_s),
                 )
             )
-    return hits
+        elif (
+            closest_start <= start.radius_m + segments_matching.NEAR_MISS_MARGIN_M
+            and closest_end <= end.radius_m + segments_matching.NEAR_MISS_MARGIN_M
+        ):
+            reason = segments_matching.classify_miss(
+                segments_matching.find_visits(track.points, start), segments_matching.find_visits(track.points, end)
+            )
+            near_misses.append(
+                NearMiss(
+                    activity_id=activity_id,
+                    activity_name=activity_name,
+                    start_time=track.start,
+                    reason=reason or segments_matching.MISS_WRONG_ORDER,
+                    closest_start_m=closest_start,
+                    closest_end_m=closest_end,
+                )
+            )
+    return PreviewResult(matches, near_misses)
+
+
+def preview_matches(
+    user_id: int,
+    start: segments_matching.Node,
+    end: segments_matching.Node,
+    db: Session,
+) -> list[PreviewMatch]:
+    """Only the matches of ``preview``."""
+    return preview(user_id, start, end, db).matches
 
 
 def refresh_segment_efforts(segment: segments_models.Segment, db: Session) -> list[segments_models.SegmentEffort]:

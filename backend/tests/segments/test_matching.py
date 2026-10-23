@@ -278,3 +278,27 @@ class TestValidateNodes:
         assert matching.validate_nodes(matching.Node(91.0, 5.0), SUMMIT) != []
         assert matching.validate_nodes(matching.Node(60.0, 181.0), SUMMIT) != []
         assert matching.validate_nodes(matching.Node(float("nan"), 5.0), SUMMIT) != []
+
+
+class TestClassifyMiss:
+    def test_matching_tracks_have_no_miss(self):
+        assert matching.classify_miss([_v(0, 10)], [_v(100, 110)]) is None
+
+    def test_which_node_was_missed(self):
+        assert matching.classify_miss([], [_v(100, 110)]) == matching.MISS_START_NOT_REACHED
+        assert matching.classify_miss([_v(0, 10)], []) == matching.MISS_END_NOT_REACHED
+        assert matching.classify_miss([], []) == matching.MISS_BOTH_NOT_REACHED
+
+    def test_the_wrong_order(self):
+        assert matching.classify_miss([_v(100, 110)], [_v(0, 10)]) == matching.MISS_WRONG_ORDER
+
+
+def test_visit_times_are_reported_for_both_nodes():
+    route = build_route([("walk", (0, 1800)), ("walk", (0, 1000)), ("walk", (0, 1800))])
+
+    result = _match(route)
+
+    assert len(result.start_visit_s) == result.start_visits == 1
+    assert len(result.end_visit_s) == result.end_visits == 2
+    assert result.end_visit_s[0] == pytest.approx(result.end_s)
+    assert result.end_visit_s[0] < result.end_visit_s[1]

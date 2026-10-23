@@ -88,3 +88,38 @@ def test_single_point_and_empty_track():
 
 def test_distance_m_matches_the_flat_map():
     assert geo.distance_m(*latlon(0, 0), *latlon(30, 40)) == pytest.approx(50.0, abs=0.01)
+
+
+class TestClosestApproach:
+    def _closest(self, points, x=0.0, y=0.0):
+        lat, lon = latlon(x, y)
+        return geo.closest_approach_m(points, lat, lon)
+
+    def test_distance_to_the_line_between_points_not_just_the_points(self):
+        # Points are 200 m apart; the line passes 30 m north of the centre.
+        assert self._closest([_p(0, -100, 30), _p(10, 100, 30)]) == pytest.approx(30.0, abs=0.05)
+
+    def test_a_pass_through_the_centre_is_zero(self):
+        assert self._closest([_p(0, -100, 0), _p(10, 100, 0)]) == pytest.approx(0.0, abs=0.05)
+
+    def test_the_end_of_the_line_counts_when_the_closest_point_is_a_point(self):
+        assert self._closest([_p(0, 40, 30), _p(10, 100, 30)]) == pytest.approx(50.0, abs=0.05)
+
+    def test_nothing_is_assumed_across_a_long_gap(self):
+        # The straight line would pass 10 m from the centre, but the walker was out of sight for 60 s.
+        points = [_p(0, -100, 10), _p(60, 100, 10)]
+
+        assert self._closest(points) == pytest.approx(geo.distance_m(*latlon(0, 0), *latlon(-100, 10)), abs=0.1)
+
+    def test_single_point_empty_track_and_repeated_point(self):
+        assert self._closest([]) is None
+        assert self._closest([_p(0, 30, 40)]) == pytest.approx(50.0, abs=0.05)
+        assert self._closest([_p(0, 30, 40), _p(1, 30, 40)]) == pytest.approx(50.0, abs=0.05)
+
+    def test_it_is_the_radius_that_just_catches_the_track(self):
+        points = [_p(0, -100, 37), _p(10, 100, 37)]
+        closest = self._closest(points)
+        lat, lon = latlon(0, 0)
+
+        assert geo.time_inside_circle(points, lat, lon, closest + 0.5) != []
+        assert geo.time_inside_circle(points, lat, lon, closest - 0.5) == []

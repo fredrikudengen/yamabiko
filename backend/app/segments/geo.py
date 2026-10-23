@@ -107,3 +107,32 @@ def time_inside_circle(
         else:
             merged.append(interval)
     return merged
+
+
+def closest_approach_m(
+    points: list[google_health_stops.TrackPoint],
+    lat: float,
+    lon: float,
+    max_gap_s: float = google_health_stops.GAP_THRESHOLD_S,
+) -> float | None:
+    """How close the track came to a position, in metres; None for an empty track.
+
+    This is the smallest circle radius around the position that the track still
+    touches. The line between two points counts (the walker passed between them),
+    except across a gap longer than ``max_gap_s``, where only the points themselves count.
+    """
+    if not points:
+        return None
+    projected = [_local(p.lat, p.lon, lat, lon) for p in points]
+    best = min(math.hypot(*xy) for xy in projected)
+    for i, (p, q) in enumerate(pairwise(points)):
+        if q.t - p.t > max_gap_s:
+            continue
+        a, b = projected[i], projected[i + 1]
+        dx, dy = b[0] - a[0], b[1] - a[1]
+        length_sq = dx * dx + dy * dy
+        if length_sq == 0.0:
+            continue
+        f = min(max(-(a[0] * dx + a[1] * dy) / length_sq, 0.0), 1.0)
+        best = min(best, math.hypot(a[0] + f * dx, a[1] + f * dy))
+    return best

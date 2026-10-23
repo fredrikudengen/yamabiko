@@ -90,6 +90,36 @@ class SegmentMatch:
     stops: tuple[tuple[float, float], ...] = field(default_factory=tuple)
     start_visits: int = 0
     end_visits: int = 0
+    # When each visit to a node began (seconds since the first GPS point), in time order.
+    start_visit_s: tuple[float, ...] = field(default_factory=tuple)
+    end_visit_s: tuple[float, ...] = field(default_factory=tuple)
+
+
+# A track counts as a near miss when it came this far outside both circles (m) or closer.
+NEAR_MISS_MARGIN_M = 500.0
+
+MISS_START_NOT_REACHED = "start_not_reached"
+MISS_END_NOT_REACHED = "end_not_reached"
+MISS_BOTH_NOT_REACHED = "both_not_reached"
+MISS_WRONG_ORDER = "wrong_order"
+
+
+def classify_miss(
+    start_visits: Sequence[segments_geo.Interval], end_visits: Sequence[segments_geo.Interval]
+) -> str | None:
+    """Why a track does not match: which node it missed, or that it passed them in the wrong order.
+
+    None when it does match.
+    """
+    if choose_passes(start_visits, end_visits) is not None:
+        return None
+    if not start_visits and not end_visits:
+        return MISS_BOTH_NOT_REACHED
+    if not start_visits:
+        return MISS_START_NOT_REACHED
+    if not end_visits:
+        return MISS_END_NOT_REACHED
+    return MISS_WRONG_ORDER
 
 
 def validate_nodes(start: Node, end: Node) -> list[str]:
@@ -241,4 +271,6 @@ def match_segment(
         stops=tuple(inside_stops),
         start_visits=len(start_visits),
         end_visits=len(end_visits),
+        start_visit_s=tuple(visit.enter for visit in start_visits),
+        end_visit_s=tuple(visit.enter for visit in end_visits),
     )

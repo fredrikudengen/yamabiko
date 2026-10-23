@@ -145,10 +145,31 @@ class PreviewMatchOut(BaseModel):
     max_hr: int | None
     start_visits: int
     end_visits: int
+    closest_start_m: float
+    closest_end_m: float
+    start_visit_times: list[datetime]
+    end_visit_times: list[datetime]
+
+
+class NearMissOut(BaseModel):
+    """An activity that came near both nodes but does not match; ``reason`` says why.
+
+    Reasons: ``start_not_reached``, ``end_not_reached``, ``both_not_reached`` (the radius
+    was too small; the closest-approach distances say how large it would have to be) and
+    ``wrong_order`` (it passed both, but the end before the start).
+    """
+
+    activity_id: int
+    activity_name: str | None
+    start_time: datetime
+    reason: str
+    closest_start_m: float
+    closest_end_m: float
 
 
 class PreviewOut(BaseModel):
-    """Which of the user's activities pass the nodes, oldest first. Nothing is saved."""
+    """Which of the user's activities pass the nodes, and which nearly do, oldest first. Nothing is saved."""
 
     matches: list[PreviewMatchOut]
+    near_misses: list[NearMissOut]
     similar_segments: list[SimilarSegmentOut]
