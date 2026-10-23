@@ -44,7 +44,7 @@ def client(db, current_user):
     return TestClient(app)
 
 
-def _add_activity(db, route, user_id=7, day=0, name="Fjelltur") -> int:
+def _add_activity(db, route, user_id=7, day=0, name="Fjelltur", **fields) -> int:
     start = T0 + timedelta(days=day)
     activity = activities_models.Activity(
         user_id=user_id,
@@ -57,6 +57,7 @@ def _add_activity(db, route, user_id=7, day=0, name="Fjelltur") -> int:
         total_timer_time=3600,
         created_at=start,
         **{c.name: False for c in activities_models.Activity.__table__.columns if c.name.startswith("hide_")},
+        **fields,
     )
     db.add(activity)
     db.flush()
@@ -365,6 +366,52 @@ class TestPreview:
         ).json()
 
         assert body["similar_segments"] == [{"id": saved["id"], "name": "Fjellet"}]
+
+
+SOURCE_CASES = [
+    ("google_health", {"googlehealth_activity_id": "abc123", "import_info": {"import_source": "google_health"}}),
+    ("strava", {"import_info": {"import_source": "Strava bulk import", "strava_activity_id": 42}}),
+    ("strava", {"strava_activity_id": 4242}),
+    ("garmin", {"garminconnect_activity_id": 99}),
+    ("other", {}),
+    ("other", {"import_info": {"import_source": "Basic bulk import"}}),
+]
+
+
+class TestSource:
+    """Efforts and previews say where each tour came from, so heart rate and height are not mixed up."""
+
+    def test_efforts_carry_the_source_of_their_activity(self, client, db):
+        ids = {
+            i: _add_activity(db, build_route(ASCENT), day=i, name=f"Tur {i}", **fields)
+            for i, (_, fields) in enumerate(SOURCE_CASES)
+        }
+        segment = _create(client)
+
+        efforts = {e["activity_id"]: e["source"] for e in client.get(f"/segments/{segment['id']}/efforts").json()}
+
+        assert efforts == {ids[i]: expected for i, (expected, _) in enumerate(SOURCE_CASES)}
+
+    def test_the_efforts_of_one_activity_carry_the_source(self, client, db):
+        activity_id = _add_activity(db, build_route(ASCENT), googlehealth_activity_id="abc123")
+        _create(client)
+
+        (effort,) = client.get(f"/segments/activities/{activity_id}/efforts").json()
+
+        assert effort["source"] == "google_health"
+
+    def test_preview_matches_carry_the_source(self, client, db):
+        activity_id = _add_activity(db, build_route(ASCENT), import_info={"import_source": "Strava bulk import"})
+        n0, n1 = node(0, 0), node(0, 1800)
+
+        response = client.post(
+            "/segments/preview",
+            json={"start": {"lat": n0.lat, "lon": n0.lon}, "end": {"lat": n1.lat, "lon": n1.lon}},
+        )
+
+        (match,) = response.json()["matches"]
+        assert match["activity_id"] == activity_id
+        assert match["source"] == "strava"
 
 
 class TestActivityEfforts:

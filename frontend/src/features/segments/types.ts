@@ -1,3 +1,5 @@
+import type { ActivitySource } from '@/features/segments/utils/source'
+
 /** A node as the API returns it: a circle on the map (snake_case wire shape). */
 export interface SegmentNodeDto {
   lat: number
@@ -38,6 +40,8 @@ export interface SegmentEffortDto {
   segment_name: string
   activity_id: number
   activity_name: string | null
+  /** Where the tour was imported from; see `utils/source.ts`. */
+  source: string
   start_time: string
   end_time: string
   elapsed_s: number
@@ -57,6 +61,8 @@ export interface SegmentEffortDto {
 export interface PreviewMatchDto {
   activity_id: number
   activity_name: string | null
+  /** Where the tour was imported from; see `utils/source.ts`. */
+  source: string
   start_time: string
   end_time: string
   elapsed_s: number
@@ -141,6 +147,7 @@ export interface SegmentEffort {
   segmentName: string
   activityId: number
   activityName: string | null
+  source: ActivitySource
   startTime: string
   endTime: string
   elapsedS: number
@@ -159,6 +166,7 @@ export interface SegmentEffort {
 export interface PreviewMatch {
   activityId: number
   activityName: string | null
+  source: ActivitySource
   startTime: string
   endTime: string
   elapsedS: number

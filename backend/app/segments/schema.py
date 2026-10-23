@@ -112,6 +112,7 @@ class EffortOut(BaseModel):
     segment_name: str
     activity_id: int
     activity_name: str | None
+    source: str
     start_time: datetime
     end_time: datetime
     elapsed_s: float
@@ -131,6 +132,7 @@ class EffortOut(BaseModel):
 class PreviewMatchOut(BaseModel):
     activity_id: int
     activity_name: str | None
+    source: str
     start_time: datetime
     end_time: datetime
     elapsed_s: float

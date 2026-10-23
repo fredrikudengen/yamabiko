@@ -3,19 +3,32 @@
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 
+import { Badge } from '@/components/ui/badge'
 import { Card } from '@/components/ui/card'
 import { useActivityEffortsQuery } from '@/features/segments/composables/useSegments'
 import { formatSeconds } from '@/features/segments/utils/geo'
+import { sourceLabelKey } from '@/features/segments/utils/source'
 
 const props = defineProps<{ activityId: number }>()
 const { t } = useI18n()
 const query = useActivityEffortsQuery(() => props.activityId)
 const efforts = computed(() => query.data.value ?? [])
+// All efforts of one tour share its source.
+const source = computed(() => efforts.value[0]?.source ?? 'other')
 </script>
 
 <template>
   <Card v-if="efforts.length > 0" class="p-3" data-testid="activity-segments">
-    <h2 class="mb-2 text-item-title">{{ t('activities.segments.onActivity') }}</h2>
+    <div class="mb-2 flex flex-wrap items-center justify-between gap-2">
+      <h2 class="text-item-title">{{ t('activities.segments.onActivity') }}</h2>
+      <Badge
+        variant="outline"
+        :title="t('activities.segments.source.tooltip')"
+        data-testid="activity-segments-source"
+      >
+        {{ t(sourceLabelKey(source)) }}
+      </Badge>
+    </div>
     <ul class="flex flex-col gap-1.5">
       <li
         v-for="effort in efforts"

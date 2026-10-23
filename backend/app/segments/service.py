@@ -19,6 +19,7 @@ import segments.crud as segments_crud
 import segments.geo as segments_geo
 import segments.matching as segments_matching
 import segments.models as segments_models
+import segments.source as segments_source
 
 _STREAM_TYPES = (
     streams_constants.STREAM_TYPE_HR,
@@ -197,6 +198,26 @@ def activity_names(activity_ids: list[int], db: Session) -> dict[int, str | None
         activities_models.Activity.id.in_(activity_ids)
     )
     return {row.id: row.name for row in db.execute(stmt)}
+
+
+def activity_sources(activity_ids: list[int], db: Session) -> dict[int, str]:
+    """The source (see ``segments.source``) of each of the given activities."""
+    if not activity_ids:
+        return {}
+    model = activities_models.Activity
+    stmt = select(
+        model.id,
+        model.googlehealth_activity_id,
+        model.strava_activity_id,
+        model.garminconnect_activity_id,
+        model.import_info,
+    ).where(model.id.in_(activity_ids))
+    return {
+        row.id: segments_source.activity_source(
+            row.googlehealth_activity_id, row.strava_activity_id, row.garminconnect_activity_id, row.import_info
+        )
+        for row in db.execute(stmt)
+    }
 
 
 def activity_owner(activity_id: int, db: Session) -> int | None:
