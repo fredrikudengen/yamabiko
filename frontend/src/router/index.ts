@@ -93,6 +93,31 @@ const router = createRouter({
       meta: { requiresAuth: true, cardless: true },
     },
     {
+      path: '/segments',
+      name: 'segments',
+      component: () => import('@/features/segments/views/SegmentsView.vue'),
+      meta: { requiresAuth: true, cardless: true },
+    },
+    {
+      // Declared before `/segments/:id` so "new" is not read as an id.
+      path: '/segments/new',
+      name: 'segment-new',
+      component: () => import('@/features/segments/views/SegmentEditorView.vue'),
+      meta: { requiresAuth: true, cardless: true },
+    },
+    {
+      path: '/segments/:id(\\d+)',
+      name: 'segment',
+      component: () => import('@/features/segments/views/SegmentDetailView.vue'),
+      meta: { requiresAuth: true, cardless: true },
+    },
+    {
+      path: '/segments/:id(\\d+)/edit',
+      name: 'segment-edit',
+      component: () => import('@/features/segments/views/SegmentEditorView.vue'),
+      meta: { requiresAuth: true, cardless: true },
+    },
+    {
       path: '/activity/:id',
       name: 'activity',
       component: () => import('@/features/activities/views/ActivityDetailView.vue'),
