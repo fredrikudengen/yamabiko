@@ -183,7 +183,11 @@ function syncNode(which: Which): void {
   }
 }
 
-/** Existing segments: dashed circles in the node colours, named at the end node. */
+/**
+ * Existing segments: faint dashed circles in the node colours, named on hover.
+ * Clicks bubble through to the map (Leaflet paths do by default), so placing a
+ * node on top of an old circle still works.
+ */
 function drawOthers(): void {
   if (!othersLayer) {
     return
@@ -193,22 +197,17 @@ function drawOthers(): void {
     for (const which of ['start', 'end'] as const) {
       const node = segment[which]
       const color = colorOf(which)
-      const ring = createCircle([node.lat, node.lon], {
+      createCircle([node.lat, node.lon], {
         radius: node.radiusM,
         color,
         weight: 1.5,
         dashArray: '4 4',
         fillColor: color,
         fillOpacity: 0.06,
-        interactive: false,
-      }).addTo(othersLayer)
-      if (which === 'end') {
-        ring.bindTooltip(segment.name, {
-          permanent: true,
-          direction: 'top',
-          className: 'segment-name-tip',
-        })
-      }
+        bubblingMouseEvents: true,
+      })
+        .bindTooltip(segment.name, { sticky: true })
+        .addTo(othersLayer)
     }
   }
 }
@@ -323,22 +322,20 @@ watch(
     fitOnce()
   },
 )
-watch(
-  () => props.placing,
-  (value) => {
-    container.value?.classList.toggle('cursor-crosshair', value !== null)
-  },
-)
-
 defineExpose({ fitAll })
 </script>
 
 <template>
-  <div class="relative isolate size-full overflow-hidden rounded-lg bg-muted">
+  <div
+    class="relative isolate size-full overflow-hidden rounded-lg bg-muted"
+    :class="{ 'segment-placing': placing !== null }"
+  >
+    <!-- Leaflet adds its own classes to this element, so Vue must not bind :class here
+         (a re-render would wipe them and the map would lose its layout and tiles).
+         The crosshair cursor lives on the wrapper and is inherited. -->
     <div
       ref="container"
       class="size-full"
-      :class="{ 'cursor-crosshair': placing !== null }"
       role="application"
       :aria-label="$t('activities.segments.map.label')"
     />
@@ -346,18 +343,9 @@ defineExpose({ fitAll })
 </template>
 
 <style>
-.segment-name-tip {
-  background: transparent;
-  border: 0;
-  box-shadow: none;
-  font-size: 11px;
-  font-weight: 600;
-  color: var(--color-foreground, #222);
-  text-shadow:
-    0 0 3px #fff,
-    0 0 3px #fff;
-}
-.segment-name-tip::before {
-  display: none;
+/* Leaflet sets its own cursor on the container, so override it from the wrapper. */
+.segment-placing .leaflet-container,
+.segment-placing .leaflet-grab {
+  cursor: crosshair;
 }
 </style>

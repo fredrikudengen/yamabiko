@@ -35,11 +35,20 @@ describe('SegmentMapEditor', () => {
     wrapper.unmount()
   })
 
-  it('marks the map as clickable only while a node is being placed', async () => {
-    const wrapper = mountEditor({ placing: 'start' })
-    expect(wrapper.find('[role="application"]').classes()).toContain('cursor-crosshair')
+  it("keeps Leaflet's own classes on its container when placing mode changes", async () => {
+    // Regression: a Vue :class binding on the Leaflet container wiped
+    // `leaflet-container` on re-render, which greyed out the map after the end node was placed.
+    const wrapper = mountEditor({ placing: 'end' })
+    const container = wrapper.find('[role="application"]')
+    expect(container.classes()).toContain('leaflet-container')
+
     await wrapper.setProps({ placing: null })
-    expect(wrapper.find('[role="application"]').classes()).not.toContain('cursor-crosshair')
+    expect(container.classes()).toContain('leaflet-container')
+    expect(wrapper.classes()).not.toContain('segment-placing')
+
+    await wrapper.setProps({ placing: 'start' })
+    expect(container.classes()).toContain('leaflet-container')
+    expect(wrapper.classes()).toContain('segment-placing')
     wrapper.unmount()
   })
 
@@ -58,9 +67,9 @@ describe('SegmentMapEditor', () => {
       ],
     })
 
-    expect(wrapper.element.querySelectorAll('path.leaflet-interactive').length).toBe(0)
-    expect(wrapper.element.querySelectorAll('.segment-name-tip')).toHaveLength(1)
-    expect(wrapper.element.textContent).toContain('Old route')
+    // Two circles (start and end), each carrying the name as a hover tooltip; no permanent label.
+    expect(wrapper.element.querySelectorAll('path.leaflet-interactive')).toHaveLength(2)
+    expect(wrapper.element.querySelectorAll('.leaflet-tooltip')).toHaveLength(0)
     wrapper.unmount()
   })
 })
