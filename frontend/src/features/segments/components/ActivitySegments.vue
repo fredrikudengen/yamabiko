@@ -7,6 +7,7 @@ import { Badge } from '@/components/ui/badge'
 import { Card } from '@/components/ui/card'
 import { useActivityEffortsQuery } from '@/features/segments/composables/useSegments'
 import { formatSeconds } from '@/features/segments/utils/geo'
+import { milestoneOf, milestoneText } from '@/features/segments/utils/milestone'
 import { sourceLabelKey } from '@/features/segments/utils/source'
 
 const props = defineProps<{ activityId: number }>()
@@ -35,12 +36,29 @@ const source = computed(() => efforts.value[0]?.source ?? 'other')
         :key="effort.id"
         class="flex flex-wrap items-baseline justify-between gap-x-3"
       >
-        <router-link
-          :to="{ name: 'segment', params: { id: effort.segmentId } }"
-          class="text-body font-medium hover:underline"
-        >
-          {{ effort.segmentName }}
-        </router-link>
+        <span class="flex flex-wrap items-baseline gap-x-2">
+          <router-link
+            :to="{ name: 'segment', params: { id: effort.segmentId } }"
+            class="text-body font-medium hover:underline"
+          >
+            {{ effort.segmentName }}
+          </router-link>
+          <!-- Rank by moving time, the table's default; the segment page can switch to total time. -->
+          <span
+            v-if="milestoneOf(effort, 'moving')"
+            class="text-meta"
+            :class="milestoneOf(effort, 'moving')?.isPr ? 'font-medium text-goal' : ''"
+            :title="t('activities.segments.milestone.tooltip')"
+            data-testid="activity-milestone"
+          >
+            {{
+              t(
+                milestoneText(milestoneOf(effort, 'moving')!).key,
+                milestoneText(milestoneOf(effort, 'moving')!).values,
+              )
+            }}
+          </span>
+        </span>
         <span class="text-meta tabular-nums">
           {{ formatSeconds(effort.movingS) }}
           <template v-if="effort.elapsedS - effort.movingS >= 1">

@@ -288,6 +288,11 @@
     "untitled": "Untitled tour",
     "radiusSummary": "Start radius {start} m, end radius {end} m",
     "onActivity": "Segments on this tour",
+    "milestone": {
+      "pr": "PR, of {count}",
+      "rank": "{rank} of {count}",
+      "tooltip": "Standing among all passes of this segment, from every source. Updates when a faster pass is added."
+    },
     "source": {
       "label": "Source",
       "google_health": "Fitbit",
@@ -305,7 +310,7 @@
       "hr": "Avg HR",
       "bpm": "bpm",
       "gain": "Ascent",
-      "best": "best",
+      "rank": "Rank",
       "total": "Total time",
       "totalShort": "total",
       "compareBy": "Compare by"

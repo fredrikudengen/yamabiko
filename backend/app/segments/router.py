@@ -17,6 +17,7 @@ import core.database as core_database
 import segments.coordinates as segments_coordinates
 import segments.crud as segments_crud
 import segments.models as segments_models
+import segments.ranking as segments_ranking
 import segments.schema as segments_schema
 import segments.service as segments_service
 import segments.source as segments_source
@@ -64,7 +65,11 @@ def _similar_out(segments: list[segments_models.Segment]) -> list[segments_schem
 
 
 def _effort_out(
-    effort: segments_models.SegmentEffort, segment_name: str, activity_name: str | None, source: str
+    effort: segments_models.SegmentEffort,
+    segment_name: str,
+    activity_name: str | None,
+    source: str,
+    standing: segments_ranking.Standing,
 ) -> segments_schema.EffortOut:
     return segments_schema.EffortOut(
         id=effort.id,
@@ -85,6 +90,9 @@ def _effort_out(
         net_elevation_m=effort.net_elevation_m,
         average_hr=effort.average_hr,
         max_hr=effort.max_hr,
+        rank_moving=standing.rank_moving,
+        rank_total=standing.rank_total,
+        segment_effort_count=standing.count,
         matcher_version=effort.matcher_version,
         details=effort.details,
     )
@@ -204,12 +212,19 @@ def get_activity_efforts(
     names = segments_service.activity_names([activity_id], db)
     sources = segments_service.activity_sources([activity_id], db)
     segment_names = {s.id: s.name for s in segments_crud.get_user_segments(token_user_id, db)}
+    # The rank needs every pass of the segment, not just this activity's.
+    standings = {
+        segment_id: segments_ranking.rank_efforts(segments_crud.get_efforts_for_segment(segment_id, db))
+        for segment_id in {e.segment_id for e in segments_crud.get_efforts_for_activity(activity_id, db)}
+        if segment_id in segment_names
+    }
     return [
         _effort_out(
             effort,
             segment_names[effort.segment_id],
             names.get(activity_id),
             sources.get(activity_id, segments_source.SOURCE_OTHER),
+            standings[effort.segment_id][effort.id],
         )
         for effort in segments_crud.get_efforts_for_activity(activity_id, db)
         if effort.segment_id in segment_names
@@ -265,12 +280,14 @@ def get_segment_efforts(
     activity_ids = [e.activity_id for e in efforts]
     names = segments_service.activity_names(activity_ids, db)
     sources = segments_service.activity_sources(activity_ids, db)
+    standings = segments_ranking.rank_efforts(efforts)
     return [
         _effort_out(
             effort,
             segment.name,
             names.get(effort.activity_id),
             sources.get(effort.activity_id, segments_source.SOURCE_OTHER),
+            standings[effort.id],
         )
         for effort in efforts
     ]

@@ -282,6 +282,11 @@
     "untitled": "Tur uten navn",
     "radiusSummary": "Startradius {start} m, sluttradius {end} m",
     "onActivity": "Segmenter på denne turen",
+    "milestone": {
+      "pr": "PR, av {count}",
+      "rank": "{rank}. av {count}",
+      "tooltip": "Plassering blant alle passeringer av dette segmentet, fra alle kilder. Endres når en raskere tur kommer til."
+    },
     "source": {
       "label": "Kilde",
       "google_health": "Fitbit",
@@ -299,7 +304,7 @@
       "hr": "Snittpuls",
       "bpm": "slag/min",
       "gain": "Stigning",
-      "best": "best",
+      "rank": "Plassering",
       "total": "Totaltid",
       "totalShort": "totalt",
       "compareBy": "Sammenlign på"

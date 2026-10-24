@@ -414,6 +414,80 @@ class TestSource:
         assert match["source"] == "strava"
 
 
+# Pass 1 is the quickest on the move but rested half way, so the clock puts it last.
+REST_HALF_WAY = [("walk", (0, 900)), ("rest", 900), ("walk", (0, 1800)), ("rest", 60), ("walk", (0, 0))]
+
+
+class TestRanking:
+    """Every pass counts, whatever its source; rank follows moving time or total time."""
+
+    def _three_passes(self, client, db):
+        ids = {
+            "rested": _add_activity(
+                db,
+                build_route(REST_HALF_WAY, speed=1.5),
+                day=0,
+                name="Hvilte",
+                googlehealth_activity_id="abc123",
+            ),
+            "steady": _add_activity(
+                db,
+                build_route(ASCENT, speed=1.2),
+                day=1,
+                name="Jevn",
+                import_info={"import_source": "Strava bulk import"},
+            ),
+            "slow": _add_activity(db, build_route(ASCENT, speed=1.0), day=2, name="Sakte"),
+        }
+        segment = _create(client)
+        efforts = client.get(f"/segments/{segment['id']}/efforts").json()
+        return ids, {e["activity_id"]: e for e in efforts}
+
+    def test_ranks_count_passes_from_every_source(self, client, db):
+        ids, efforts = self._three_passes(client, db)
+
+        assert {name: efforts[i]["rank_moving"] for name, i in ids.items()} == {"rested": 1, "steady": 2, "slow": 3}
+        assert {efforts[i]["segment_effort_count"] for i in ids.values()} == {3}
+        assert {efforts[i]["source"] for i in ids.values()} == {"google_health", "strava", "other"}
+
+    def test_total_time_ranks_separately_from_moving_time(self, client, db):
+        ids, efforts = self._three_passes(client, db)
+
+        assert efforts[ids["rested"]]["elapsed_s"] > efforts[ids["slow"]]["elapsed_s"]
+        assert {name: efforts[i]["rank_total"] for name, i in ids.items()} == {"rested": 3, "steady": 1, "slow": 2}
+
+    def test_the_activity_endpoint_ranks_against_all_passes_not_just_its_own(self, client, db):
+        ids, efforts = self._three_passes(client, db)
+
+        (own,) = client.get(f"/segments/activities/{ids['slow']}/efforts").json()
+
+        assert own["rank_moving"] == 3
+        assert own["rank_total"] == 2
+        assert own["segment_effort_count"] == 3
+        assert own["rank_moving"] == efforts[ids["slow"]]["rank_moving"]
+
+    def test_each_segment_is_ranked_among_its_own_passes(self, client, db):
+        first = _add_activity(db, build_route(ASCENT, speed=1.2), day=0)
+        second = _add_activity(db, build_route(ASCENT, speed=1.0), day=1)
+        mid = node(0, 900)
+        _create(client, name="Toppen")
+        _create(client, name="Midten", end={"lat": mid.lat, "lon": mid.lon})
+
+        by_segment = {e["segment_name"]: e for e in client.get(f"/segments/activities/{second}/efforts").json()}
+
+        assert (by_segment["Toppen"]["rank_moving"], by_segment["Toppen"]["segment_effort_count"]) == (2, 2)
+        assert (by_segment["Midten"]["rank_moving"], by_segment["Midten"]["segment_effort_count"]) == (2, 2)
+        assert first != second
+
+    def test_a_single_pass_is_first_of_one(self, client, db):
+        activity_id = _add_activity(db, build_route(ASCENT))
+        _create(client)
+
+        (effort,) = client.get(f"/segments/activities/{activity_id}/efforts").json()
+
+        assert (effort["rank_moving"], effort["rank_total"], effort["segment_effort_count"]) == (1, 1, 1)
+
+
 class TestActivityEfforts:
     def test_efforts_of_one_activity(self, client, db):
         activity_id = _add_activity(db, build_route(ASCENT))

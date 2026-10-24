@@ -85,6 +85,9 @@ export function mapEffort(dto: SegmentEffortDto): SegmentEffort {
     netElevationM: dto.net_elevation_m,
     averageHr: dto.average_hr,
     maxHr: dto.max_hr,
+    rankMoving: dto.rank_moving,
+    rankTotal: dto.rank_total,
+    segmentEffortCount: dto.segment_effort_count,
   }
 }
 

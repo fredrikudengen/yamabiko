@@ -38,6 +38,7 @@ export function compareEfforts(
     .map((effort) => ({
       effort,
       behindBestS: timeOf(effort, basis) - best,
-      isBest: timeOf(effort, basis) === best,
+      // Times show to the second, so equal-looking times tie, as in the server's ranking.
+      isBest: Math.round(timeOf(effort, basis)) === Math.round(best),
     }))
 }
