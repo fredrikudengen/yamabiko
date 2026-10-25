@@ -56,6 +56,8 @@ export type StreamMetric = keyof typeof STREAM_TYPE
  * Every field is optional because the present keys depend on the stream type.
  */
 export interface StreamWaypoint {
+  /** Sample time (ISO 8601, no offset on imported activities); only differences between samples are meaningful. */
+  time?: string | null
   /** Heart rate in bpm. */
   hr?: number | null
   /** Power in watts. */

@@ -67,6 +67,37 @@ function hexToRgba(hex: string, alpha: number): string {
  */
 const AREA_FILL_ALPHA = 0.15
 
+/** Id of the hidden y-axis a backdrop series is drawn against. */
+const BACKDROP_AXIS = 'backdrop'
+/** Chart.js draws higher `order` first, so the backdrop sits behind the other series. */
+const BACKDROP_ORDER = 10
+const BACKDROP_FILL_ALPHA = 0.25
+const BACKDROP_LINE_ALPHA = 0.5
+/** The backdrop fills the lower part of the chart: this much headroom above its highest point (as a share of its range). */
+const BACKDROP_HEADROOM = 0.6
+/** And this much room below its lowest point. */
+const BACKDROP_FLOOR = 0.05
+
+/**
+ * The bounds of the hidden axis for a backdrop series, chosen so the series fills the lower part of
+ * the chart instead of the whole height.
+ *
+ * @param series - The backdrop series.
+ * @returns Axis bounds, or `undefined` when the series has no finite values.
+ */
+function backdropBounds(
+  series: ChartRenderOptions['series'][number],
+): { min: number; max: number } | undefined {
+  const values = series.data.filter(Number.isFinite)
+  if (values.length === 0) {
+    return undefined
+  }
+  const low = Math.min(...values)
+  const high = Math.max(...values)
+  const range = high - low || 1
+  return { min: low - range * BACKDROP_FLOOR, max: high + range * BACKDROP_HEADROOM }
+}
+
 /**
  * Translates seam {@link ChartRenderOptions} into a Chart.js configuration.
  * Pure and deterministic so it can be unit-tested without a canvas.
@@ -80,9 +111,27 @@ export function buildChartConfiguration(
   palette: readonly string[] = DEFAULT_CHART_PALETTE,
 ): ChartConfiguration<'line' | 'bar'> {
   const type: 'line' | 'bar' = options.kind === 'bar' ? 'bar' : 'line'
+  const backdrop = options.series.find((series) => series.backdrop)
 
   const datasets: ChartDataset<'line' | 'bar'>[] = options.series.map((series, index) => {
     const color = colorFor(index, series.color, palette)
+    // A backdrop series is a muted area behind the rest (a height profile behind a pace line). It sits
+    // on its own hidden axis, so it needs no unit in common with the main series.
+    if (series.backdrop) {
+      return {
+        type: 'line',
+        label: series.label,
+        data: series.data,
+        yAxisID: BACKDROP_AXIS,
+        borderColor: hexToRgba(color, BACKDROP_LINE_ALPHA),
+        backgroundColor: hexToRgba(color, BACKDROP_FILL_ALPHA),
+        borderWidth: 1,
+        fill: 'start',
+        tension: 0.2,
+        pointRadius: 0,
+        order: BACKDROP_ORDER,
+      }
+    }
     // A dashed series is a reference/target line: render it as a dashed line
     // overlay regardless of the chart's geometry, so it sits on top of bars as a
     // mixed bar/line chart — mirroring v1's dashed target lines.
@@ -141,7 +190,9 @@ export function buildChartConfiguration(
               if (y === null || y === undefined) {
                 return ctx.dataset.label ?? ''
               }
-              const formatted = options.valueFormat?.(y) ?? String(y)
+              // A series may format its own values (a height next to a pace).
+              const format = options.series[ctx.datasetIndex]?.format ?? options.valueFormat
+              const formatted = format?.(y) ?? String(y)
               return ctx.dataset.label ? `${ctx.dataset.label}: ${formatted}` : formatted
             },
           },
@@ -159,15 +210,29 @@ export function buildChartConfiguration(
             }
           : undefined,
       },
+      // With a backdrop the tooltip shows every series at the hovered position (the pace and the height
+      // there), not only the one nearest the pointer. Other charts keep Chart.js's default.
+      interaction: backdrop ? { mode: 'index', intersect: false } : undefined,
       scales: {
         x: { display: true },
         y: {
           display: true,
           reverse: options.invertY ?? false,
+          min: options.yMin,
+          max: options.yMax,
           ticks: options.valueFormat
             ? { callback: (value) => options.valueFormat?.(Number(value)) ?? String(value) }
             : {},
         },
+        ...(backdrop
+          ? {
+              [BACKDROP_AXIS]: {
+                display: false,
+                position: 'right' as const,
+                ...backdropBounds(backdrop),
+              },
+            }
+          : {}),
       },
     },
   }

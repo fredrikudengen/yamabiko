@@ -27,6 +27,13 @@ export interface ChartSeries {
    * without dashed support fall back to a solid line.
    */
   dashed?: boolean
+  /**
+   * Draws the series as a muted filled area behind the other series, on its own hidden y-axis scaled
+   * to the series (a height profile behind a pace line). It is not read against the main axis.
+   */
+  backdrop?: boolean
+  /** Formats this series' values in the tooltip; defaults to {@link ChartRenderOptions.valueFormat}. */
+  format?: (value: number) => string
 }
 
 /** Options controlling a single chart render. */
@@ -55,6 +62,10 @@ export interface ChartRenderOptions {
    * where a lower (faster) pace is "better".
    */
   invertY?: boolean
+  /** Lower bound of the y-axis. Values outside the bounds are drawn clipped at the chart edge. */
+  yMin?: number
+  /** Upper bound of the y-axis; see {@link ChartRenderOptions.yMin}. */
+  yMax?: number
   /**
    * Enables interactive pan/zoom along the x-axis (wheel + drag on desktop,
    * pinch on touch). Providers without zoom support ignore this.
