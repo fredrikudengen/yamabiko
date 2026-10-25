@@ -99,6 +99,9 @@ describe('mapEffort', () => {
       net_elevation_m: 250,
       average_hr: 170,
       max_hr: 190,
+      rank_moving: 1,
+      rank_total: 1,
+      segment_effort_count: 1,
       matcher_version: 1,
       details: null,
     })
@@ -126,6 +129,9 @@ describe('EffortsTable and sources', () => {
     netElevationM: 250,
     averageHr: 110,
     maxHr: 140,
+    rankMoving: 1,
+    rankTotal: 1,
+    segmentEffortCount: 1,
   })
   const mountTable = (efforts: SegmentEffort[]) =>
     mount(EffortsTable, {

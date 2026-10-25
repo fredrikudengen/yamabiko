@@ -54,6 +54,10 @@ export interface SegmentEffortDto {
   net_elevation_m: number | null
   average_hr: number | null
   max_hr: number | null
+  /** Standing among all passes of the segment, whatever their source (1 = fastest). */
+  rank_moving: number
+  rank_total: number
+  segment_effort_count: number
   matcher_version: number
   details: Record<string, unknown> | null
 }
@@ -161,6 +165,10 @@ export interface SegmentEffort {
   netElevationM: number | null
   averageHr: number | null
   maxHr: number | null
+  /** Standing by moving time among all passes of the segment (1 = fastest); see `utils/milestone.ts`. */
+  rankMoving: number
+  rankTotal: number
+  segmentEffortCount: number
 }
 
 export interface PreviewMatch {

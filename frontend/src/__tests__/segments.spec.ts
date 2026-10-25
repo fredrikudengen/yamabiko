@@ -244,6 +244,9 @@ const effort = (id: number, startTime: string, movingS: number, extra = {}): Seg
   netElevationM: 250,
   averageHr: 110,
   maxHr: 140,
+  rankMoving: 1,
+  rankTotal: 1,
+  segmentEffortCount: 1,
   ...extra,
 })
 
@@ -274,48 +277,64 @@ describe('comparing efforts', () => {
     expect(byTotal.find((r) => !r.isBest)?.behindBestS).toBe(600)
   })
 
-  it('shows total time and switches the ranking with the toggle', async () => {
+  it('shows total time and switches the rank with the toggle', async () => {
+    // The restful tour is first on the move and second by the clock; the steady one the other way round.
     const wrapper = mount(EffortsTable, {
       props: {
         efforts: [
-          effort(1, '2026-10-01T08:00:00', 2000, { elapsedS: 2900, stoppedS: 900 }),
-          effort(2, '2026-10-20T08:00:00', 2300, { elapsedS: 2300 }),
+          effort(1, '2026-10-01T08:00:00', 2000, {
+            elapsedS: 2900,
+            stoppedS: 900,
+            rankMoving: 1,
+            rankTotal: 2,
+            segmentEffortCount: 2,
+          }),
+          effort(2, '2026-10-20T08:00:00', 2300, {
+            elapsedS: 2300,
+            rankMoving: 2,
+            rankTotal: 1,
+            segmentEffortCount: 2,
+          }),
         ],
       },
       global: { plugins: [i18n], stubs: { 'router-link': true } },
     })
-    const badgeRow = () =>
+    const prRow = () =>
       wrapper
         .findAll('[data-testid="effort-row"]')
-        .findIndex((r) => r.find('[data-testid="best-badge"]').exists())
+        .findIndex((r) => r.find('[data-testid="effort-rank"]').text().startsWith('PR'))
 
     expect(wrapper.text()).toContain('48:20') // 2900 s total
     // Rows are newest first: index 0 is the steady tour, index 1 the restful one.
-    expect(badgeRow()).toBe(1)
+    expect(prRow()).toBe(1)
 
     await wrapper.find('[data-testid="basis-total"]').trigger('click')
-    expect(badgeRow()).toBe(0)
+    expect(prRow()).toBe(0)
   })
 
-  it('shows the best badge only when there is something to compare with', () => {
+  it('shows a rank only when there is something to compare with', () => {
     const mountTable = (efforts: SegmentEffort[]) =>
       mount(EffortsTable, {
         props: { efforts },
         global: { plugins: [i18n], stubs: { 'router-link': true } },
       })
+    const rankTexts = (wrapper: ReturnType<typeof mountTable>) =>
+      wrapper.findAll('[data-testid="effort-rank"]').map((cell) => cell.text())
 
-    expect(
-      mountTable([effort(1, '2026-10-01T08:00:00', 2000)])
-        .find('[data-testid="best-badge"]')
-        .exists(),
-    ).toBe(false)
+    expect(rankTexts(mountTable([effort(1, '2026-10-01T08:00:00', 2000)]))).toEqual(['–'])
 
     const wrapper = mountTable([
-      effort(1, '2026-10-01T08:00:00', 2000),
-      effort(2, '2026-10-20T08:00:00', 1866, { stoppedS: 90, averageHr: null }),
+      effort(1, '2026-10-01T08:00:00', 2000, { rankMoving: 2, segmentEffortCount: 2 }),
+      effort(2, '2026-10-20T08:00:00', 1866, {
+        stoppedS: 90,
+        averageHr: null,
+        rankMoving: 1,
+        segmentEffortCount: 2,
+      }),
     ])
     expect(wrapper.findAll('[data-testid="effort-row"]')).toHaveLength(2)
-    expect(wrapper.findAll('[data-testid="best-badge"]')).toHaveLength(1)
+    // Newest first.
+    expect(rankTexts(wrapper)).toEqual(['PR, of 2', '2 of 2'])
     expect(wrapper.text()).toContain('31:06')
     expect(wrapper.text()).toContain('+2:14')
     expect(wrapper.text()).toContain('1:30')

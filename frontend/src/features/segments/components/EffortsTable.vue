@@ -8,6 +8,7 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { compareEfforts, type EffortBasis } from '@/features/segments/utils/efforts'
 import { formatSeconds } from '@/features/segments/utils/geo'
+import { milestoneOf, milestoneText } from '@/features/segments/utils/milestone'
 import { hasMixedSources, sourceLabelKey } from '@/features/segments/utils/source'
 
 const props = defineProps<{
@@ -18,7 +19,13 @@ const props = defineProps<{
 
 const { t, locale } = useI18n()
 const basis = ref<EffortBasis>('moving')
-const rows = computed(() => compareEfforts(props.efforts, basis.value))
+const rows = computed(() =>
+  compareEfforts(props.efforts, basis.value).map((row) => ({
+    ...row,
+    // Where the pass stands among all passes of the segment, on the chosen basis.
+    milestone: milestoneOf(row.effort, basis.value),
+  })),
+)
 // Times come from the GPS track for every source; heart rate and ascent do not.
 const mixedSources = computed(() => hasMixedSources(props.efforts))
 
@@ -72,6 +79,9 @@ function signed(seconds: number): string {
               {{ t('activities.segments.source.label') }}
             </th>
             <th scope="col" class="py-1 pr-3 font-medium">
+              {{ t('activities.segments.fields.rank') }}
+            </th>
+            <th scope="col" class="py-1 pr-3 font-medium">
               {{ t('activities.segments.fields.moving') }}
             </th>
             <th scope="col" class="py-1 pr-3 font-medium">
@@ -112,25 +122,21 @@ function signed(seconds: number): string {
                 {{ t(sourceLabelKey(row.effort.source)) }}
               </Badge>
             </td>
+            <td class="py-1.5 pr-3 whitespace-nowrap" data-testid="effort-rank">
+              <span
+                v-if="row.milestone"
+                :class="row.milestone.isPr ? 'font-medium text-goal' : ''"
+                :title="t('activities.segments.milestone.tooltip')"
+              >
+                {{ t(milestoneText(row.milestone).key, milestoneText(row.milestone).values) }}
+              </span>
+              <span v-else>–</span>
+            </td>
             <td class="py-1.5 pr-3 tabular-nums" :class="{ 'font-medium': basis === 'moving' }">
               {{ formatSeconds(row.effort.movingS) }}
-              <span
-                v-if="row.isBest && rows.length > 1 && basis === 'moving'"
-                class="ml-1 text-goal"
-                data-testid="best-badge"
-              >
-                {{ t('activities.segments.fields.best') }}
-              </span>
             </td>
             <td class="py-1.5 pr-3 tabular-nums" :class="{ 'font-medium': basis === 'total' }">
               {{ formatSeconds(row.effort.elapsedS) }}
-              <span
-                v-if="row.isBest && rows.length > 1 && basis === 'total'"
-                class="ml-1 text-goal"
-                data-testid="best-badge"
-              >
-                {{ t('activities.segments.fields.best') }}
-              </span>
             </td>
             <td class="py-1.5 pr-3 tabular-nums">
               {{ row.isBest ? '–' : signed(row.behindBestS) }}

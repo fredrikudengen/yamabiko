@@ -125,6 +125,10 @@ class EffortOut(BaseModel):
     net_elevation_m: float | None
     average_hr: float | None
     max_hr: int | None
+    # Standing among all passes of the segment, whatever their source (1 = fastest; equal times share a rank).
+    rank_moving: int
+    rank_total: int
+    segment_effort_count: int
     matcher_version: int
     details: dict[str, Any] | None
 
