@@ -169,37 +169,40 @@ function fillHeights(heights: (number | null)[]): (number | null)[] {
   })
 }
 
+/** One step between two GPS fixes. */
+interface Step {
+  from: number
+  to: number
+  dt: number
+  length: number
+  kind: 'moving' | 'gap' | 'stop'
+}
+
+/** The track as a distance axis: shared by the pace profile and the per-distance value profiles. */
+interface Track {
+  times: number[]
+  cumulative: number[]
+  steps: Step[]
+  /** Factor applied to the GPS path to match the activity's distance (1 = none). */
+  scale: number
+  totalM: number
+  binSizeM: number
+  binCount: number
+  /** The bin a distance in metres (after scaling) falls in. */
+  binOf: (metres: number) => number
+}
+
 /**
- * Builds the binned pace profile.
+ * Walks the GPS track and classifies each step (moving, gap, inside a known stop), scales the path
+ * to the activity's distance when the two agree, and chooses the bins.
  *
- * A stretch of track is `moving` (counts towards pace and distance), `gap` (the device stopped
- * recording for more than {@link GPS_GAP_S}: the distance still counts, there is no pace) or inside
- * a known `stop` (neither the time nor the jitter counts, and the bin where the stop happened is
- * left empty so the chart shows a break there).
- *
- * @param points - GPS fixes in time order.
- * @param elevation - Height samples, optional.
- * @param options - Known stops and the activity's distance.
- * @returns The profile, or `null` when the track is too short to bin.
+ * @returns The track, or `null` when it has fewer than two fixes or no length.
  */
-export function buildPaceProfile(
-  points: readonly TimedPoint[],
-  elevation: readonly TimedValue[] = [],
-  options: PaceProfileOptions = {},
-): PaceProfile | null {
+function buildTrack(points: readonly TimedPoint[], options: PaceProfileOptions): Track | null {
   const stops = options.stops ?? []
   const fixes = points.filter((p, i) => i === 0 || p.t > points[i - 1]!.t)
   if (fixes.length < 2) {
     return null
-  }
-
-  // Pass 1: walk the track and classify each step.
-  interface Step {
-    from: number
-    to: number
-    dt: number
-    length: number
-    kind: 'moving' | 'gap' | 'stop'
   }
   const times: number[] = [fixes[0]!.t]
   const cumulative: number[] = [0]
@@ -238,6 +241,103 @@ export function buildPaceProfile(
   const binCount = Math.max(1, Math.ceil(totalM / binSizeM - 1e-9))
   const binOf = (metres: number): number =>
     Math.min(Math.max(Math.floor(metres / binSizeM), 0), binCount - 1)
+  return { times, cumulative, steps, scale, totalM, binSizeM, binCount, binOf }
+}
+
+/** One distance bin of a value profile (heart rate, height). */
+export interface ValueBin {
+  startM: number
+  endM: number
+  /** Mean of the samples in the bin, or `null` where there is none (or the bin holds a known stop). */
+  value: number | null
+  /** The bin where a known stop happened: left empty so the chart breaks there. */
+  stop: boolean
+}
+
+/** A sampled value averaged per distance bin, on the same axis as {@link buildPaceProfile}. */
+export interface ValueProfile {
+  binSizeM: number
+  totalM: number
+  bins: ValueBin[]
+}
+
+/**
+ * Averages a sampled value (heart rate, height) per distance bin on the track's own distance axis,
+ * so it lines up with the pace profile above it. A sample is placed by the distance at its time,
+ * interpolated between GPS fixes, so a stretch where the GPS dropped out is still placed (on the
+ * straight line across it). Samples before the first or after the last fix are dropped. The bin where a
+ * known stop happened is left empty, with the samples taken during the stop, so the line breaks there.
+ *
+ * @param points - GPS fixes in time order.
+ * @param samples - The values and their times, seconds since the first fix.
+ * @param options - Known stops and the activity's distance (as for the pace profile).
+ * @param fill - Interpolate bins without samples from their neighbours (height), instead of leaving
+ *   them empty (heart rate: no samples means no measurement).
+ * @returns The profile, or `null` when the track is too short to bin.
+ */
+export function buildValueProfile(
+  points: readonly TimedPoint[],
+  samples: readonly TimedValue[],
+  options: PaceProfileOptions = {},
+  fill = false,
+): ValueProfile | null {
+  const track = buildTrack(points, options)
+  if (!track) {
+    return null
+  }
+  const { times, cumulative, steps, scale, totalM, binSizeM, binCount, binOf } = track
+  const sums = Array.from({ length: binCount }, () => 0)
+  const counts = Array.from({ length: binCount }, () => 0)
+  const first = times[0]!
+  const last = times[times.length - 1]!
+  for (const sample of samples) {
+    if (!Number.isFinite(sample.value) || sample.t < first || sample.t > last) {
+      continue
+    }
+    const bin = binOf(distanceAt(sample.t, times, cumulative) * scale)
+    sums[bin]! += sample.value
+    counts[bin]! += 1
+  }
+  const stopBins = new Set<number>()
+  for (const step of steps) {
+    if (step.kind === 'stop') {
+      stopBins.add(binOf(step.from * scale))
+    }
+  }
+  const means = sums.map((sum, i) => (counts[i]! > 0 ? sum / counts[i]! : null))
+  const values = fill ? fillHeights(means) : means
+  const bins: ValueBin[] = values.map((value, i) => ({
+    startM: i * binSizeM,
+    endM: Math.min((i + 1) * binSizeM, totalM),
+    value: stopBins.has(i) ? null : value,
+    stop: stopBins.has(i),
+  }))
+  return { binSizeM, totalM, bins }
+}
+
+/**
+ * Builds the binned pace profile.
+ *
+ * A stretch of track is `moving` (counts towards pace and distance), `gap` (the device stopped
+ * recording for more than {@link GPS_GAP_S}: the distance still counts, there is no pace) or inside
+ * a known `stop` (neither the time nor the jitter counts, and the bin where the stop happened is
+ * left empty so the chart shows a break there).
+ *
+ * @param points - GPS fixes in time order.
+ * @param elevation - Height samples, optional.
+ * @param options - Known stops and the activity's distance.
+ * @returns The profile, or `null` when the track is too short to bin.
+ */
+export function buildPaceProfile(
+  points: readonly TimedPoint[],
+  elevation: readonly TimedValue[] = [],
+  options: PaceProfileOptions = {},
+): PaceProfile | null {
+  const track = buildTrack(points, options)
+  if (!track) {
+    return null
+  }
+  const { times, cumulative, steps, scale, totalM, binSizeM, binCount, binOf } = track
 
   // Pass 2: time and distance per bin, and where the known stops happened.
   const seconds = Array.from({ length: binCount }, () => 0)

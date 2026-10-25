@@ -34,6 +34,7 @@ import {
 } from './format'
 import {
   buildPaceProfile,
+  buildValueProfile,
   longStopsOf,
   paceAxisRange,
   type TimedPoint,
@@ -483,6 +484,34 @@ function waypointSeconds(waypoint: StreamWaypoint): number {
 }
 
 /**
+ * The GPS fixes of an activity as a timed track, seconds since the first fix.
+ *
+ * @returns The track and the epoch second of its first fix, or `null` without timed coordinates.
+ */
+function gpsTrackOf(streams: ActivityStream[]): { points: TimedPoint[]; origin: number } | null {
+  // The stream that carries coordinates with a time on each fix.
+  let fixes: { seconds: number; lat: number; lon: number }[] = []
+  for (const stream of streams) {
+    fixes = stream.waypoints.flatMap((w) => {
+      const lat = num(w.lat)
+      const lon = num(w.lon)
+      const seconds = waypointSeconds(w)
+      return Number.isNaN(lat) || Number.isNaN(lon) || Number.isNaN(seconds)
+        ? []
+        : [{ seconds, lat, lon }]
+    })
+    if (fixes.length > 0) {
+      break
+    }
+  }
+  const origin = fixes[0]?.seconds
+  if (origin === undefined) {
+    return null
+  }
+  return { points: fixes.map((f) => ({ t: f.seconds - origin, lat: f.lat, lon: f.lon })), origin }
+}
+
+/**
  * Builds the readable pace chart from the GPS track instead of the per-second pace stream: pace
  * averaged per distance bin, on a real distance axis, with stops left out and the height as a grey
  * profile behind. See `paceProfile.ts` for how.
@@ -504,26 +533,11 @@ export function buildPaceProfileChart(
     return null
   }
 
-  // The stream that carries coordinates with a time on each fix.
-  let fixes: { seconds: number; lat: number; lon: number }[] = []
-  for (const stream of streams) {
-    fixes = stream.waypoints.flatMap((w) => {
-      const lat = num(w.lat)
-      const lon = num(w.lon)
-      const seconds = waypointSeconds(w)
-      return Number.isNaN(lat) || Number.isNaN(lon) || Number.isNaN(seconds)
-        ? []
-        : [{ seconds, lat, lon }]
-    })
-    if (fixes.length > 0) {
-      break
-    }
-  }
-  const origin = fixes[0]?.seconds
-  if (origin === undefined) {
+  const track = gpsTrackOf(streams)
+  if (!track) {
     return null
   }
-  const points: TimedPoint[] = fixes.map((f) => ({ t: f.seconds - origin, lat: f.lat, lon: f.lon }))
+  const { points, origin } = track
 
   const heights: TimedValue[] = showElevation
     ? (streams
@@ -588,6 +602,85 @@ export function buildPaceProfileChart(
 }
 
 /**
+ * Whether a metric can be put on the track's distance axis: any activity with a timed GPS track
+ * except swimming and paddling, whose GPS distance is not reliable enough.
+ */
+function usesDistanceAxis(activityType: number): boolean {
+  return (
+    !activityTypeIsSwimming(activityType) &&
+    !activityTypeIsRowing(activityType) &&
+    !activityTypeIsStandUpPaddling(activityType)
+  )
+}
+
+/**
+ * Builds a heart-rate or height chart on the same distance axis as the pace profile: the value
+ * averaged per distance bin, with the bin of a known stop left empty. The plain per-sample chart
+ * spreads its labels evenly over the samples, which stretches the axis wherever the watch recorded
+ * more or fewer samples per kilometre and so does not line up with the pace chart above it.
+ *
+ * @param metric - `'hr'` or `'elevation'`.
+ * @param streams - The activity's metric streams; the GPS stream supplies position and time.
+ * @param activity - The activity (type, reported distance, stored long stops, aggregate stats).
+ * @param units - The user's unit system.
+ * @returns The chart, or `null` when the activity has no timed GPS track or no samples with a time.
+ */
+export function buildDistanceValueChart(
+  metric: 'hr' | 'elevation',
+  streams: ActivityStream[],
+  activity: Activity,
+  units: Units,
+): StreamChart | null {
+  const type = activity.activityType
+  if (!usesDistanceAxis(type) || !(activity.distance > 0)) {
+    return null
+  }
+  const stream = streams.find((s) => METRIC_BY_TYPE[s.streamType] === metric)
+  const track = gpsTrackOf(streams)
+  if (!stream || !track) {
+    return null
+  }
+  const samples: TimedValue[] = stream.waypoints.flatMap((w) => {
+    const value = extractValue(w, metric, type, units)
+    const seconds = waypointSeconds(w)
+    return Number.isNaN(value) || Number.isNaN(seconds)
+      ? []
+      : [{ t: seconds - track.origin, value }]
+  })
+  if (samples.length === 0) {
+    return null
+  }
+
+  const profile = buildValueProfile(
+    track.points,
+    samples,
+    { stops: longStopsOf(activity.importInfo), activityDistanceM: activity.distance },
+    metric === 'elevation',
+  )
+  if (!profile) {
+    return null
+  }
+  const data = profile.bins.map((bin) => bin.value ?? Number.NaN)
+  if (data.every((value) => Number.isNaN(value))) {
+    return null
+  }
+  const perUnit = units === 'imperial' ? METRES_PER_MILE : 1000
+  return {
+    metric,
+    titleKey: METRIC_TITLE_KEY[metric],
+    render: {
+      kind: 'line',
+      series: [{ label: METRIC_TITLE_KEY[metric], data, color: METRIC_COLOR[metric] }],
+      labels: profile.bins.map((bin) => ((bin.startM + bin.endM) / 2 / perUnit).toFixed(2)),
+      xUnit: units === 'imperial' ? 'mi' : 'km',
+      valueFormat: valueFormatter(metric, type, units),
+      zoom: true,
+    },
+    stats: buildStreamStats(metric, activity, units),
+  }
+}
+
+/**
  * Builds every metric chart for an activity, in display order and filtered by
  * (1) per-field privacy flags the viewer may see and (2) type relevance (pace
  * vs. speed, no elevation for swimming).
@@ -628,6 +721,15 @@ export function buildStreamCharts(
     const profile = buildPaceProfileChart(streams, activity, units, isMetricVisible('elevation'))
     if (profile) {
       byMetric.set('pace', profile)
+    }
+  }
+  // Heart rate and height share the pace profile's distance axis where there is a GPS track.
+  for (const metric of ['hr', 'elevation'] as const) {
+    if (byMetric.has(metric)) {
+      const chart = buildDistanceValueChart(metric, streams, activity, units)
+      if (chart) {
+        byMetric.set(metric, chart)
+      }
     }
   }
   return STREAM_METRIC_ORDER.flatMap((metric) => {
