@@ -6,6 +6,7 @@ import type { SegmentEffort } from '@/features/segments/types'
 
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
+import { beatsPer100mOf, climbRateOf } from '@/features/segments/utils/climb'
 import { compareEfforts, type EffortBasis } from '@/features/segments/utils/efforts'
 import { formatSeconds } from '@/features/segments/utils/geo'
 import { milestoneOf, milestoneText } from '@/features/segments/utils/milestone'
@@ -24,6 +25,9 @@ const rows = computed(() =>
     ...row,
     // Where the pass stands among all passes of the segment, on the chosen basis.
     milestone: milestoneOf(row.effort, basis.value),
+    // Metres climbed per hour on the chosen time, and heart beats per 100 m climbed (moving time).
+    climbRate: climbRateOf(row.effort, basis.value),
+    beatsPer100m: beatsPer100mOf(row.effort),
   })),
 )
 // Times come from the GPS track for every source; heart rate and ascent do not.
@@ -96,8 +100,22 @@ function signed(seconds: number): string {
             <th scope="col" class="py-1 pr-3 font-medium">
               {{ t('activities.segments.fields.hr') }}
             </th>
-            <th scope="col" class="py-1 font-medium">
+            <th scope="col" class="py-1 pr-3 font-medium">
               {{ t('activities.segments.fields.gain') }}
+            </th>
+            <th
+              scope="col"
+              class="py-1 pr-3 font-medium"
+              :title="t('activities.segments.fields.climbRateTooltip')"
+            >
+              {{ t('activities.segments.fields.climbRate') }}
+            </th>
+            <th
+              scope="col"
+              class="py-1 font-medium"
+              :title="t('activities.segments.fields.beatsTooltip')"
+            >
+              {{ t('activities.segments.fields.beats') }}
             </th>
           </tr>
         </thead>
@@ -151,12 +169,22 @@ function signed(seconds: number): string {
             <td class="py-1.5 pr-3 tabular-nums">
               {{ row.effort.averageHr !== null ? Math.round(row.effort.averageHr) : '–' }}
             </td>
-            <td class="py-1.5 tabular-nums">
+            <td class="py-1.5 pr-3 tabular-nums">
               {{
                 row.effort.elevationGainM !== null
                   ? `+${Math.round(row.effort.elevationGainM)} m`
                   : '–'
               }}
+            </td>
+            <td class="py-1.5 pr-3 tabular-nums whitespace-nowrap" data-testid="effort-climb-rate">
+              {{
+                row.climbRate !== null
+                  ? `${Math.round(row.climbRate)} ${t('activities.segments.fields.climbRateUnit')}`
+                  : '–'
+              }}
+            </td>
+            <td class="py-1.5 tabular-nums" data-testid="effort-beats">
+              {{ row.beatsPer100m !== null ? Math.round(row.beatsPer100m) : '–' }}
             </td>
           </tr>
         </tbody>
