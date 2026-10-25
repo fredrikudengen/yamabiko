@@ -117,6 +117,22 @@ describe('buildChartConfiguration', () => {
     expect(ticks?.callback?.(120)).toBe('120 bpm')
   })
 
+  it('keeps the tint under the line on an inverted axis', () => {
+    const fillOf = (invertY: boolean) => {
+      const config = buildChartConfiguration({
+        kind: 'line',
+        series: [{ label: 'Pace', data: [1] }],
+        invertY,
+      })
+      return (config.data.datasets[0] as Record<string, unknown> | undefined)?.fill
+    }
+
+    // Chart.js fills towards the axis minimum by default, which is the top edge once the axis is
+    // inverted; 'start' is the bottom edge whichever way the axis points.
+    expect(fillOf(true)).toBe('start')
+    expect(fillOf(false)).toBe(true)
+  })
+
   it('appends the x-axis unit to the tooltip title', () => {
     const config = buildChartConfiguration({
       kind: 'line',
