@@ -32,6 +32,13 @@ import {
   speedUnitLabel,
   type Units,
 } from './format'
+import {
+  buildPaceProfile,
+  longStopsOf,
+  paceAxisRange,
+  type TimedPoint,
+  type TimedValue,
+} from './paceProfile'
 
 /** Maps a numeric stream type to its metric kind. */
 const METRIC_BY_TYPE: Record<number, StreamMetric> = {
@@ -452,6 +459,134 @@ export function buildStreamChart(
   }
 }
 
+/** Metres in one mile, for the profile's distance axis. */
+const METRES_PER_MILE = 1609.34
+/** Colour of the height profile behind the pace line (no design token for a neutral chart tone). */
+const PROFILE_BACKDROP_COLOR = '#94a3b8'
+
+/**
+ * Whether the binned pace profile applies: pace per km or mile on foot. Swimming and paddling report
+ * pace per 100 m or 500 m, and their GPS distance is not trustworthy enough to bin.
+ */
+function usesDistanceProfile(activityType: number): boolean {
+  return (
+    activityTypeUsesPace(activityType) &&
+    !activityTypeIsSwimming(activityType) &&
+    !activityTypeIsRowing(activityType) &&
+    !activityTypeIsStandUpPaddling(activityType)
+  )
+}
+
+/** Seconds since the epoch for a waypoint time, or `NaN` when it is missing or unreadable. */
+function waypointSeconds(waypoint: StreamWaypoint): number {
+  return waypoint.time ? Date.parse(waypoint.time) / 1000 : Number.NaN
+}
+
+/**
+ * Builds the readable pace chart from the GPS track instead of the per-second pace stream: pace
+ * averaged per distance bin, on a real distance axis, with stops left out and the height as a grey
+ * profile behind. See `paceProfile.ts` for how.
+ *
+ * @param streams - The activity's metric streams; the GPS stream supplies position and time.
+ * @param activity - The activity (type, reported distance, stored long stops).
+ * @param units - The user's unit system.
+ * @param showElevation - Whether the viewer may see height (the profile is left out otherwise).
+ * @returns The chart, or `null` when this activity or its streams do not support the profile.
+ */
+export function buildPaceProfileChart(
+  streams: ActivityStream[],
+  activity: Activity,
+  units: Units,
+  showElevation: boolean,
+): StreamChart | null {
+  const type = activity.activityType
+  if (!usesDistanceProfile(type)) {
+    return null
+  }
+
+  // The stream that carries coordinates with a time on each fix.
+  let fixes: { seconds: number; lat: number; lon: number }[] = []
+  for (const stream of streams) {
+    fixes = stream.waypoints.flatMap((w) => {
+      const lat = num(w.lat)
+      const lon = num(w.lon)
+      const seconds = waypointSeconds(w)
+      return Number.isNaN(lat) || Number.isNaN(lon) || Number.isNaN(seconds)
+        ? []
+        : [{ seconds, lat, lon }]
+    })
+    if (fixes.length > 0) {
+      break
+    }
+  }
+  const origin = fixes[0]?.seconds
+  if (origin === undefined) {
+    return null
+  }
+  const points: TimedPoint[] = fixes.map((f) => ({ t: f.seconds - origin, lat: f.lat, lon: f.lon }))
+
+  const heights: TimedValue[] = showElevation
+    ? (streams
+        .find((stream) => stream.streamType === STREAM_TYPE.elevation)
+        ?.waypoints.flatMap((w) => {
+          const value = num(w.ele)
+          const seconds = waypointSeconds(w)
+          return Number.isNaN(value) || Number.isNaN(seconds)
+            ? []
+            : [{ t: seconds - origin, value: elevationToDisplay(value, units) }]
+        }) ?? [])
+    : []
+
+  const profile = buildPaceProfile(points, heights, {
+    stops: longStopsOf(activity.importInfo),
+    activityDistanceM: activity.distance,
+  })
+  if (!profile) {
+    return null
+  }
+
+  const pace = profile.bins.map((bin) =>
+    bin.paceSPerM === null ? Number.NaN : paceToDisplaySeconds(bin.paceSPerM, type, units),
+  )
+  const range = paceAxisRange(pace)
+  if (!range) {
+    return null
+  }
+  const perUnit = units === 'imperial' ? METRES_PER_MILE : 1000
+  const labels = profile.bins.map((bin) => ((bin.startM + bin.endM) / 2 / perUnit).toFixed(2))
+  const heightData = profile.bins.map((bin) => bin.elevationM ?? Number.NaN)
+  const heightUnit = units === 'imperial' ? 'ft' : 'm'
+
+  return {
+    metric: 'pace',
+    titleKey: METRIC_TITLE_KEY.pace,
+    render: {
+      kind: 'line',
+      series: [
+        { label: METRIC_TITLE_KEY.pace, data: pace, color: METRIC_COLOR.pace },
+        ...(heightData.some((h) => !Number.isNaN(h))
+          ? [
+              {
+                label: METRIC_TITLE_KEY.elevation,
+                data: heightData,
+                color: PROFILE_BACKDROP_COLOR,
+                backdrop: true,
+                format: (v: number) => `${Math.round(v)} ${heightUnit}`,
+              },
+            ]
+          : []),
+      ],
+      labels,
+      xUnit: units === 'imperial' ? 'mi' : 'km',
+      valueFormat: valueFormatter('pace', type, units),
+      yMin: range.min,
+      yMax: range.max,
+      zoom: true,
+    },
+    stats: buildStreamStats('pace', activity, units),
+  }
+}
+
 /**
  * Builds every metric chart for an activity, in display order and filtered by
  * (1) per-field privacy flags the viewer may see and (2) type relevance (pace
@@ -485,6 +620,14 @@ export function buildStreamCharts(
     const chart = buildStreamChart(stream, activity, units)
     if (chart) {
       byMetric.set(metric, chart)
+    }
+  }
+  // The per-second pace stream is too noisy to read. Where the GPS track allows, plot pace per
+  // distance bin instead (see `buildPaceProfileChart`); otherwise the plain pace chart stays.
+  if (byMetric.has('pace')) {
+    const profile = buildPaceProfileChart(streams, activity, units, isMetricVisible('elevation'))
+    if (profile) {
+      byMetric.set('pace', profile)
     }
   }
   return STREAM_METRIC_ORDER.flatMap((metric) => {
