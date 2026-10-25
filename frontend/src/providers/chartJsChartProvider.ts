@@ -158,7 +158,10 @@ export function buildChartConfiguration(
       borderColor: color,
       backgroundColor: filled ? hexToRgba(color, AREA_FILL_ALPHA) : color,
       borderWidth: 2,
-      fill: filled,
+      // On an inverted axis the default fill runs to the top edge (where the axis minimum now is), so
+      // fill to the bottom edge of the chart instead ('start' is the bottom edge, whichever way the
+      // axis points) and keep the tint under the line.
+      fill: filled && options.invertY ? 'start' : filled,
       tension: 0.3,
       pointRadius: 0,
     }

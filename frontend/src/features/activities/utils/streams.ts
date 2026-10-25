@@ -445,11 +445,12 @@ export function buildStreamChart(
     metric,
     titleKey: METRIC_TITLE_KEY[metric],
     render: {
-      // All metric charts render as lines with a gradient fill for visual
-      // consistency. Pace is plotted on a normal (non-inverted) axis like every
-      // other metric; the y-tick/tooltip formatter renders it as M:SS.
+      // All metric charts render as lines with a flat fill for visual consistency. Pace has the
+      // axis inverted so that faster (fewer seconds) is higher, as for the pace profile; the
+      // y-tick/tooltip formatter renders it as M:SS.
       kind: 'line',
       series: [{ label: METRIC_TITLE_KEY[metric], data, color: METRIC_COLOR[metric] }],
+      invertY: metric === 'pace',
       labels: xAxis.labels,
       xUnit: xAxis.unit,
       valueFormat: valueFormatter(metric, type, units),
@@ -579,6 +580,7 @@ export function buildPaceProfileChart(
       labels,
       xUnit: units === 'imperial' ? 'mi' : 'km',
       valueFormat: valueFormatter('pace', type, units),
+      invertY: true,
       yMin: range.min,
       yMax: range.max,
       zoom: true,

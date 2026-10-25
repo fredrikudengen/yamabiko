@@ -71,6 +71,8 @@ describe('buildPaceProfileChart', () => {
     const [pace, height] = chart.render.series
 
     expect(chart.metric).toBe('pace')
+    // Faster (fewer seconds) is higher, as in the plain pace chart.
+    expect(chart.render.invertY).toBe(true)
     expect(chart.render.xUnit).toBe('km')
     expect(chart.render.labels).toHaveLength(pace!.data.length)
     // 1200 m on a real distance axis: the last label is the end of the walk, not the end of the clock.
