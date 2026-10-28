@@ -7,6 +7,7 @@ import type {
   Activity,
   ActivityPrivacy,
   ActivityStream,
+  HrZoneBucket,
   StreamMetric,
   StreamWaypoint,
 } from '../types'
@@ -32,9 +33,11 @@ import {
   speedUnitLabel,
   type Units,
 } from './format'
+import { computeZoneSeconds, toZoneBuckets, type HrZoneLimits } from './hrZoneTime'
 import {
   buildPaceProfile,
   buildValueProfile,
+  hasLongStopInfo,
   longStopsOf,
   paceAxisRange,
   type TimedPoint,
@@ -679,6 +682,55 @@ export function buildDistanceValueChart(
       zoom: true,
     },
     stats: buildStreamStats(metric, activity, units),
+  }
+}
+
+/** Time in heart-rate zones with the long stops left out, as the zone card shows it. */
+export interface MovingHrZones {
+  buckets: HrZoneBucket[]
+  /** Seconds counted, the sum of the zones. */
+  countedS: number
+  /** Whether the importer recorded the activity's long stops; if not, nothing could be left out. */
+  stopsKnown: boolean
+}
+
+/**
+ * Time in each heart-rate zone, from the heart-rate samples and the activity's stored long stops.
+ *
+ * @param streams - The activity's metric streams; the HR stream supplies the samples and the GPS
+ *   stream the origin the stored stops are measured from (the first sample when there is no GPS).
+ * @param activity - The activity (stored long stops).
+ * @param limits - The zone limits.
+ * @returns The zones, or `null` without timed heart-rate samples.
+ */
+export function buildMovingHrZones(
+  streams: ActivityStream[],
+  activity: Activity,
+  limits: HrZoneLimits,
+): MovingHrZones | null {
+  const stream = streams.find((s) => METRIC_BY_TYPE[s.streamType] === 'hr')
+  if (!stream) {
+    return null
+  }
+  const timed = stream.waypoints.flatMap((w) => {
+    const value = num(w.hr)
+    const seconds = waypointSeconds(w)
+    return Number.isNaN(value) || Number.isNaN(seconds) ? [] : [{ seconds, value }]
+  })
+  const first = timed[0]
+  if (!first) {
+    return null
+  }
+  const origin = gpsTrackOf(streams)?.origin ?? first.seconds
+  const samples: TimedValue[] = timed.map((s) => ({ t: s.seconds - origin, value: s.value }))
+  const result = computeZoneSeconds(samples, limits, longStopsOf(activity.importInfo))
+  if (!(result.countedS > 0)) {
+    return null
+  }
+  return {
+    buckets: toZoneBuckets(result, limits),
+    countedS: result.countedS,
+    stopsKnown: hasLongStopInfo(activity.importInfo),
   }
 }
 

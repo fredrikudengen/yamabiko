@@ -98,7 +98,22 @@
   },
   "hrZones": {
     "title": "Pulssoner",
-    "zone": "Sone"
+    "zone": "Sone",
+    "basisMoving": "Bevegelsestid, lange stopp utelatt",
+    "basisRecorded": "Hele opptaket (ingen stopp registrert for denne aktiviteten)",
+    "sum": "Sum {time}",
+    "editLimits": "Endre grenser",
+    "customLimits": "Egne grenser",
+    "limitsHint": "Hvor hver sone starter (slag/min). Lagres på denne enheten.",
+    "zoneStartsAt": "Sone {zone} fra",
+    "save": "Lagre",
+    "reset": "Tilbakestill",
+    "cancel": "Avbryt",
+    "error": {
+      "incomplete": "Fyll inn alle fire grensene som hele tall.",
+      "range": "Grensene må ligge mellom 30 og 250 slag/min.",
+      "order": "Hver grense må være høyere enn den forrige."
+    }
   },
   "laps": {
     "title": "Runder",

@@ -1,5 +1,5 @@
 const PREFIX = 'endurain:'
-const DEVICE_SCOPED_KEYS = new Set([`${PREFIX}theme`, `${PREFIX}locale`])
+const DEVICE_SCOPED_KEYS = new Set([`${PREFIX}theme`, `${PREFIX}locale`, `${PREFIX}hrZoneLimits`])
 
 /**
  * Reads and JSON-parses a namespaced value from `localStorage`.
