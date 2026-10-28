@@ -6,10 +6,17 @@
  * The pure {@link buildChartConfiguration} helper is exported so the seam →
  * Chart.js translation can be unit-tested without a canvas.
  */
-import { Chart, registerables, type ChartConfiguration, type ChartDataset } from 'chart.js'
+import {
+  Chart,
+  registerables,
+  type ChartConfiguration,
+  type ChartDataset,
+  type ScriptableContext,
+} from 'chart.js'
 import zoomPlugin from 'chartjs-plugin-zoom'
 
 import type {
+  ChartBand,
   ChartInstance,
   ChartProvider,
   ChartRenderOptions,
@@ -98,6 +105,87 @@ function backdropBounds(
   return { min: low - range * BACKDROP_FLOOR, max: high + range * BACKDROP_HEADROOM }
 }
 
+/** A colour stop of a banded gradient: `offset` is 0 at the top edge of the plot area, 1 at the bottom. */
+export interface BandStop {
+  offset: number
+  color: string
+}
+
+/**
+ * The colour stops of a vertical gradient that paints each value band in its own colour, with a hard
+ * edge at every band limit. The stops follow the y-scale, so they hold on an inverted axis, and a band
+ * outside the visible range gets no stops.
+ *
+ * @param bands - The bands, ascending by `from`.
+ * @param area - The top and bottom edge of the plot area, in pixels.
+ * @param scale - The y-scale: the pixel of a value.
+ * @param alpha - Opacity for the colours (the fill), or `null` to keep them opaque (the line).
+ * @returns Stops in increasing offset order, ready to add to a canvas gradient in that order.
+ */
+export function bandGradientStops(
+  bands: readonly ChartBand[],
+  area: { top: number; bottom: number },
+  scale: { getPixelForValue(value: number): number },
+  alpha: number | null,
+): BandStop[] {
+  const height = area.bottom - area.top
+  if (!(height > 0)) {
+    return []
+  }
+  // A limit outside the visible range lands beyond the plot area (Chart.js clamps an infinite value
+  // to a far-off pixel), so keeping the offset within 0..1 cuts the band at the edge.
+  const offsetOf = (value: number): number => {
+    const offset = (scale.getPixelForValue(value) - area.top) / height
+    return Math.min(Math.max(offset, 0), 1)
+  }
+  const ranges = bands.flatMap((band, index) => {
+    const next = bands[index + 1]
+    const a = offsetOf(band.from)
+    const b = offsetOf(next ? next.from : Number.POSITIVE_INFINITY)
+    const top = Math.min(a, b)
+    const bottom = Math.max(a, b)
+    return bottom > top ? [{ top, bottom, color: band.color }] : []
+  })
+  // The bands tile the axis, so once ordered from the top edge each one starts where the one above
+  // it ends: the pair of stops at that offset is what makes the edge hard.
+  ranges.sort((x, y) => x.top - y.top)
+  return ranges.flatMap(({ top, bottom, color }) => {
+    const paint = alpha === null ? color : hexToRgba(color, alpha)
+    return [
+      { offset: top, color: paint },
+      { offset: bottom, color: paint },
+    ]
+  })
+}
+
+/**
+ * A scriptable colour for a series coloured by value bands: a vertical gradient fitted to the plot
+ * area and y-scale at the time the chart is drawn. Falls back to the series colour before the first
+ * layout, when there is no plot area yet.
+ */
+function bandPaint(
+  bands: readonly ChartBand[],
+  fallback: string,
+  alpha: number | null,
+): (context: ScriptableContext<'line'>) => string | CanvasGradient {
+  return ({ chart }) => {
+    const area = chart.chartArea
+    const scale = chart.scales.y
+    if (!area || !scale) {
+      return fallback
+    }
+    const stops = bandGradientStops(bands, area, scale, alpha)
+    if (stops.length === 0) {
+      return fallback
+    }
+    const gradient = chart.ctx.createLinearGradient(0, area.top, 0, area.bottom)
+    for (const stop of stops) {
+      gradient.addColorStop(stop.offset, stop.color)
+    }
+    return gradient
+  }
+}
+
 /**
  * Translates seam {@link ChartRenderOptions} into a Chart.js configuration.
  * Pure and deterministic so it can be unit-tested without a canvas.
@@ -152,11 +240,17 @@ export function buildChartConfiguration(
     // Line/area charts get a flat translucent fill below the line (a calm tint,
     // not a gradient — per the design system); bars stay solid.
     const filled = type === 'line'
+    // A series coloured by value (heart rate in its zones) paints line and fill with the bands.
+    const banded = filled && series.bands && series.bands.length > 0 ? series.bands : null
     return {
       label: series.label,
       data: series.data,
-      borderColor: color,
-      backgroundColor: filled ? hexToRgba(color, AREA_FILL_ALPHA) : color,
+      borderColor: banded ? bandPaint(banded, color, null) : color,
+      backgroundColor: banded
+        ? bandPaint(banded, hexToRgba(color, AREA_FILL_ALPHA), AREA_FILL_ALPHA)
+        : filled
+          ? hexToRgba(color, AREA_FILL_ALPHA)
+          : color,
       borderWidth: 2,
       // On an inverted axis the default fill runs to the top edge (where the axis minimum now is), so
       // fill to the bottom edge of the chart instead ('start' is the bottom edge, whichever way the

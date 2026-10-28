@@ -9,10 +9,12 @@ import {
   isValidZoneLimits,
   parseZoneLimitInputs,
   toZoneBuckets,
+  zoneBands,
   zoneOf,
   zoneRangeLabel,
   type HrZoneLimits,
 } from '@/features/activities/utils/hrZoneTime'
+import { hrZoneColor } from '@/features/activities/utils/hrZones'
 import { buildMovingHrZones } from '@/features/activities/utils/streams'
 import { clearUserScopedStorage, getStorageItem } from '@/lib/storage'
 
@@ -48,6 +50,16 @@ describe('zoneRangeLabel', () => {
       '126 - 153',
       '≥ 154',
     ])
+  })
+})
+
+describe('zoneBands', () => {
+  it('starts each zone at its limit, with zone 1 open downwards', () => {
+    const bands = zoneBands(LIMITS)
+
+    expect(bands.map((b) => b.from)).toEqual([Number.NEGATIVE_INFINITY, 100, 120, 140, 160])
+    // The same colours as the bars on the zone card.
+    expect(bands.map((b) => b.color)).toEqual([1, 2, 3, 4, 5].map((z) => hrZoneColor(z)))
   })
 })
 

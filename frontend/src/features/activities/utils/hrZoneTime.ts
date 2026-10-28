@@ -1,6 +1,9 @@
+import type { ChartBand } from '@/composables/useChartProvider'
+
 import type { HrZoneBucket } from '../types'
 import type { StopWindow, TimedValue } from './paceProfile'
 
+import { hrZoneColor } from './hrZones'
 import { GPS_GAP_S } from './paceProfile'
 
 /**
@@ -101,6 +104,19 @@ export function zoneRangeLabel(zone: number, limits: HrZoneLimits): string {
     return `≥ ${lower}`
   }
   return `${lower} - ${upper - 1}`
+}
+
+/**
+ * The zones as colour bands for a chart, so a heart-rate line changes colour at each limit.
+ *
+ * @param limits - The zone limits.
+ * @returns Five bands, zone 1 from `-Infinity`, each zone starting at its limit.
+ */
+export function zoneBands(limits: HrZoneLimits): ChartBand[] {
+  return Array.from({ length: HR_ZONE_COUNT }, (_, index) => ({
+    from: index === 0 ? Number.NEGATIVE_INFINITY : limits[index - 1]!,
+    color: hrZoneColor(index + 1),
+  }))
 }
 
 /** What {@link computeZoneSeconds} found. */

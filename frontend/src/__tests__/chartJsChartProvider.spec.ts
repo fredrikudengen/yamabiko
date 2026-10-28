@@ -1,7 +1,10 @@
 import { describe, expect, it } from 'vitest'
 
 import { setChartProvider, useChartProvider } from '@/composables/useChartProvider'
+import type { ChartBand } from '@/composables/useChartProvider'
+
 import {
+  bandGradientStops,
   buildChartConfiguration,
   createChartJsChartProvider,
   DEFAULT_CHART_PALETTE,
@@ -281,5 +284,149 @@ describe('backdrop series and axis bounds', () => {
     expect(Object.keys(scales)).toEqual(['x', 'y'])
     expect(scales.y?.min).toBeUndefined()
     expect(scales.y?.max).toBeUndefined()
+  })
+})
+
+describe('series coloured by value bands', () => {
+  const BANDS: ChartBand[] = [
+    { from: Number.NEGATIVE_INFINITY, color: '#111111' },
+    { from: 100, color: '#222222' },
+    { from: 120, color: '#333333' },
+    { from: 140, color: '#444444' },
+  ]
+  // Plot area 100..300 px; values 80..180 map to pixels 300..100 (higher value higher up).
+  const area = { top: 100, bottom: 300 }
+  const upright = {
+    min: 80,
+    max: 180,
+    getPixelForValue: (value: number) => 300 - (value - 80) * 2,
+  }
+  const inverted = {
+    min: 80,
+    max: 180,
+    getPixelForValue: (value: number) => 100 + (value - 80) * 2,
+  }
+
+  it('puts a hard colour edge at every band limit, from the top edge down', () => {
+    // 2 px per unit over 200 px: 180..140 -> 0..0.4, 140..120 -> 0.4..0.6, 120..100 -> 0.6..0.8,
+    // below 100 -> 0.8..1.
+    const stops = bandGradientStops(BANDS, area, upright, null)
+
+    expect(stops.map((s) => s.color)).toEqual([
+      '#444444',
+      '#444444',
+      '#333333',
+      '#333333',
+      '#222222',
+      '#222222',
+      '#111111',
+      '#111111',
+    ])
+    expect(stops.map((s) => s.offset)).toEqual([0, 0.4, 0.4, 0.6, 0.6, 0.8, 0.8, 1])
+  })
+
+  it('follows an inverted axis, where the lowest band is at the top', () => {
+    const stops = bandGradientStops(BANDS, area, inverted, null)
+
+    expect(stops.map((s) => s.color)).toEqual([
+      '#111111',
+      '#111111',
+      '#222222',
+      '#222222',
+      '#333333',
+      '#333333',
+      '#444444',
+      '#444444',
+    ])
+    expect(stops.map((s) => s.offset)).toEqual([0, 0.2, 0.2, 0.4, 0.4, 0.6, 0.6, 1])
+  })
+
+  it('leaves out bands outside the visible range and cuts the ones that stick out', () => {
+    // Only 110..130 is visible: the lowest and the highest band are out of view.
+    const narrow = {
+      min: 110,
+      max: 130,
+      getPixelForValue: (value: number) => 300 - (value - 110) * 10,
+    }
+    const stops = bandGradientStops(BANDS, area, narrow, null)
+
+    expect(stops.map((s) => s.color)).toEqual(['#333333', '#333333', '#222222', '#222222'])
+    expect(stops.map((s) => s.offset)).toEqual([0, 0.5, 0.5, 1])
+  })
+
+  it('applies an opacity to the colours, and returns nothing for an empty plot area', () => {
+    const stops = bandGradientStops([{ from: 0, color: '#ff0000' }], area, upright, 0.15)
+
+    expect(stops.map((s) => s.color)).toEqual(['rgba(255, 0, 0, 0.15)', 'rgba(255, 0, 0, 0.15)'])
+    expect(bandGradientStops(BANDS, { top: 50, bottom: 50 }, upright, null)).toEqual([])
+  })
+
+  /** A chart stub that records the gradient the provider builds. */
+  function fakeChart(chartArea: { top: number; bottom: number } | undefined) {
+    const added: { offset: number; color: string }[] = []
+    const gradientArgs: number[][] = []
+    const gradient = {
+      addColorStop: (offset: number, color: string) => added.push({ offset, color }),
+    }
+    const chart = {
+      chartArea,
+      scales: { y: upright },
+      ctx: {
+        createLinearGradient: (...args: number[]) => {
+          gradientArgs.push(args)
+          return gradient
+        },
+      },
+    }
+    return { chart, added, gradientArgs }
+  }
+  const banded = () =>
+    buildChartConfiguration({
+      kind: 'line',
+      labels: ['a'],
+      series: [{ label: 'HR', data: [120], color: '#e24b4a', bands: BANDS }],
+    }).data.datasets[0] as unknown as Record<string, unknown>
+
+  it('paints the line opaque and the area translucent from the bands', () => {
+    const dataset = banded()
+    const line = fakeChart(area)
+    const fill = fakeChart(area)
+
+    const border = (dataset.borderColor as (ctx: unknown) => unknown)({ chart: line.chart })
+    const background = (dataset.backgroundColor as (ctx: unknown) => unknown)({ chart: fill.chart })
+
+    expect(border).toBeDefined()
+    expect(background).toBeDefined()
+    // A vertical gradient over the plot area.
+    expect(line.gradientArgs).toEqual([[0, 100, 0, 300]])
+    expect(line.added[0]).toEqual({ offset: 0, color: '#444444' })
+    expect(line.added).toHaveLength(8)
+    expect(fill.added[0]).toEqual({ offset: 0, color: 'rgba(68, 68, 68, 0.15)' })
+  })
+
+  it('falls back to the series colour before the chart has a plot area', () => {
+    const dataset = banded()
+    const { chart } = fakeChart(undefined)
+
+    expect((dataset.borderColor as (ctx: unknown) => unknown)({ chart })).toBe('#e24b4a')
+    expect((dataset.backgroundColor as (ctx: unknown) => unknown)({ chart })).toBe(
+      'rgba(226, 75, 74, 0.15)',
+    )
+  })
+
+  it('keeps series without bands, and bar charts, as plain colours', () => {
+    const plain = buildChartConfiguration({
+      kind: 'line',
+      series: [{ label: 'HR', data: [1], color: '#e24b4a' }],
+    }).data.datasets[0] as unknown as Record<string, unknown>
+    const bar = buildChartConfiguration({
+      kind: 'bar',
+      series: [{ label: 'HR', data: [1], color: '#e24b4a', bands: BANDS }],
+    }).data.datasets[0] as unknown as Record<string, unknown>
+
+    expect(plain.borderColor).toBe('#e24b4a')
+    expect(plain.backgroundColor).toBe('rgba(226, 75, 74, 0.15)')
+    expect(bar.borderColor).toBe('#e24b4a')
+    expect(bar.backgroundColor).toBe('#e24b4a')
   })
 })

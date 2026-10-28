@@ -13,6 +13,17 @@ import { createProviderSeam } from '@/composables/createProviderSeam'
 /** Supported chart geometries. */
 export type ChartKind = 'line' | 'area' | 'bar'
 
+/**
+ * One colour band of a series coloured by value: values from `from` up to the next band's `from`
+ * (or without upper limit for the last band) are drawn in `color`.
+ */
+export interface ChartBand {
+  /** Lower bound of the band, inclusive; use `-Infinity` for the lowest band. */
+  from: number
+  /** Colour of the band (6-digit hex). */
+  color: string
+}
+
 /** A single named data series. */
 export interface ChartSeries {
   /** Series label shown in legends/tooltips. */
@@ -34,6 +45,12 @@ export interface ChartSeries {
   backdrop?: boolean
   /** Formats this series' values in the tooltip; defaults to {@link ChartRenderOptions.valueFormat}. */
   format?: (value: number) => string
+  /**
+   * Colours the line and the area under it by value (heart rate in its zones), changing colour at
+   * each band's limit even in the middle of a line segment. Bands are in ascending order. Providers
+   * without support draw the series in {@link ChartSeries.color}.
+   */
+  bands?: readonly ChartBand[]
 }
 
 /** Options controlling a single chart render. */
