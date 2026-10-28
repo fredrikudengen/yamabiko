@@ -98,7 +98,22 @@
   },
   "hrZones": {
     "title": "Heart rate zones",
-    "zone": "Zone"
+    "zone": "Zone",
+    "basisMoving": "Moving time, long stops left out",
+    "basisRecorded": "Whole recording (no stops recorded for this activity)",
+    "sum": "Total {time}",
+    "editLimits": "Edit limits",
+    "customLimits": "Custom limits",
+    "limitsHint": "Where each zone starts (bpm). Kept on this device.",
+    "zoneStartsAt": "Zone {zone} from",
+    "save": "Save",
+    "reset": "Reset to default",
+    "cancel": "Cancel",
+    "error": {
+      "incomplete": "Enter all four limits as whole numbers.",
+      "range": "Limits must be between 30 and 250 bpm.",
+      "order": "Each limit must be higher than the one before."
+    }
   },
   "laps": {
     "title": "Laps",

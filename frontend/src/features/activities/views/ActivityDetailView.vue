@@ -39,8 +39,13 @@ import {
   isActivityOwner,
   streamMetricVisibility,
 } from '@/features/activities/utils/privacy'
+import { useHrZoneLimits } from '@/features/activities/composables/useHrZoneLimits'
 import { extractHrZones } from '@/features/activities/utils/hrZones'
-import { buildStreamCharts, extractTrackPoints } from '@/features/activities/utils/streams'
+import {
+  buildMovingHrZones,
+  buildStreamCharts,
+  extractTrackPoints,
+} from '@/features/activities/utils/streams'
 
 const route = useRoute()
 const { t } = useI18n()
@@ -137,8 +142,17 @@ const showWorkout = computed(
 const splitsTab = ref('laps')
 
 // HR zones live on the HR stream; gate them by the same HR visibility as the
-// HR chart so a privacy-restricted viewer never sees them.
-const hrZones = computed(() => extractHrZones(streams.value ?? []))
+// HR chart so a privacy-restricted viewer never sees them. The time in each zone is counted from
+// the HR samples with the user's own limits and without the long stops; the server's split (a
+// share of samples at fixed percentages of max HR) is only the fallback when the samples carry no
+// time.
+const { limits: hrZoneLimits } = useHrZoneLimits()
+const movingHrZones = computed(() =>
+  activity.value
+    ? buildMovingHrZones(streams.value ?? [], activity.value, hrZoneLimits.value)
+    : null,
+)
+const hrZones = computed(() => movingHrZones.value?.buckets ?? extractHrZones(streams.value ?? []))
 const showHrZones = computed(
   () =>
     !!activity.value &&
@@ -314,7 +328,14 @@ const notFound = computed(() => !isPending.value && !isError.value && activity.v
               <h3 class="text-card-heading">{{ t('activities.hrZones.title') }}</h3>
             </div>
             <div class="flex flex-1 items-center">
-              <ActivityHrZones :zones="panel.zones" class="w-full" />
+              <ActivityHrZones
+                :zones="panel.zones"
+                :basis="
+                  movingHrZones ? (movingHrZones.stopsKnown ? 'moving' : 'recorded') : undefined
+                "
+                :counted-s="movingHrZones?.countedS"
+                class="w-full"
+              />
             </div>
           </Card>
         </template>

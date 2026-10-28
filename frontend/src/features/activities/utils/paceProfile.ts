@@ -426,6 +426,17 @@ export function paceAxisRange(values: readonly number[]): { min: number; max: nu
 }
 
 /**
+ * Whether the importer looked for long stops at all (the list can then still be empty). Activities
+ * from other sources carry no such record, so for them "no stops" means "not known".
+ *
+ * @param importInfo - The activity's `import_info`.
+ */
+export function hasLongStopInfo(importInfo: Record<string, unknown> | null): boolean {
+  const longStops = importInfo?.long_stops
+  return Array.isArray((longStops as { stops?: unknown } | null | undefined)?.stops)
+}
+
+/**
  * Reads the long stops the Google Health importer stores in `import_info.long_stops.stops`.
  *
  * @param importInfo - The activity's `import_info`.
