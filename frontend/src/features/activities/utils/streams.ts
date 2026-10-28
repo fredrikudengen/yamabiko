@@ -33,7 +33,7 @@ import {
   speedUnitLabel,
   type Units,
 } from './format'
-import { computeZoneSeconds, toZoneBuckets, type HrZoneLimits } from './hrZoneTime'
+import { computeZoneSeconds, toZoneBuckets, zoneBands, type HrZoneLimits } from './hrZoneTime'
 import {
   buildPaceProfile,
   buildValueProfile,
@@ -744,6 +744,8 @@ export function buildMovingHrZones(
  * @param units - The user's unit system.
  * @param isMetricVisible - Predicate deciding whether a metric is visible to
  *   the current viewer (owner vs. privacy flags).
+ * @param hrZoneLimits - The heart-rate zone limits; when given, the heart-rate line is coloured by
+ *   zone.
  * @returns The ordered, visible, type-relevant chart models.
  */
 export function buildStreamCharts(
@@ -751,6 +753,7 @@ export function buildStreamCharts(
   activity: Activity,
   units: Units,
   isMetricVisible: (metric: StreamMetric) => boolean,
+  hrZoneLimits?: HrZoneLimits,
 ): StreamChart[] {
   const type = activity.activityType
   const byMetric = new Map<StreamMetric, StreamChart>()
@@ -786,10 +789,26 @@ export function buildStreamCharts(
       }
     }
   }
+  const heartRate = byMetric.get('hr')
+  if (heartRate && hrZoneLimits) {
+    byMetric.set('hr', withZoneBands(heartRate, hrZoneLimits))
+  }
   return STREAM_METRIC_ORDER.flatMap((metric) => {
     const chart = byMetric.get(metric)
     return chart ? [chart] : []
   })
+}
+
+/** The heart-rate chart with its line and area coloured by zone. */
+function withZoneBands(chart: StreamChart, limits: HrZoneLimits): StreamChart {
+  const [line, ...others] = chart.render.series
+  if (!line) {
+    return chart
+  }
+  return {
+    ...chart,
+    render: { ...chart.render, series: [{ ...line, bands: zoneBands(limits) }, ...others] },
+  }
 }
 
 /**

@@ -51,6 +51,9 @@ const route = useRoute()
 const { t } = useI18n()
 const { data: currentUser } = useCurrentUser()
 const units = useDisplayUnits()
+// The zone limits colour the heart-rate chart as well as the zone card, so changing them in the card
+// recolours the chart at once.
+const { limits: hrZoneLimits } = useHrZoneLimits()
 
 const activityId = computed(() => {
   const raw = Number(route.params.id)
@@ -110,6 +113,7 @@ const streamCharts = computed(() => {
     activity.value,
     units.value,
     streamMetricVisibility(activity.value, currentUserId.value),
+    hrZoneLimits.value,
   )
 })
 
@@ -146,7 +150,6 @@ const splitsTab = ref('laps')
 // the HR samples with the user's own limits and without the long stops; the server's split (a
 // share of samples at fixed percentages of max HR) is only the fallback when the samples carry no
 // time.
-const { limits: hrZoneLimits } = useHrZoneLimits()
 const movingHrZones = computed(() =>
   activity.value
     ? buildMovingHrZones(streams.value ?? [], activity.value, hrZoneLimits.value)

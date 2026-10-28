@@ -2,6 +2,8 @@ import { describe, expect, it } from 'vitest'
 
 import type { ActivityStream } from '@/features/activities/types'
 
+import { DEFAULT_HR_ZONE_LIMITS } from '@/features/activities/utils/hrZoneTime'
+import { hrZoneColor } from '@/features/activities/utils/hrZones'
 import {
   buildStreamChart,
   buildStreamCharts,
@@ -160,6 +162,53 @@ describe('buildStreamCharts', () => {
       () => true,
     )
     expect(charts.map((chart) => chart.metric)).toEqual(['velocity'])
+  })
+})
+
+describe('buildStreamCharts heart-rate zone colours', () => {
+  const streams = [stream(1, [{ hr: 120 }, { hr: 130 }]), stream(4, [{ ele: 10 }, { ele: 20 }])]
+  const activity = makeActivity({ activityType: 1, distance: 10000 })
+
+  it('colours the heart-rate line by zone with the given limits, and nothing else', () => {
+    const charts = buildStreamCharts(streams, activity, 'metric', () => true, [100, 120, 140, 160])
+    const hr = charts.find((c) => c.metric === 'hr')!
+    const elevation = charts.find((c) => c.metric === 'elevation')!
+
+    expect(hr.render.series[0]!.bands).toEqual([
+      { from: Number.NEGATIVE_INFINITY, color: hrZoneColor(1) },
+      { from: 100, color: hrZoneColor(2) },
+      { from: 120, color: hrZoneColor(3) },
+      { from: 140, color: hrZoneColor(4) },
+      { from: 160, color: hrZoneColor(5) },
+    ])
+    expect(elevation.render.series[0]!.bands).toBeUndefined()
+  })
+
+  it('leaves the chart plain without limits, and follows the limits it is given', () => {
+    const plain = buildStreamCharts(streams, activity, 'metric', () => true)
+    const google = buildStreamCharts(
+      streams,
+      activity,
+      'metric',
+      () => true,
+      DEFAULT_HR_ZONE_LIMITS,
+    )
+
+    expect(plain.find((c) => c.metric === 'hr')!.render.series[0]!.bands).toBeUndefined()
+    expect(
+      google.find((c) => c.metric === 'hr')!.render.series[0]!.bands!.map((b) => b.from),
+    ).toEqual([Number.NEGATIVE_INFINITY, 103, 113, 126, 154])
+  })
+
+  it('does not add bands when the heart-rate chart is hidden', () => {
+    const charts = buildStreamCharts(
+      streams,
+      activity,
+      'metric',
+      (metric) => metric !== 'hr',
+      DEFAULT_HR_ZONE_LIMITS,
+    )
+    expect(charts.some((c) => c.metric === 'hr')).toBe(false)
   })
 })
 
