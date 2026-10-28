@@ -63,16 +63,6 @@ RUN mkdir -p /app && chown -R ${APP_USER}:${APP_USER} /app
 # Define environment variables
 ENV BEHIND_PROXY=false
 
-# --- Frontend ---
-WORKDIR /app/frontend
-
-COPY --from=frontend-build --chown=${UID}:${GID} /tmp/frontend/dist ./dist
-
-# env.js is created world-writable (666) so the file can be overwritten at
-# runtime even when docker-compose overrides the container user via `user:`
-# to a UID different from the one baked in at build time (ARG UID).
-RUN touch /app/frontend/dist/env.js && chmod 666 /app/frontend/dist/env.js /app/frontend/dist/index.html
-
 # --- Backend ---
 WORKDIR /app/backend
 
@@ -91,6 +81,16 @@ COPY --chown=${UID}:${GID} docker/start.sh /docker-entrypoint.d/start.sh
 # is checked out with CRLF on Windows hosts.
 RUN sed -i 's/\r$//' /docker-entrypoint.d/start.sh \
  && chmod +x /docker-entrypoint.d/start.sh
+
+# --- Frontend ---
+# Last on purpose: the frontend changes most often, and everything above (notably
+# the slow pip install) stays cached when only the frontend changed.
+COPY --from=frontend-build --chown=${UID}:${GID} /tmp/frontend/dist /app/frontend/dist
+
+# env.js is created world-writable (666) so the file can be overwritten at
+# runtime even when docker-compose overrides the container user via `user:`
+# to a UID different from the one baked in at build time (ARG UID).
+RUN touch /app/frontend/dist/env.js && chmod 666 /app/frontend/dist/env.js /app/frontend/dist/index.html
 
 # Make port 8080 available to the world outside this container
 EXPOSE 8080
