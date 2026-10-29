@@ -337,6 +337,7 @@ const notFound = computed(() => !isPending.value && !isError.value && activity.v
                   movingHrZones ? (movingHrZones.stopsKnown ? 'moving' : 'recorded') : undefined
                 "
                 :counted-s="movingHrZones?.countedS"
+                :gap-s="movingHrZones?.gapS"
                 class="w-full"
               />
             </div>

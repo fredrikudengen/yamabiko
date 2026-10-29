@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { useHrZoneLimits } from '@/features/activities/composables/useHrZoneLimits'
 import { formatHmsDuration } from '@/features/activities/utils/format'
-import { parseZoneLimitInputs } from '@/features/activities/utils/hrZoneTime'
+import { MIN_SHOWN_GAP_S, parseZoneLimitInputs } from '@/features/activities/utils/hrZoneTime'
 import { hrZoneColor } from '@/features/activities/utils/hrZones'
 
 const props = defineProps<{
@@ -22,12 +22,15 @@ const props = defineProps<{
   basis?: 'moving' | 'recorded'
   /** Seconds counted, shown as the sum under the bars. */
   countedS?: number
+  /** Seconds without heart-rate data; shown only when it is more than a few seconds. */
+  gapS?: number
 }>()
 
 const { t } = useI18n()
 const { limits, isDefault, setLimits, resetLimits } = useHrZoneLimits()
 
 const editable = computed(() => props.basis !== undefined)
+const showGap = computed(() => (props.gapS ?? 0) >= MIN_SHOWN_GAP_S)
 const editing = ref(false)
 const fields = ref<string[]>([])
 const error = ref<'incomplete' | 'range' | 'order' | null>(null)
@@ -106,6 +109,11 @@ function reset(): void {
         <template v-if="countedS">
           · {{ t('activities.hrZones.sum', { time: formatHmsDuration(countedS) }) }}
         </template>
+      </p>
+      <p v-if="showGap" class="text-caption">
+        {{
+          t('activities.hrZones.noHeartRate', { time: formatHmsDuration(Math.round(gapS ?? 0)) })
+        }}
       </p>
 
       <div v-if="!editing" class="flex items-center gap-2">

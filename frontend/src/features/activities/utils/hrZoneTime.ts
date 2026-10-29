@@ -127,9 +127,25 @@ export interface ZoneSeconds {
   countedS: number
   /** Seconds inside known stops that were left out. */
   stoppedS: number
-  /** Seconds between two samples too far apart to say anything about (the sensor dropped out). */
+  /**
+   * Seconds without heart-rate data that are not inside a known stop: steps between two samples
+   * too far apart to say anything about (the sensor dropped out), and, when a recording span is
+   * given, the time before the first and after the last sample.
+   */
   gapS: number
 }
+
+/** The stretch of the recording the heart rate should cover, relative to the samples' origin. */
+export interface RecordingSpan {
+  startS: number
+  endS: number
+}
+
+/**
+ * A gap shorter than this is not worth showing: the last sample has no successor, so even a
+ * complete recording ends about a second short.
+ */
+export const MIN_SHOWN_GAP_S = 5
 
 /** Sorts stops by start and merges the ones that overlap, so no second is counted twice. */
 function mergeStops(stops: readonly StopWindow[]): [number, number][] {
@@ -171,6 +187,9 @@ function overlapWithStops(from: number, to: number, stops: readonly [number, num
  * @param limits - The zone limits.
  * @param stops - Long stops to leave out, relative to the same origin as the samples.
  * @param maxStepS - Longest step between two samples that still counts.
+ * @param span - The stretch of the recording the heart rate should cover. When given, the time
+ *   before the first sample and after the last one (outside known stops) is reported as a gap too.
+ *   Without it only the steps between samples can be found missing.
  * @returns The seconds per zone and how much was left out.
  */
 export function computeZoneSeconds(
@@ -178,6 +197,7 @@ export function computeZoneSeconds(
   limits: HrZoneLimits,
   stops: readonly StopWindow[] = [],
   maxStepS: number = GPS_GAP_S,
+  span?: RecordingSpan,
 ): ZoneSeconds {
   const ordered = samples
     .filter((s) => Number.isFinite(s.t) && Number.isFinite(s.value))
@@ -201,6 +221,17 @@ export function computeZoneSeconds(
       continue
     }
     seconds[zoneOf(from.value, limits) - 1]! += step - inStop
+  }
+
+  const firstSample = ordered[0]
+  const lastSample = ordered[ordered.length - 1]
+  if (span && firstSample && lastSample) {
+    if (firstSample.t > span.startS) {
+      gapS += firstSample.t - span.startS - overlapWithStops(span.startS, firstSample.t, windows)
+    }
+    if (span.endS > lastSample.t) {
+      gapS += span.endS - lastSample.t - overlapWithStops(lastSample.t, span.endS, windows)
+    }
   }
 
   const countedS = seconds.reduce((sum, s) => sum + s, 0)

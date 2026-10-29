@@ -102,6 +102,7 @@
     "basisMoving": "Bevegelsestid, lange stopp utelatt",
     "basisRecorded": "Hele opptaket (ingen stopp registrert for denne aktiviteten)",
     "sum": "Sum {time}",
+    "noHeartRate": "Uten pulsdata: {time}",
     "editLimits": "Endre grenser",
     "customLimits": "Egne grenser",
     "limitsHint": "Hvor hver sone starter (slag/min). Lagres på denne enheten.",

@@ -15,7 +15,9 @@ const BUCKETS: HrZoneBucket[] = toZoneBuckets(
   DEFAULT_HR_ZONE_LIMITS,
 )
 
-function mountCard(props: { basis?: 'moving' | 'recorded'; countedS?: number } = {}) {
+function mountCard(
+  props: { basis?: 'moving' | 'recorded'; countedS?: number; gapS?: number } = {},
+) {
   return mount(ActivityHrZones, {
     props: { zones: BUCKETS, ...props },
     global: { plugins: [i18n] },
@@ -41,6 +43,30 @@ describe('ActivityHrZones with computed zones', () => {
     expect(text).toContain('≥ 154')
     expect(text).toContain('Moving time, long stops left out')
     expect(text).toContain('Total 1:36:00')
+  })
+
+  it('shows the time without heart-rate data when it is more than a few seconds', () => {
+    const text = mountCard({ basis: 'moving', countedS: 5760, gapS: 266 }).text()
+    expect(text).toContain('Without heart-rate data: 04:26')
+  })
+
+  it('rounds the seconds without heart-rate data to the nearest, like the zone times', () => {
+    expect(mountCard({ basis: 'moving', countedS: 5760, gapS: 266.4 }).text()).toContain(
+      'Without heart-rate data: 04:26',
+    )
+    expect(mountCard({ basis: 'moving', countedS: 5760, gapS: 266.6 }).text()).toContain(
+      'Without heart-rate data: 04:27',
+    )
+  })
+
+  it('leaves the line out when there is no gap or only about a second of it', () => {
+    for (const gapS of [undefined, 0, 1, 4.9]) {
+      const text = mountCard({ basis: 'moving', countedS: 5760, gapS }).text()
+      expect(text).not.toContain('Without heart-rate data')
+    }
+    expect(mountCard({ basis: 'moving', countedS: 5760, gapS: 5 }).text()).toContain(
+      'Without heart-rate data: 00:05',
+    )
   })
 
   it('says it is the whole recording when no stops are recorded', () => {
@@ -96,6 +122,10 @@ describe('ActivityHrZones with the server zones', () => {
     expect(text).not.toContain('Moving time')
     expect(text).not.toContain('1:00:00')
     expect(text).toContain('63%')
+  })
+
+  it('does not show the gap line either, since the server split has no time', () => {
+    expect(mountCard({ gapS: 266 }).text()).not.toContain('Without heart-rate data')
   })
 })
 
