@@ -22,6 +22,7 @@ import auth.sessions.router as auth_sessions_router
 import auth.sign_up_tokens.router as sign_up_tokens_router
 import core.config as core_config
 import core.router as core_router
+import coverage_map.router as coverage_map_router
 import followers.router as followers_router
 import garmin.router as garmin_router
 import gears.gear.router as gears_router
@@ -264,6 +265,11 @@ router.include_router(
     segments_router.router,
     prefix=core_config.ROOT_PATH + "/segments",
     tags=["segments"],
+)
+router.include_router(
+    coverage_map_router.router,
+    prefix=core_config.ROOT_PATH + "/coverage",
+    tags=["coverage"],
 )
 router.include_router(
     strava_router.router,

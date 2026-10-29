@@ -19,5 +19,6 @@
   "updateAvailable": "Oppdatering tilgjengelig",
   "updateAvailableTitle": "Versjon {version} er tilgjengelig",
   "updateViewRelease": "Vis utgivelsesnotater",
-  "segments": "Segmenter"
+  "segments": "Segmenter",
+  "coverage": "Kart"
 }
