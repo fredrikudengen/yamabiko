@@ -248,9 +248,12 @@ function buildTrack(points: readonly TimedPoint[], options: PaceProfileOptions):
 export interface ValueBin {
   startM: number
   endM: number
-  /** Mean of the samples in the bin, or `null` where there is none (or the bin holds a known stop). */
+  /**
+   * Mean of the samples in the bin, or `null` where there is none. A bin that holds a known stop is
+   * also `null`, except for a value that stays known while standing still (height, `fill`).
+   */
   value: number | null
-  /** The bin where a known stop happened: left empty so the chart breaks there. */
+  /** The bin where a known stop happened. */
   stop: boolean
 }
 
@@ -266,13 +269,16 @@ export interface ValueProfile {
  * so it lines up with the pace profile above it. A sample is placed by the distance at its time,
  * interpolated between GPS fixes, so a stretch where the GPS dropped out is still placed (on the
  * straight line across it). Samples before the first or after the last fix are dropped. The bin where a
- * known stop happened is left empty, with the samples taken during the stop, so the line breaks there.
+ * known stop happened is left empty, with the samples taken during the stop, so the line breaks there;
+ * with `fill` it keeps its value instead.
  *
  * @param points - GPS fixes in time order.
  * @param samples - The values and their times, seconds since the first fix.
  * @param options - Known stops and the activity's distance (as for the pace profile).
- * @param fill - Interpolate bins without samples from their neighbours (height), instead of leaving
- *   them empty (heart rate: no samples means no measurement).
+ * @param fill - For a value that is still known while standing still (height): interpolate bins
+ *   without samples from their neighbours, and keep the value in the bin of a known stop. Without it
+ *   (heart rate: no samples means no measurement, and the resting rate would drag the bin down) both are
+ *   left empty.
  * @returns The profile, or `null` when the track is too short to bin.
  */
 export function buildValueProfile(
@@ -309,7 +315,7 @@ export function buildValueProfile(
   const bins: ValueBin[] = values.map((value, i) => ({
     startM: i * binSizeM,
     endM: Math.min((i + 1) * binSizeM, totalM),
-    value: stopBins.has(i) ? null : value,
+    value: stopBins.has(i) && !fill ? null : value,
     stop: stopBins.has(i),
   }))
   return { binSizeM, totalM, bins }
