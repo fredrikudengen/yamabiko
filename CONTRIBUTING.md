@@ -1,10 +1,10 @@
-# Contributing to Endurain
+# Contributing to Yamabiko
  
-Thank you for considering contributing to Endurain! Before diving in, please read these guidelines carefully. They exist to make the process sustainable for everyone.
+Thank you for considering contributing to Yamabiko, a fork of [Endurain](https://github.com/endurain-project/endurain)! Before diving in, please read these guidelines carefully. They exist to make the process sustainable for everyone.
 
 ## A Note on Maintainership
  
-Endurain is maintained by a single person in their spare time. This means review bandwidth is genuinely limited. Following these guidelines isn't bureaucracy, it's what allows contributions to actually get merged rather than sitting in a queue indefinitely.
+Yamabiko is maintained by a single person in their spare time. This means review bandwidth is genuinely limited. Following these guidelines isn't bureaucracy, it's what allows contributions to actually get merged rather than sitting in a queue indefinitely.
 
 ## Before You Write Any Code
  
@@ -48,14 +48,14 @@ PRs that are too large to review efficiently will be asked to be split before th
 
 ### Translations
 
-- Endurain uses [Codeberg Translate](https://translate.codeberg.org/projects/endurain/) for i18n
-- Please contribute translations there rather than via PRs to the repo
+- English and Norwegian Bokmål (`nb`) are kept complete. The other locales come from Endurain and may be missing newer keys
+- Translations for Endurain's own text are best contributed to [Endurain's Codeberg Translate project](https://translate.codeberg.org/projects/endurain/); changes to Yamabiko-specific text are welcome as PRs
 
 ### New Features
 
 - **Always discuss in an issue first** — this is required, not optional
 - Features that haven't been discussed and approved in an issue may be closed without review, regardless of quality
-- Check the [ROADMAP.md](https://github.com/endurain-project/endurain/blob/master/ROADMAP.md) before proposing something that may already be planned
+- Check the [ROADMAP.md](ROADMAP.md) before proposing something that may already be planned
 
 ### Refactors and Code Quality
 
@@ -69,7 +69,7 @@ PRs that are too large to review efficiently will be asked to be split before th
 1. **Fork the repository** on GitHub
 2. **Clone your fork** locally:
    ```bash
-   git clone https://github.com/YOUR_USERNAME/endurain.git
+   git clone https://github.com/YOUR_USERNAME/yamabiko.git
    ```
 3. **Create a branch** and use a descriptive name:
    ```bash
@@ -110,4 +110,4 @@ Reviews may take days to weeks depending on availability. A PR sitting without a
 
 ## Thank You
  
-Even small contributions make a real difference. Thank you for taking the time to improve Endurain for everyone who self-hosts it.
+Even small contributions make a real difference. Thank you for taking the time to improve Yamabiko for everyone who self-hosts it.
