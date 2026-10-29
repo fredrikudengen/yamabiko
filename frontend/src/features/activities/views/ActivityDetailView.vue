@@ -13,9 +13,10 @@ import { ErrorState } from '@/components/ui/error-state'
 import { Skeleton } from '@/components/ui/skeleton'
 import { useCurrentUser } from '@/features/auth/composables/useCurrentUser'
 import ActivityDetailHeader from '@/features/activities/components/ActivityDetailHeader.vue'
-import ActivityGallery from '@/features/activities/components/ActivityGallery.vue'
 import ActivityHrZones from '@/features/activities/components/ActivityHrZones.vue'
 import ActivitySegments from '@/features/segments/components/ActivitySegments.vue'
+import ActivityMap from '@/features/activities/components/ActivityMap.vue'
+import ActivityMediaCard from '@/features/activities/components/ActivityMediaCard.vue'
 import ActivityMetricsGrid from '@/features/activities/components/ActivityMetricsGrid.vue'
 import ActivityPrivacyAlerts from '@/features/activities/components/ActivityPrivacyAlerts.vue'
 import ActivityStreamChart from '@/features/activities/components/ActivityStreamChart.vue'
@@ -208,7 +209,7 @@ const notFound = computed(() => !isPending.value && !isError.value && activity.v
         </div>
       </Card>
 
-      <!-- Map zone: matches the gallery's height. -->
+      <!-- Map zone: matches the map card's height. -->
       <Skeleton class="h-72 w-full rounded-card lg:h-150" />
 
       <!-- Charts grid: two-column stream-chart placeholders. -->
@@ -283,11 +284,12 @@ const notFound = computed(() => !isPending.value && !isError.value && activity.v
 
       <ActivityPrivacyAlerts :activity="activity" :current-user-id="currentUserId" />
 
-      <ActivityGallery
-        :points="showMap ? trackPoints : []"
-        :activity-id="activity.id"
-        :is-owner="isOwner"
-      />
+      <!-- The map and the photos are separate cards: the photos used to be slides after the map. -->
+      <div v-if="showMap" class="h-72 overflow-hidden rounded-card border border-border lg:h-150">
+        <ActivityMap :points="trackPoints" />
+      </div>
+
+      <ActivityMediaCard :activity-id="activity.id" :is-owner="isOwner" />
 
       <ActivitySegments v-if="isOwner" :activity-id="activity.id" />
 
