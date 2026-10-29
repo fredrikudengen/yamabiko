@@ -99,18 +99,6 @@
     "title": "Zóny tepové frekvence",
     "zone": "Zóna"
   },
-  "laps": {
-    "title": "Okruhy",
-    "lap": "Okruh",
-    "intensity": "Intenzita",
-    "distance": "Vzdálenost",
-    "time": "Čas",
-    "tempo": "Tempo / Rychlost",
-    "elevation": "Převýšení",
-    "strokeRate": "Frekvence záběrů",
-    "cycles": "Cykly",
-    "hr": "Tepová frekvence"
-  },
   "workout": {
     "title": "Trénink",
     "stepsTitle": "Kroky",
@@ -122,28 +110,6 @@
     "exercise": "Cvik",
     "stroke": "Záběr",
     "weight": "Hmotnost"
-  },
-  "gear": {
-    "title": "Vybavení",
-    "notSet": "Není přiřazeno žádné vybavení",
-    "loading": "Načítání…",
-    "add": "Přidat vybavení",
-    "change": "Změnit vybavení",
-    "remove": "Odebrat vybavení",
-    "addTitle": "Přidat vybavení",
-    "changeTitle": "Změnit vybavení",
-    "selectLabel": "Vybavení",
-    "selectPlaceholder": "Vyberte vybavení",
-    "noGears": "Nebylo nalezeno žádné kompatibilní vybavení. Nejprve přidejte vybavení na stránce vybavení.",
-    "save": "Uložit",
-    "cancel": "Zrušit",
-    "close": "Zavřít",
-    "saveSuccess": "Vybavení aktualizováno",
-    "saveError": "Nepodařilo se aktualizovat vybavení",
-    "removeTitle": "Odebrat vybavení",
-    "removeBody": "Odebrat vybavení přiřazené k této aktivitě?",
-    "removeSuccess": "Vybavení odebráno",
-    "removeError": "Nepodařilo se odebrat vybavení"
   },
   "actions": {
     "menu": "Akce aktivity",
@@ -200,9 +166,7 @@
     "hideElevation": "Skrýt převýšení",
     "hideSpeed": "Skrýt rychlost",
     "hidePace": "Skrýt tempo",
-    "hideLaps": "Skrýt okruhy",
     "hideWorkoutSetsSteps": "Skrýt série a kroky tréninku",
-    "hideGear": "Skrýt vybavení",
     "success": "Aktivita aktualizována",
     "error": "Nepodařilo se aktualizovat aktivitu"
   },

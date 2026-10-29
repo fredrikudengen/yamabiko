@@ -99,18 +99,6 @@
     "title": "Zones de freqüència cardíaca",
     "zone": "Zona"
   },
-  "laps": {
-    "title": "Voltes",
-    "lap": "Volta",
-    "intensity": "Intensitat",
-    "distance": "Distància",
-    "time": "Temps",
-    "tempo": "Ritme / Velocitat",
-    "elevation": "Elevació",
-    "strokeRate": "Freqüència de braçada",
-    "cycles": "Cicles",
-    "hr": "Freqüència cardíaca"
-  },
   "workout": {
     "title": "Entrenament",
     "stepsTitle": "Passos",
@@ -122,28 +110,6 @@
     "exercise": "Exercici",
     "stroke": "Braçada",
     "weight": "Pes"
-  },
-  "gear": {
-    "title": "Equipament",
-    "notSet": "Sense equipament assignat",
-    "loading": "Carregant…",
-    "add": "Afegeix equipament",
-    "change": "Canvia l'equipament",
-    "remove": "Elimina l'equipament",
-    "addTitle": "Afegeix equipament",
-    "changeTitle": "Canvia l'equipament",
-    "selectLabel": "Equipament",
-    "selectPlaceholder": "Selecciona un equipament",
-    "noGears": "No s'ha trobat equipament compatible. Afegeix equipament des de la pàgina d'equipament.",
-    "save": "Desa",
-    "cancel": "Cancel·la",
-    "close": "Tanca",
-    "saveSuccess": "Equipament actualitzat",
-    "saveError": "No s'ha pogut actualitzar l'equipament",
-    "removeTitle": "Elimina l'equipament",
-    "removeBody": "Eliminar l'equipament associat a aquesta activitat?",
-    "removeSuccess": "Equipament eliminat",
-    "removeError": "No s'ha pogut eliminar l'equipament"
   },
   "actions": {
     "menu": "Accions de l'activitat",
@@ -200,9 +166,7 @@
     "hideElevation": "Amaga l'elevació",
     "hideSpeed": "Amaga la velocitat",
     "hidePace": "Amaga el ritme",
-    "hideLaps": "Amaga les voltes",
     "hideWorkoutSetsSteps": "Amaga les sèries i passos de l'entrenament",
-    "hideGear": "Amaga l'equipament",
     "success": "Activitat actualitzada",
     "error": "No s'ha pogut actualitzar l'activitat"
   },

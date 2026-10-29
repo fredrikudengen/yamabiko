@@ -99,18 +99,6 @@
     "title": "Zone de puls",
     "zone": "Zonă"
   },
-  "laps": {
-    "title": "Ture",
-    "lap": "Tură",
-    "intensity": "Intensitate",
-    "distance": "Distanță",
-    "time": "Timp",
-    "tempo": "Ritm / Viteză",
-    "elevation": "Diferență de nivel",
-    "strokeRate": "Frecvența brațelor",
-    "cycles": "Cicluri",
-    "hr": "Puls"
-  },
   "workout": {
     "title": "Antrenament",
     "stepsTitle": "Pași",
@@ -122,28 +110,6 @@
     "exercise": "Exercițiu",
     "stroke": "Procedeu",
     "weight": "Greutate"
-  },
-  "gear": {
-    "title": "Echipament",
-    "notSet": "Niciun echipament atribuit",
-    "loading": "Se încarcă…",
-    "add": "Adaugă echipament",
-    "change": "Schimbă echipamentul",
-    "remove": "Elimină echipamentul",
-    "addTitle": "Adaugă echipament",
-    "changeTitle": "Schimbă echipamentul",
-    "selectLabel": "Echipament",
-    "selectPlaceholder": "Selectează un echipament",
-    "noGears": "Niciun echipament compatibil găsit. Adaugă mai întâi echipament din pagina de echipament.",
-    "save": "Salvează",
-    "cancel": "Anulează",
-    "close": "Închide",
-    "saveSuccess": "Echipament actualizat",
-    "saveError": "Nu am putut actualiza echipamentul",
-    "removeTitle": "Elimină echipamentul",
-    "removeBody": "Elimini echipamentul asociat acestei activități?",
-    "removeSuccess": "Echipament eliminat",
-    "removeError": "Nu am putut elimina echipamentul"
   },
   "actions": {
     "menu": "Acțiuni pentru activitate",
@@ -200,9 +166,7 @@
     "hideElevation": "Ascunde altitudinea",
     "hideSpeed": "Ascunde viteza",
     "hidePace": "Ascunde ritmul",
-    "hideLaps": "Ascunde turele",
     "hideWorkoutSetsSteps": "Ascunde seturile și pașii antrenamentului",
-    "hideGear": "Ascunde echipamentul",
     "success": "Activitate actualizată",
     "error": "Nu am putut actualiza activitatea"
   },

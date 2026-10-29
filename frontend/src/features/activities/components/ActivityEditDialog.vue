@@ -85,9 +85,7 @@ const privacyFields = [
   { key: 'hideElevation', labelKey: 'activities.edit.hideElevation' },
   { key: 'hideSpeed', labelKey: 'activities.edit.hideSpeed' },
   { key: 'hidePace', labelKey: 'activities.edit.hidePace' },
-  { key: 'hideLaps', labelKey: 'activities.edit.hideLaps' },
   { key: 'hideWorkoutSetsSteps', labelKey: 'activities.edit.hideWorkoutSetsSteps' },
-  { key: 'hideGear', labelKey: 'activities.edit.hideGear' },
 ] as const
 
 const canSubmit = computed(() => form.name.trim().length > 0)

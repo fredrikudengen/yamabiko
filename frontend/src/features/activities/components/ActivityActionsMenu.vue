@@ -2,7 +2,7 @@
 import { ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
-import { EllipsisVertical, ImagePlus, Pencil, Trash2 } from '@lucide/vue'
+import { EllipsisVertical, Pencil, Trash2 } from '@lucide/vue'
 
 import type { Activity } from '@/features/activities/types'
 
@@ -15,10 +15,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { useToasts } from '@/composables/useToasts'
-import {
-  useDeleteActivityMutation,
-  useUploadActivityMediaMutation,
-} from '@/features/activities/composables/useActivityDetail'
+import { useDeleteActivityMutation } from '@/features/activities/composables/useActivityDetail'
 import ActivityEditDialog from '@/features/activities/components/ActivityEditDialog.vue'
 
 const props = defineProps<{
@@ -31,35 +28,8 @@ const router = useRouter()
 const toasts = useToasts()
 
 const deleteMutation = useDeleteActivityMutation()
-const uploadMutation = useUploadActivityMediaMutation(() => props.activity.id)
 const isDeleteOpen = ref(false)
 const isEditOpen = ref(false)
-const fileInput = ref<HTMLInputElement | null>(null)
-
-/** Opens the native file picker for the Add photo action. */
-function openFilePicker(): void {
-  fileInput.value?.click()
-}
-
-/** Uploads the chosen image, resetting the input so the same file re-selects. */
-async function onFileSelected(event: Event): Promise<void> {
-  const input = event.target as HTMLInputElement
-  const file = input.files?.[0] ?? null
-  input.value = ''
-  if (!file) {
-    return
-  }
-  if (!file.type.startsWith('image/')) {
-    toasts.error(t('activities.media.invalidType'))
-    return
-  }
-  try {
-    await uploadMutation.mutateAsync(file)
-    toasts.success(t('activities.media.uploadSuccess'))
-  } catch {
-    toasts.error(t('activities.media.uploadError'))
-  }
-}
 
 /** Deletes the activity, then returns to the home feed. */
 async function confirmDelete(): Promise<void> {
@@ -83,10 +53,6 @@ async function confirmDelete(): Promise<void> {
       <EllipsisVertical class="size-5" />
     </DropdownMenuTrigger>
     <DropdownMenuContent align="end">
-      <DropdownMenuItem @select="openFilePicker">
-        <ImagePlus class="size-4" />
-        <span>{{ t('activities.media.addMedia') }}</span>
-      </DropdownMenuItem>
       <DropdownMenuItem @select="isEditOpen = true">
         <Pencil class="size-4" />
         <span>{{ t('activities.actions.edit') }}</span>
@@ -101,8 +67,6 @@ async function confirmDelete(): Promise<void> {
       </DropdownMenuItem>
     </DropdownMenuContent>
   </DropdownMenu>
-
-  <input ref="fileInput" type="file" accept="image/*" class="hidden" @change="onFileSelected" />
 
   <ActivityEditDialog v-model:open="isEditOpen" :activity="activity" />
 

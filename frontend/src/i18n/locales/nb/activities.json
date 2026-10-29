@@ -116,18 +116,6 @@
       "order": "Hver grense må være høyere enn den forrige."
     }
   },
-  "laps": {
-    "title": "Runder",
-    "lap": "Runde",
-    "intensity": "Intensitet",
-    "distance": "Distanse",
-    "time": "Tid",
-    "tempo": "Tempo / Fart",
-    "elevation": "Stigning",
-    "strokeRate": "Taktfrekvens",
-    "cycles": "Sykluser",
-    "hr": "Puls"
-  },
   "workout": {
     "title": "Treningsøkt",
     "stepsTitle": "Trinn",
@@ -139,28 +127,6 @@
     "exercise": "Øvelse",
     "stroke": "Tak",
     "weight": "Vekt"
-  },
-  "gear": {
-    "title": "Utstyr",
-    "notSet": "Ingen utstyr tildelt",
-    "loading": "Laster…",
-    "add": "Legg til utstyr",
-    "change": "Endre utstyr",
-    "remove": "Fjern utstyr",
-    "addTitle": "Legg til utstyr",
-    "changeTitle": "Endre utstyr",
-    "selectLabel": "Utstyr",
-    "selectPlaceholder": "Velg et utstyr",
-    "noGears": "Ingen kompatibelt utstyr funnet. Legg til utstyr fra utstyrssiden først.",
-    "save": "Lagre",
-    "cancel": "Avbryt",
-    "close": "Lukk",
-    "saveSuccess": "Utstyr oppdatert",
-    "saveError": "Kunne ikke oppdatere utstyret",
-    "removeTitle": "Fjern utstyr",
-    "removeBody": "Fjerne utstyret som er knyttet til denne aktiviteten?",
-    "removeSuccess": "Utstyr fjernet",
-    "removeError": "Kunne ikke fjerne utstyret"
   },
   "actions": {
     "menu": "Aktivitetshandlinger",
@@ -220,9 +186,7 @@
     "hideElevation": "Skjul stigning",
     "hideSpeed": "Skjul fart",
     "hidePace": "Skjul tempo",
-    "hideLaps": "Skjul runder",
     "hideWorkoutSetsSteps": "Skjul treningssett og -trinn",
-    "hideGear": "Skjul utstyr",
     "success": "Aktivitet oppdatert",
     "error": "Kunne ikke oppdatere aktiviteten"
   },

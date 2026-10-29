@@ -99,18 +99,6 @@
     "title": "Pulzuszónák",
     "zone": "Zóna"
   },
-  "laps": {
-    "title": "Körök",
-    "lap": "Kör",
-    "intensity": "Intenzitás",
-    "distance": "Táv",
-    "time": "Idő",
-    "tempo": "Tempó / Sebesség",
-    "elevation": "Szintemelkedés",
-    "strokeRate": "Tempószám",
-    "cycles": "Ciklusok",
-    "hr": "Pulzusszám"
-  },
   "workout": {
     "title": "Edzés",
     "stepsTitle": "Lépések",
@@ -122,28 +110,6 @@
     "exercise": "Gyakorlat",
     "stroke": "Tempó",
     "weight": "Súly"
-  },
-  "gear": {
-    "title": "Felszerelés",
-    "notSet": "Nincs hozzárendelt felszerelés",
-    "loading": "Betöltés…",
-    "add": "Felszerelés hozzáadása",
-    "change": "Felszerelés módosítása",
-    "remove": "Felszerelés eltávolítása",
-    "addTitle": "Felszerelés hozzáadása",
-    "changeTitle": "Felszerelés módosítása",
-    "selectLabel": "Felszerelés",
-    "selectPlaceholder": "Válassz felszerelést",
-    "noGears": "Nem található kompatibilis felszerelés. Először adj hozzá felszerelést a felszerelés oldalon.",
-    "save": "Mentés",
-    "cancel": "Mégse",
-    "close": "Bezárás",
-    "saveSuccess": "Felszerelés frissítve",
-    "saveError": "Nem sikerült frissíteni a felszerelést",
-    "removeTitle": "Felszerelés eltávolítása",
-    "removeBody": "Eltávolítod a tevékenységhez tartozó felszerelést?",
-    "removeSuccess": "Felszerelés eltávolítva",
-    "removeError": "Nem sikerült eltávolítani a felszerelést"
   },
   "actions": {
     "menu": "Tevékenység műveletei",
@@ -200,9 +166,7 @@
     "hideElevation": "Szintemelkedés elrejtése",
     "hideSpeed": "Sebesség elrejtése",
     "hidePace": "Tempó elrejtése",
-    "hideLaps": "Körök elrejtése",
     "hideWorkoutSetsSteps": "Edzéssorozatok és -lépések elrejtése",
-    "hideGear": "Felszerelés elrejtése",
     "success": "Tevékenység frissítve",
     "error": "Nem sikerült frissíteni a tevékenységet"
   },

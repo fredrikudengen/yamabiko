@@ -9,10 +9,8 @@ import {
   activityTypeIsSailing,
   activityTypeIsWalking,
   activityTypeIsWindsurf,
-  activityTypeUsesPace,
 } from './activityType'
 import {
-  combineMetric,
   formatDistance,
   formatElevation,
   formatHmsDuration,
@@ -278,30 +276,4 @@ export function buildActivityMetrics(
   }
 
   return tiles
-}
-
-/**
- * Formats a single lap's pace or speed for the laps table, choosing pace vs.
- * speed by activity type.
- *
- * @param enhancedAvgPace - Lap average pace in seconds per metre.
- * @param enhancedAvgSpeed - Lap average speed in metres per second.
- * @param activityType - Numeric activity type.
- * @param units - The user's unit system.
- * @returns A combined `value unit` string, or `--`.
- */
-export function formatLapTempo(
-  enhancedAvgPace: number | null,
-  enhancedAvgSpeed: number | null,
-  activityType: number,
-  units: Units,
-): string {
-  if (activityTypeUsesPace(activityType)) {
-    return enhancedAvgPace === null
-      ? '--'
-      : combineMetric(formatPace(enhancedAvgPace, activityType, units))
-  }
-  return enhancedAvgSpeed === null
-    ? '--'
-    : combineMetric(formatSpeed(enhancedAvgSpeed, activityType, units))
 }

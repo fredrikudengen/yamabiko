@@ -99,18 +99,6 @@
     "title": "Zone otkucaja srca",
     "zone": "Zona"
   },
-  "laps": {
-    "title": "Krugovi",
-    "lap": "Krug",
-    "intensity": "Intenzitet",
-    "distance": "Udaljenost",
-    "time": "Vrijeme",
-    "tempo": "Tempo / Brzina",
-    "elevation": "Visinska razlika",
-    "strokeRate": "Frekvencija zaveslaja",
-    "cycles": "Ciklusi",
-    "hr": "Broj otkucaja srca"
-  },
   "workout": {
     "title": "Trening",
     "stepsTitle": "Koraci",
@@ -122,28 +110,6 @@
     "exercise": "Vježba",
     "stroke": "Zaveslaj",
     "weight": "Težina"
-  },
-  "gear": {
-    "title": "Oprema",
-    "notSet": "Nema dodijeljene opreme",
-    "loading": "Učitavanje…",
-    "add": "Dodaj opremu",
-    "change": "Promijeni opremu",
-    "remove": "Ukloni opremu",
-    "addTitle": "Dodaj opremu",
-    "changeTitle": "Promijeni opremu",
-    "selectLabel": "Oprema",
-    "selectPlaceholder": "Odaberi opremu",
-    "noGears": "Nije pronađena kompatibilna oprema. Prvo dodajte opremu sa stranice opreme.",
-    "save": "Spremi",
-    "cancel": "Odustani",
-    "close": "Zatvori",
-    "saveSuccess": "Oprema je ažurirana",
-    "saveError": "Nije moguće ažurirati opremu",
-    "removeTitle": "Ukloni opremu",
-    "removeBody": "Ukloniti opremu povezanu s ovom aktivnošću?",
-    "removeSuccess": "Oprema je uklonjena",
-    "removeError": "Nije moguće ukloniti opremu"
   },
   "actions": {
     "menu": "Radnje aktivnosti",
@@ -200,9 +166,7 @@
     "hideElevation": "Sakrij visinsku razliku",
     "hideSpeed": "Sakrij brzinu",
     "hidePace": "Sakrij tempo",
-    "hideLaps": "Sakrij krugove",
     "hideWorkoutSetsSteps": "Sakrij serije i korake treninga",
-    "hideGear": "Sakrij opremu",
     "success": "Aktivnost je ažurirana",
     "error": "Nije moguće ažurirati aktivnost"
   },

@@ -99,18 +99,6 @@
     "title": "Strefy tętna",
     "zone": "Strefa"
   },
-  "laps": {
-    "title": "Okrążenia",
-    "lap": "Okrążenie",
-    "intensity": "Intensywność",
-    "distance": "Dystans",
-    "time": "Czas",
-    "tempo": "Tempo / Prędkość",
-    "elevation": "Przewyższenie",
-    "strokeRate": "Częstotliwość ruchów",
-    "cycles": "Cykle",
-    "hr": "Tętno"
-  },
   "workout": {
     "title": "Trening",
     "stepsTitle": "Etapy",
@@ -122,28 +110,6 @@
     "exercise": "Ćwiczenie",
     "stroke": "Styl",
     "weight": "Ciężar"
-  },
-  "gear": {
-    "title": "Sprzęt",
-    "notSet": "Nie przypisano sprzętu",
-    "loading": "Ładowanie…",
-    "add": "Dodaj sprzęt",
-    "change": "Zmień sprzęt",
-    "remove": "Usuń sprzęt",
-    "addTitle": "Dodaj sprzęt",
-    "changeTitle": "Zmień sprzęt",
-    "selectLabel": "Sprzęt",
-    "selectPlaceholder": "Wybierz sprzęt",
-    "noGears": "Nie znaleziono zgodnego sprzętu. Najpierw dodaj sprzęt na stronie sprzętu.",
-    "save": "Zapisz",
-    "cancel": "Anuluj",
-    "close": "Zamknij",
-    "saveSuccess": "Zaktualizowano sprzęt",
-    "saveError": "Nie udało się zaktualizować sprzętu",
-    "removeTitle": "Usuń sprzęt",
-    "removeBody": "Usunąć sprzęt powiązany z tą aktywnością?",
-    "removeSuccess": "Usunięto sprzęt",
-    "removeError": "Nie udało się usunąć sprzętu"
   },
   "actions": {
     "menu": "Akcje aktywności",
@@ -200,9 +166,7 @@
     "hideElevation": "Ukryj przewyższenie",
     "hideSpeed": "Ukryj prędkość",
     "hidePace": "Ukryj tempo",
-    "hideLaps": "Ukryj okrążenia",
     "hideWorkoutSetsSteps": "Ukryj serie i etapy treningu",
-    "hideGear": "Ukryj sprzęt",
     "success": "Zaktualizowano aktywność",
     "error": "Nie udało się zaktualizować aktywności"
   },

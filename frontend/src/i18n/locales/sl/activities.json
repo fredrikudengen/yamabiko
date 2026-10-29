@@ -99,18 +99,6 @@
     "title": "Cone srčnega utripa",
     "zone": "Cona"
   },
-  "laps": {
-    "title": "Krogi",
-    "lap": "Krog",
-    "intensity": "Intenzivnost",
-    "distance": "Razdalja",
-    "time": "Čas",
-    "tempo": "Tempo / Hitrost",
-    "elevation": "Višinska razlika",
-    "strokeRate": "Hitrost zamahov",
-    "cycles": "Cikli",
-    "hr": "Srčni utrip"
-  },
   "workout": {
     "title": "Vadba",
     "stepsTitle": "Koraki",
@@ -122,28 +110,6 @@
     "exercise": "Vaja",
     "stroke": "Zamah",
     "weight": "Teža"
-  },
-  "gear": {
-    "title": "Oprema",
-    "notSet": "Oprema ni dodeljena",
-    "loading": "Nalaganje…",
-    "add": "Dodaj opremo",
-    "change": "Zamenjaj opremo",
-    "remove": "Odstrani opremo",
-    "addTitle": "Dodaj opremo",
-    "changeTitle": "Zamenjaj opremo",
-    "selectLabel": "Oprema",
-    "selectPlaceholder": "Izberi opremo",
-    "noGears": "Ni združljive opreme. Najprej dodaj opremo na strani za opremo.",
-    "save": "Shrani",
-    "cancel": "Prekliči",
-    "close": "Zapri",
-    "saveSuccess": "Oprema posodobljena",
-    "saveError": "Opreme ni bilo mogoče posodobiti",
-    "removeTitle": "Odstrani opremo",
-    "removeBody": "Odstrani opremo, ki je povezana s to aktivnostjo?",
-    "removeSuccess": "Oprema odstranjena",
-    "removeError": "Opreme ni bilo mogoče odstraniti"
   },
   "actions": {
     "menu": "Dejanja aktivnosti",
@@ -200,9 +166,7 @@
     "hideElevation": "Skrij višinsko razliko",
     "hideSpeed": "Skrij hitrost",
     "hidePace": "Skrij tempo",
-    "hideLaps": "Skrij kroge",
     "hideWorkoutSetsSteps": "Skrij serije in korake vadbe",
-    "hideGear": "Skrij opremo",
     "success": "Aktivnost posodobljena",
     "error": "Aktivnosti ni bilo mogoče posodobiti"
   },

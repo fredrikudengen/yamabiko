@@ -99,18 +99,6 @@
     "title": "Zonas de frequência cardíaca",
     "zone": "Zona"
   },
-  "laps": {
-    "title": "Voltas",
-    "lap": "Volta",
-    "intensity": "Intensidade",
-    "distance": "Distância",
-    "time": "Tempo",
-    "tempo": "Ritmo / Velocidade",
-    "elevation": "Elevação",
-    "strokeRate": "Cadência de braçadas",
-    "cycles": "Ciclos",
-    "hr": "Frequência cardíaca"
-  },
   "workout": {
     "title": "Treino",
     "stepsTitle": "Passos",
@@ -122,28 +110,6 @@
     "exercise": "Exercício",
     "stroke": "Técnica",
     "weight": "Peso"
-  },
-  "gear": {
-    "title": "Equipamento",
-    "notSet": "Sem equipamento atribuído",
-    "loading": "A carregar…",
-    "add": "Adicionar equipamento",
-    "change": "Alterar equipamento",
-    "remove": "Remover equipamento",
-    "addTitle": "Adicionar equipamento",
-    "changeTitle": "Alterar equipamento",
-    "selectLabel": "Equipamento",
-    "selectPlaceholder": "Selecionar equipamento",
-    "noGears": "Nenhum equipamento compatível encontrado. Adiciona equipamento na página de equipamento primeiro.",
-    "save": "Guardar",
-    "cancel": "Cancelar",
-    "close": "Fechar",
-    "saveSuccess": "Equipamento atualizado",
-    "saveError": "Não foi possível atualizar o equipamento",
-    "removeTitle": "Remover equipamento",
-    "removeBody": "Remover o equipamento associado a esta atividade?",
-    "removeSuccess": "Equipamento removido",
-    "removeError": "Não foi possível remover o equipamento"
   },
   "actions": {
     "menu": "Ações da atividade",
@@ -200,9 +166,7 @@
     "hideElevation": "Ocultar elevação",
     "hideSpeed": "Ocultar velocidade",
     "hidePace": "Ocultar ritmo",
-    "hideLaps": "Ocultar voltas",
     "hideWorkoutSetsSteps": "Ocultar séries e passos do treino",
-    "hideGear": "Ocultar equipamento",
     "success": "Atividade atualizada",
     "error": "Não foi possível atualizar a atividade"
   },

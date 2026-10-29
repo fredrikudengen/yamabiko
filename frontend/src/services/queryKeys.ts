@@ -161,11 +161,6 @@ export const queryKeys = {
      * @returns A query key for an activity's metric streams.
      */
     streams: (id: number) => ['activities', 'detail', id, 'streams'] as const,
-    /**
-     * @param id - Activity identifier.
-     * @returns A query key for an activity's laps.
-     */
-    laps: (id: number) => ['activities', 'detail', id, 'laps'] as const,
     /** Planned workout steps for one activity. */
     workoutSteps: (id: number) => ['activities', 'detail', id, 'workout-steps'] as const,
     /** Performed workout sets for one activity. */

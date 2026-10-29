@@ -99,18 +99,6 @@
     "title": "心率區間",
     "zone": "區間"
   },
-  "laps": {
-    "title": "分圈",
-    "lap": "圈",
-    "intensity": "強度",
-    "distance": "距離",
-    "time": "時間",
-    "tempo": "配速 / 速度",
-    "elevation": "海拔",
-    "strokeRate": "划頻",
-    "cycles": "循環數",
-    "hr": "心率"
-  },
   "workout": {
     "title": "訓練",
     "stepsTitle": "動作",
@@ -122,28 +110,6 @@
     "exercise": "動作",
     "stroke": "划法",
     "weight": "重量"
-  },
-  "gear": {
-    "title": "裝備",
-    "notSet": "未指定裝備",
-    "loading": "載入中…",
-    "add": "新增裝備",
-    "change": "更換裝備",
-    "remove": "移除裝備",
-    "addTitle": "新增裝備",
-    "changeTitle": "更換裝備",
-    "selectLabel": "裝備",
-    "selectPlaceholder": "選擇裝備",
-    "noGears": "找不到相容的裝備。請先從裝備頁面新增裝備。",
-    "save": "儲存",
-    "cancel": "取消",
-    "close": "關閉",
-    "saveSuccess": "裝備已更新",
-    "saveError": "無法更新裝備",
-    "removeTitle": "移除裝備",
-    "removeBody": "移除與此活動相關的裝備？",
-    "removeSuccess": "裝備已移除",
-    "removeError": "無法移除裝備"
   },
   "actions": {
     "menu": "活動操作",
@@ -200,9 +166,7 @@
     "hideElevation": "隱藏海拔",
     "hideSpeed": "隱藏速度",
     "hidePace": "隱藏配速",
-    "hideLaps": "隱藏分圈",
     "hideWorkoutSetsSteps": "隱藏訓練組數與動作",
-    "hideGear": "隱藏裝備",
     "success": "活動已更新",
     "error": "無法更新活動"
   },
