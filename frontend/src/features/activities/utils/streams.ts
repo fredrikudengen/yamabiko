@@ -690,6 +690,11 @@ export interface MovingHrZones {
   buckets: HrZoneBucket[]
   /** Seconds counted, the sum of the zones. */
   countedS: number
+  /**
+   * Seconds without heart-rate data, outside known stops: steps between samples more than 30 s
+   * apart, and, with a GPS track, the time before the first and after the last sample.
+   */
+  gapS: number
   /** Whether the importer recorded the activity's long stops; if not, nothing could be left out. */
   stopsKnown: boolean
 }
@@ -721,15 +726,26 @@ export function buildMovingHrZones(
   if (!first) {
     return null
   }
-  const origin = gpsTrackOf(streams)?.origin ?? first.seconds
+  const track = gpsTrackOf(streams)
+  const origin = track?.origin ?? first.seconds
   const samples: TimedValue[] = timed.map((s) => ({ t: s.seconds - origin, value: s.value }))
-  const result = computeZoneSeconds(samples, limits, longStopsOf(activity.importInfo))
+  // The GPS track says how long the recording ran; without it only gaps between samples are known.
+  const lastFix = track?.points[track.points.length - 1]
+  const span = lastFix ? { startS: 0, endS: lastFix.t } : undefined
+  const result = computeZoneSeconds(
+    samples,
+    limits,
+    longStopsOf(activity.importInfo),
+    undefined,
+    span,
+  )
   if (!(result.countedS > 0)) {
     return null
   }
   return {
     buckets: toZoneBuckets(result, limits),
     countedS: result.countedS,
+    gapS: result.gapS,
     stopsKnown: hasLongStopInfo(activity.importInfo),
   }
 }

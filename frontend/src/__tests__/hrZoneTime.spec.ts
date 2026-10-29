@@ -194,6 +194,68 @@ describe('computeZoneSeconds', () => {
     expect(result.gapS).toBe(50)
   })
 
+  describe('with a recording span', () => {
+    it('reports the time before the first and after the last sample as a gap', () => {
+      // Heart rate from t = 30 to 99 (69 s counted) in a recording that ran from 0 to 200.
+      const result = computeZoneSeconds(steady(30, 100, 130), LIMITS, [], 30, {
+        startS: 0,
+        endS: 200,
+      })
+
+      expect(result.seconds[2]).toBe(69)
+      // 30 s before the first sample + 101 s after the last (t = 99).
+      expect(result.gapS).toBe(131)
+    })
+
+    it('leaves a stop at the edge out of the gap', () => {
+      const result = computeZoneSeconds(
+        steady(30, 100, 130),
+        LIMITS,
+        [
+          { startS: 0, durationS: 20 }, // 20 of the 30 s before the first sample
+          { startS: 150, durationS: 40 }, // 40 of the 101 s after the last
+        ],
+        30,
+        { startS: 0, endS: 200 },
+      )
+
+      expect(result.gapS).toBe(10 + 61)
+    })
+
+    it('finds no gap when the samples cover the span', () => {
+      const result = computeZoneSeconds(steady(0, 101, 130), LIMITS, [], 30, {
+        startS: 0,
+        endS: 100,
+      })
+      expect(result.gapS).toBe(0)
+    })
+
+    it('does not count samples that start before or end after the span as negative gap', () => {
+      const result = computeZoneSeconds(steady(0, 100, 130), LIMITS, [], 30, {
+        startS: 10,
+        endS: 50,
+      })
+      expect(result.gapS).toBe(0)
+    })
+
+    it('finds nothing to compare against when there are no samples', () => {
+      const result = computeZoneSeconds([], LIMITS, [], 30, { startS: 0, endS: 200 })
+      expect(result.gapS).toBe(0)
+    })
+
+    it('finds no edge gap without a span, only gaps between samples', () => {
+      expect(computeZoneSeconds(steady(30, 100, 130), LIMITS).gapS).toBe(0)
+    })
+
+    it('adds an edge gap to a gap between samples', () => {
+      const samples = [...steady(10, 20, 130), ...steady(100, 110, 130)]
+      const result = computeZoneSeconds(samples, LIMITS, [], 30, { startS: 0, endS: 120 })
+
+      // 10 s before, 81 s between t = 19 and 100, 11 s after t = 109.
+      expect(result.gapS).toBe(10 + 81 + 11)
+    })
+  })
+
   it('accepts samples in any order', () => {
     // Sorted: 0:130, 5:130, 10:90, 20:90 -> 10 s in zone 3, then 10 s in zone 1.
     const result = computeZoneSeconds(
@@ -313,6 +375,62 @@ describe('buildMovingHrZones', () => {
 
     expect(result.stopsKnown).toBe(false)
     expect(result.countedS).toBe(200)
+    expect(result.gapS).toBe(0)
+  })
+
+  it('reports heart rate that starts after and stops before the GPS track', () => {
+    const gps: StreamWaypoint[] = []
+    for (let t = 0; t <= 300; t += 1) {
+      gps.push({ time: iso(t), lat: 60 + t * 1e-5, lon: 5 })
+    }
+    const hr: StreamWaypoint[] = []
+    for (let t = 40; t <= 270; t += 1) {
+      hr.push({ time: iso(t), hr: 130 })
+    }
+    const result = buildMovingHrZones(
+      [stream(7, gps), stream(1, hr)],
+      makeActivity({ importInfo: null }),
+      LIMITS,
+    )!
+
+    expect(result.countedS).toBe(230)
+    // 40 s before the first heart-rate sample, 30 s after the last, measured against the GPS track.
+    expect(result.gapS).toBe(70)
+  })
+
+  it('leaves a stop inside a heart-rate dropout out of the gap', () => {
+    const gps: StreamWaypoint[] = []
+    for (let t = 0; t <= 300; t += 1) {
+      gps.push({ time: iso(t), lat: 60 + t * 1e-5, lon: 5 })
+    }
+    // No heart rate between 100 and 200 s, but the first 60 s of that is a recorded stop.
+    const hr: StreamWaypoint[] = []
+    for (let t = 0; t <= 300; t += 1) {
+      if (t <= 100 || t >= 200) {
+        hr.push({ time: iso(t), hr: 130 })
+      }
+    }
+    const result = buildMovingHrZones(
+      [stream(7, gps), stream(1, hr)],
+      makeActivity({
+        importInfo: { long_stops: { stops: [{ start_s: 100, duration_s: 60 }] } },
+      }),
+      LIMITS,
+    )!
+
+    expect(result.gapS).toBe(40)
+  })
+
+  it('without GPS finds only the hole between samples', () => {
+    const hr: StreamWaypoint[] = []
+    for (let t = 0; t <= 120; t += 1) {
+      if (t < 10 || t >= 110) {
+        hr.push({ time: iso(t), hr: 130 })
+      }
+    }
+    const result = buildMovingHrZones([stream(1, hr)], makeActivity({ importInfo: null }), LIMITS)!
+
+    expect(result.gapS).toBe(101)
   })
 
   it('treats an importer record with an empty stop list as known', () => {

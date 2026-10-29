@@ -102,6 +102,7 @@
     "basisMoving": "Moving time, long stops left out",
     "basisRecorded": "Whole recording (no stops recorded for this activity)",
     "sum": "Total {time}",
+    "noHeartRate": "Without heart-rate data: {time}",
     "editLimits": "Edit limits",
     "customLimits": "Custom limits",
     "limitsHint": "Where each zone starts (bpm). Kept on this device.",
