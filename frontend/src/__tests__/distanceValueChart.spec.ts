@@ -131,11 +131,33 @@ describe('buildDistanceValueChart', () => {
     const data = chart.render.series[0]!.data
 
     expect(chart.metric).toBe('elevation')
-    // The stop bin is empty in the heart-rate chart, but height is filled from the neighbours' samples
-    // and is also left out in the stop bin only; no other bin is missing.
-    expect(data.filter(Number.isNaN).length).toBeLessThanOrEqual(1)
+    // Height is known while standing still, so the stop bin is not empty the way it is for heart rate.
+    expect(data.filter(Number.isNaN)).toHaveLength(0)
     expect(data[0]).toBeCloseTo(100 + 0.1 * 12.5, 0)
     expect(chart.stats.map((s) => s.labelKey)).toContain('activities.metrics.elevationGain')
+  })
+
+  it('carries the height through the stop without a jump', () => {
+    const { streams, stopStart } = hike()
+    const chart = buildDistanceValueChart(
+      'elevation',
+      streams,
+      activity({ importInfo: withStop(stopStart) }),
+      'metric',
+    )!
+    const data = chart.render.series[0]!.data
+    const labels = chart.render.labels!.map(Number)
+
+    // The stop is at 600 m, where the height is 100 + 0.1 * 600 = 160 m. The bin there holds the
+    // samples of the whole stand-still, so it reads that height rather than a gap.
+    // The label is the middle of a bin, so the stop at 600 m is on the edge between two of them.
+    const nearStop = data.filter((_, i) => Math.abs(labels[i]! - 0.6) <= 0.02)
+    expect(nearStop.some((height) => Math.abs(height - 160) < 0.5)).toBe(true)
+    // The climb goes on across it: never down, and no step larger than the bin's own climb.
+    for (let i = 1; i < data.length; i += 1) {
+      expect(data[i]!).toBeGreaterThanOrEqual(data[i - 1]! - 0.1)
+      expect(data[i]! - data[i - 1]!).toBeLessThan(5)
+    }
   })
 
   it('shows heights in feet and distance in miles for imperial users', () => {
@@ -227,5 +249,21 @@ describe('buildValueProfile', () => {
 
     expect(empty.bins.some((b) => b.value === null)).toBe(true)
     expect(filled.bins.every((b) => b.value !== null)).toBe(true)
+  })
+
+  it('empties the bin of a known stop unless the value is known while standing still', () => {
+    // A stop from 40 to 60 s, half way along the 100 m line; the only sample is taken during it.
+    const options = { stops: [{ startS: 40, durationS: 20 }] }
+    const samples = [{ t: 50, value: 150 }]
+
+    const heartRate = buildValueProfile(line, samples, options)!
+    const height = buildValueProfile(line, samples, options, true)!
+
+    // Without `fill` the bin breaks even though a sample fell in it.
+    expect(heartRate.bins.filter((b) => b.stop)).toHaveLength(1)
+    expect(heartRate.bins.find((b) => b.stop)!.value).toBeNull()
+    // With it the bin keeps its value; it is still marked as the stop.
+    expect(height.bins.filter((b) => b.stop)).toHaveLength(1)
+    expect(height.bins.find((b) => b.stop)!.value).toBe(150)
   })
 })
