@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { RouterLink, useRoute } from 'vue-router'
 import { ArrowLeft } from '@lucide/vue'
@@ -11,21 +11,17 @@ import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { ErrorState } from '@/components/ui/error-state'
 import { Skeleton } from '@/components/ui/skeleton'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { useCurrentUser } from '@/features/auth/composables/useCurrentUser'
 import ActivityDetailHeader from '@/features/activities/components/ActivityDetailHeader.vue'
 import ActivityGallery from '@/features/activities/components/ActivityGallery.vue'
-import ActivityGearCard from '@/features/activities/components/ActivityGearCard.vue'
 import ActivityHrZones from '@/features/activities/components/ActivityHrZones.vue'
 import ActivitySegments from '@/features/segments/components/ActivitySegments.vue'
-import ActivityLapsTable from '@/features/activities/components/ActivityLapsTable.vue'
 import ActivityMetricsGrid from '@/features/activities/components/ActivityMetricsGrid.vue'
 import ActivityPrivacyAlerts from '@/features/activities/components/ActivityPrivacyAlerts.vue'
 import ActivityStreamChart from '@/features/activities/components/ActivityStreamChart.vue'
 import ActivityWorkoutSets from '@/features/activities/components/ActivityWorkoutSets.vue'
 import {
   useActivityExerciseTitlesQuery,
-  useActivityLapsQuery,
   useActivityOwnerQuery,
   useActivityQuery,
   useActivitySetsQuery,
@@ -64,12 +60,10 @@ const { data: activity, isPending, isError, refetch } = useActivityQuery(activit
 
 const activityLoaded = computed(() => !!activity.value)
 const { data: streams } = useActivityStreamsQuery(activityId, activityLoaded)
-const { data: laps } = useActivityLapsQuery(activityId, activityLoaded)
 
 const currentUserId = computed(() => currentUser.value?.id ?? null)
 
-// Only the owner manages gear; non-owners (incl. public viewers) never see the
-// gear card.
+// Only the owner manages photos and segments.
 const isOwner = computed(
   () => !!activity.value && isActivityOwner(activity.value, currentUserId.value),
 )
@@ -117,13 +111,6 @@ const streamCharts = computed(() => {
   )
 })
 
-const showLaps = computed(
-  () =>
-    !!activity.value &&
-    canViewField(activity.value, 'hideLaps', currentUserId.value) &&
-    (laps.value?.length ?? 0) > 0,
-)
-
 // Workout steps/sets. Fetched for every activity (like laps/streams); the
 // section self-hides when there is no data, mirroring v1 which fetches these
 // regardless of activity type and lets data presence drive display.
@@ -141,9 +128,6 @@ const showWorkout = computed(
     canViewField(activity.value, 'hideWorkoutSetsSteps', currentUserId.value) &&
     hasWorkoutData.value,
 )
-
-// Active tab when both laps and workout sets are available (v1's pill switch).
-const splitsTab = ref('laps')
 
 // HR zones live on the HR stream; gate them by the same HR visibility as the
 // HR chart so a privacy-restricted viewer never sees them. The time in each zone is counted from
@@ -200,8 +184,8 @@ const notFound = computed(() => !isPending.value && !isError.value && activity.v
       {{ t('activities.back') }}
     </Button>
 
-    <!-- Loading: mirror the summary (athlete header + metrics), the map, the
-         charts grid, and the splits table so the placeholder matches the load. -->
+    <!-- Loading: mirror the summary (athlete header + metrics), the map, and the
+         charts grid so the placeholder matches the load. -->
     <template v-if="isPending">
       <!-- Summary: athlete header + at-a-glance metrics (one card, as loaded). -->
       <Card class="flex flex-col gap-3" aria-busy="true">
@@ -247,14 +231,6 @@ const notFound = computed(() => !isPending.value && !isError.value && activity.v
           </div>
         </Card>
       </div>
-
-      <!-- Splits/laps table. -->
-      <Card class="flex flex-col gap-3" aria-busy="true">
-        <Skeleton class="h-5 w-24" />
-        <div class="space-y-2">
-          <Skeleton v-for="n in 4" :key="n" class="h-8 w-full" />
-        </div>
-      </Card>
     </template>
 
     <!-- Network error -->
@@ -313,8 +289,6 @@ const notFound = computed(() => !isPending.value && !isError.value && activity.v
         :is-owner="isOwner"
       />
 
-      <ActivityGearCard v-if="isOwner" :activity="activity" />
-
       <ActivitySegments v-if="isOwner" :activity-id="activity.id" />
 
       <div v-if="chartPanels.length > 0" class="grid gap-3 lg:grid-cols-2">
@@ -345,38 +319,13 @@ const notFound = computed(() => !isPending.value && !isError.value && activity.v
         </template>
       </div>
 
-      <Card v-if="showLaps || showWorkout" class="flex flex-col gap-3">
-        <!-- Both available → switch between Laps and Sets (mirrors v1's pills). -->
-        <Tabs v-if="showLaps && showWorkout" v-model="splitsTab">
-          <TabsList>
-            <TabsTrigger value="laps">{{ t('activities.laps.title') }}</TabsTrigger>
-            <TabsTrigger value="sets">{{ t('activities.workout.title') }}</TabsTrigger>
-          </TabsList>
-          <TabsContent value="laps">
-            <ActivityLapsTable :laps="laps ?? []" :activity="activity" :units="units" />
-          </TabsContent>
-          <TabsContent value="sets">
-            <ActivityWorkoutSets
-              :workout-steps="workoutSteps ?? []"
-              :workout-sets="workoutSets ?? []"
-              :exercise-titles="exerciseTitles ?? []"
-            />
-          </TabsContent>
-        </Tabs>
-
-        <!-- Only one available → a plain titled table. -->
-        <template v-else-if="showLaps">
-          <h2 class="text-card-heading">{{ t('activities.laps.title') }}</h2>
-          <ActivityLapsTable :laps="laps ?? []" :activity="activity" :units="units" />
-        </template>
-        <template v-else>
-          <h2 class="text-card-heading">{{ t('activities.workout.title') }}</h2>
-          <ActivityWorkoutSets
-            :workout-steps="workoutSteps ?? []"
-            :workout-sets="workoutSets ?? []"
-            :exercise-titles="exerciseTitles ?? []"
-          />
-        </template>
+      <Card v-if="showWorkout" class="flex flex-col gap-3">
+        <h2 class="text-card-heading">{{ t('activities.workout.title') }}</h2>
+        <ActivityWorkoutSets
+          :workout-steps="workoutSteps ?? []"
+          :workout-sets="workoutSets ?? []"
+          :exercise-titles="exerciseTitles ?? []"
+        />
       </Card>
     </template>
   </div>
