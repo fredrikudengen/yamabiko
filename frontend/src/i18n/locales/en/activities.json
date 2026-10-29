@@ -116,23 +116,6 @@
       "order": "Each limit must be higher than the one before."
     }
   },
-  "laps": {
-    "title": "Laps",
-    "lap": "Lap",
-    "intensity": "Intensity",
-    "distance": "Distance",
-    "time": "Time",
-    "tempo": "Pace / Speed",
-    "elevation": "Elevation",
-    "strokeRate": "Stroke rate",
-    "cycles": "Cycles",
-    "strokes": "Strokes",
-    "revolutions": "Revolutions",
-    "strides": "Strides",
-    "jumps": "Jumps",
-    "hr": "Heart rate",
-    "activeSummary": "Active total"
-  },
   "workout": {
     "title": "Workout",
     "stepsTitle": "Steps",
@@ -144,28 +127,6 @@
     "exercise": "Exercise",
     "stroke": "Stroke",
     "weight": "Weight"
-  },
-  "gear": {
-    "title": "Gear",
-    "notSet": "No gear assigned",
-    "loading": "Loading…",
-    "add": "Add gear",
-    "change": "Change gear",
-    "remove": "Remove gear",
-    "addTitle": "Add gear",
-    "changeTitle": "Change gear",
-    "selectLabel": "Gear",
-    "selectPlaceholder": "Select a gear",
-    "noGears": "No compatible gear found. Add gear from the gear page first.",
-    "save": "Save",
-    "cancel": "Cancel",
-    "close": "Close",
-    "saveSuccess": "Gear updated",
-    "saveError": "Couldn't update the gear",
-    "removeTitle": "Remove gear",
-    "removeBody": "Remove the gear associated with this activity?",
-    "removeSuccess": "Gear removed",
-    "removeError": "Couldn't remove the gear"
   },
   "actions": {
     "menu": "Activity actions",
@@ -225,9 +186,7 @@
     "hideElevation": "Hide elevation",
     "hideSpeed": "Hide speed",
     "hidePace": "Hide pace",
-    "hideLaps": "Hide laps",
     "hideWorkoutSetsSteps": "Hide workout sets & steps",
-    "hideGear": "Hide gear",
     "success": "Activity updated",
     "error": "Couldn't update the activity"
   },

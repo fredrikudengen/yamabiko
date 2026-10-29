@@ -99,18 +99,6 @@
     "title": "Pulsitsoonid",
     "zone": "Tsoon"
   },
-  "laps": {
-    "title": "Ringid",
-    "lap": "Ring",
-    "intensity": "Intensiivsus",
-    "distance": "Vahemaa",
-    "time": "Aeg",
-    "tempo": "Tempo / kiirus",
-    "elevation": "Tõus",
-    "strokeRate": "Tõmbesagedus",
-    "cycles": "Tsüklid",
-    "hr": "Pulss"
-  },
   "workout": {
     "title": "Treening",
     "stepsTitle": "Sammud",
@@ -122,28 +110,6 @@
     "exercise": "Harjutus",
     "stroke": "Tõmme",
     "weight": "Raskus"
-  },
-  "gear": {
-    "title": "Varustus",
-    "notSet": "Varustust pole määratud",
-    "loading": "Laadimine…",
-    "add": "Lisa varustus",
-    "change": "Muuda varustust",
-    "remove": "Eemalda varustus",
-    "addTitle": "Lisa varustus",
-    "changeTitle": "Muuda varustust",
-    "selectLabel": "Varustus",
-    "selectPlaceholder": "Vali varustus",
-    "noGears": "Sobivat varustust ei leitud. Lisa esmalt varustus varustuse lehel.",
-    "save": "Salvesta",
-    "cancel": "Tühista",
-    "close": "Sulge",
-    "saveSuccess": "Varustus uuendatud",
-    "saveError": "Varustust ei õnnestunud uuendada",
-    "removeTitle": "Eemalda varustus",
-    "removeBody": "Kas eemaldada selle tegevusega seotud varustus?",
-    "removeSuccess": "Varustus eemaldatud",
-    "removeError": "Varustust ei õnnestunud eemaldada"
   },
   "actions": {
     "menu": "Tegevuse toimingud",
@@ -200,9 +166,7 @@
     "hideElevation": "Peida kõrgus",
     "hideSpeed": "Peida kiirus",
     "hidePace": "Peida tempo",
-    "hideLaps": "Peida ringid",
     "hideWorkoutSetsSteps": "Peida treeningu seeriad ja sammud",
-    "hideGear": "Peida varustus",
     "success": "Tegevus uuendatud",
     "error": "Tegevust ei õnnestunud uuendada"
   },

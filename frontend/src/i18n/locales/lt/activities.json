@@ -99,18 +99,6 @@
     "title": "Pulso zonos",
     "zone": "Zona"
   },
-  "laps": {
-    "title": "Ratai",
-    "lap": "Ratas",
-    "intensity": "Intensyvumas",
-    "distance": "Atstumas",
-    "time": "Laikas",
-    "tempo": "Tempas / greitis",
-    "elevation": "Aukščio pokytis",
-    "strokeRate": "Mostų dažnis",
-    "cycles": "Ciklai",
-    "hr": "Pulsas"
-  },
   "workout": {
     "title": "Treniruotė",
     "stepsTitle": "Žingsniai",
@@ -122,28 +110,6 @@
     "exercise": "Pratimas",
     "stroke": "Mostas",
     "weight": "Svoris"
-  },
-  "gear": {
-    "title": "Įranga",
-    "notSet": "Įranga nepriskirta",
-    "loading": "Įkeliama…",
-    "add": "Pridėti įrangą",
-    "change": "Keisti įrangą",
-    "remove": "Pašalinti įrangą",
-    "addTitle": "Pridėti įrangą",
-    "changeTitle": "Keisti įrangą",
-    "selectLabel": "Įranga",
-    "selectPlaceholder": "Pasirinkite įrangą",
-    "noGears": "Suderinamos įrangos nerasta. Pirmiausia pridėkite įrangą įrangos puslapyje.",
-    "save": "Išsaugoti",
-    "cancel": "Atšaukti",
-    "close": "Uždaryti",
-    "saveSuccess": "Įranga atnaujinta",
-    "saveError": "Nepavyko atnaujinti įrangos",
-    "removeTitle": "Pašalinti įrangą",
-    "removeBody": "Pašalinti su šia veikla susietą įrangą?",
-    "removeSuccess": "Įranga pašalinta",
-    "removeError": "Nepavyko pašalinti įrangos"
   },
   "actions": {
     "menu": "Veiklos veiksmai",
@@ -200,9 +166,7 @@
     "hideElevation": "Slėpti aukščio pokytį",
     "hideSpeed": "Slėpti greitį",
     "hidePace": "Slėpti tempą",
-    "hideLaps": "Slėpti ratus",
     "hideWorkoutSetsSteps": "Slėpti treniruotės serijas ir žingsnius",
-    "hideGear": "Slėpti įrangą",
     "success": "Veikla atnaujinta",
     "error": "Nepavyko atnaujinti veiklos"
   },

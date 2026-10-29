@@ -8,7 +8,6 @@ import type { Schemas } from '@/types'
  */
 export type ActivityDto = Schemas['Activity']
 export type ActivityStreamDto = Schemas['ActivityStreamsRead']
-export type ActivityLapDto = Schemas['ActivityLapsRead']
 export type ActivityEditDto = Schemas['ActivityEdit']
 export type ActivityMediaDto = Schemas['ActivityMedia']
 export type ActivityWorkoutStepDto = Schemas['ActivityWorkoutSteps']
@@ -97,31 +96,6 @@ export interface ActivityStream {
   waypoints: StreamWaypoint[]
   /** Decoded heart-rate zone buckets, present only on the HR stream. */
   hrZones: HrZoneBucket[] | null
-}
-
-/** A single lap/split within an activity. */
-export interface ActivityLap {
-  id: number
-  /** Distance in metres. */
-  totalDistance: number | null
-  /** Elapsed (wall-clock) time in seconds. */
-  totalElapsedTime: number | null
-  /** Moving time in seconds. */
-  totalTimerTime: number | null
-  /** Average pace in seconds per metre. */
-  enhancedAvgPace: number | null
-  /** Average speed in metres per second. */
-  enhancedAvgSpeed: number | null
-  /** Ascent in metres. */
-  totalAscent: number | null
-  /** Average heart rate in bpm. */
-  avgHeartRate: number | null
-  /** Average cadence (raw). */
-  avgCadence: number | null
-  /** Total cycles (e.g. strides, pedal revolutions, or swim strokes). */
-  totalCycles: number | null
-  /** Lap intensity label (e.g. `active`, `rest`). */
-  intensity: string | null
 }
 
 /**

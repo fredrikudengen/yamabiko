@@ -99,18 +99,6 @@
     "title": "Pulszoner",
     "zone": "Zone"
   },
-  "laps": {
-    "title": "Omgange",
-    "lap": "Omgang",
-    "intensity": "Intensitet",
-    "distance": "Distance",
-    "time": "Tid",
-    "tempo": "Tempo / Hastighed",
-    "elevation": "Højdemeter",
-    "strokeRate": "Tagfrekvens",
-    "cycles": "Cyklusser",
-    "hr": "Puls"
-  },
   "workout": {
     "title": "Træning",
     "stepsTitle": "Trin",
@@ -122,28 +110,6 @@
     "exercise": "Øvelse",
     "stroke": "Tag",
     "weight": "Vægt"
-  },
-  "gear": {
-    "title": "Udstyr",
-    "notSet": "Intet udstyr tildelt",
-    "loading": "Indlæser…",
-    "add": "Tilføj udstyr",
-    "change": "Skift udstyr",
-    "remove": "Fjern udstyr",
-    "addTitle": "Tilføj udstyr",
-    "changeTitle": "Skift udstyr",
-    "selectLabel": "Udstyr",
-    "selectPlaceholder": "Vælg udstyr",
-    "noGears": "Intet kompatibelt udstyr fundet. Tilføj udstyr fra udstyrssiden først.",
-    "save": "Gem",
-    "cancel": "Annullér",
-    "close": "Luk",
-    "saveSuccess": "Udstyr opdateret",
-    "saveError": "Kunne ikke opdatere udstyret",
-    "removeTitle": "Fjern udstyr",
-    "removeBody": "Fjern udstyret tilknyttet denne aktivitet?",
-    "removeSuccess": "Udstyr fjernet",
-    "removeError": "Kunne ikke fjerne udstyret"
   },
   "actions": {
     "menu": "Aktivitetshandlinger",
@@ -200,9 +166,7 @@
     "hideElevation": "Skjul højdemeter",
     "hideSpeed": "Skjul hastighed",
     "hidePace": "Skjul tempo",
-    "hideLaps": "Skjul omgange",
     "hideWorkoutSetsSteps": "Skjul træningssæt og -trin",
-    "hideGear": "Skjul udstyr",
     "success": "Aktivitet opdateret",
     "error": "Kunne ikke opdatere aktiviteten"
   },

@@ -99,18 +99,6 @@
     "title": "Zonas de frecuencia cardíaca",
     "zone": "Zona"
   },
-  "laps": {
-    "title": "Vueltas",
-    "lap": "Vuelta",
-    "intensity": "Intensidad",
-    "distance": "Distancia",
-    "time": "Tiempo",
-    "tempo": "Ritmo / Velocidad",
-    "elevation": "Desnivel",
-    "strokeRate": "Cadencia de brazada",
-    "cycles": "Ciclos",
-    "hr": "Frecuencia cardíaca"
-  },
   "workout": {
     "title": "Entrenamiento",
     "stepsTitle": "Pasos",
@@ -122,28 +110,6 @@
     "exercise": "Ejercicio",
     "stroke": "Estilo",
     "weight": "Peso"
-  },
-  "gear": {
-    "title": "Equipamiento",
-    "notSet": "Sin equipamiento asignado",
-    "loading": "Cargando\u2026",
-    "add": "Añadir equipamiento",
-    "change": "Cambiar equipamiento",
-    "remove": "Eliminar equipamiento",
-    "addTitle": "Añadir equipamiento",
-    "changeTitle": "Cambiar equipamiento",
-    "selectLabel": "Equipamiento",
-    "selectPlaceholder": "Selecciona un equipamiento",
-    "noGears": "No se encontró equipamiento compatible. Añade equipamiento desde la página de equipamiento primero.",
-    "save": "Guardar",
-    "cancel": "Cancelar",
-    "close": "Cerrar",
-    "saveSuccess": "Equipamiento actualizado",
-    "saveError": "No se pudo actualizar el equipamiento",
-    "removeTitle": "Eliminar equipamiento",
-    "removeBody": "¿Eliminar el equipamiento asociado a esta actividad?",
-    "removeSuccess": "Equipamiento eliminado",
-    "removeError": "No se pudo eliminar el equipamiento"
   },
   "actions": {
     "menu": "Acciones de la actividad",
@@ -200,9 +166,7 @@
     "hideElevation": "Ocultar desnivel",
     "hideSpeed": "Ocultar velocidad",
     "hidePace": "Ocultar ritmo",
-    "hideLaps": "Ocultar vueltas",
     "hideWorkoutSetsSteps": "Ocultar series y pasos del entrenamiento",
-    "hideGear": "Ocultar equipamiento",
     "success": "Actividad actualizada",
     "error": "No se pudo actualizar la actividad"
   },

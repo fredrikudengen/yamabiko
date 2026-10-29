@@ -25,7 +25,6 @@ import {
   editActivity,
   fetchActivity,
   fetchActivityExerciseTitles,
-  fetchActivityLaps,
   fetchActivitySets,
   fetchActivityStreams,
   fetchActivityWorkoutSteps,
@@ -105,28 +104,6 @@ export function useActivityStreamsQuery(
     queryKey: computed(() => queryKeys.activities.streams(resolveId(id))),
     queryFn: ({ signal }) =>
       fetchActivityStreams(resolveId(id), { authenticated: auth.isAuthenticated, signal }),
-    enabled: computed(() => resolveId(id) > 0 && toValue(enabled)),
-    staleTime: 5 * 60_000,
-  })
-}
-
-/**
- * Loads an activity's laps. Gated like {@link useActivityStreamsQuery}.
- *
- * @param id - Reactive activity id.
- * @param enabled - Reactive gate (typically "activity loaded").
- * @returns The TanStack query result for the laps.
- */
-export function useActivityLapsQuery(
-  id: MaybeRefOrGetter<number | null>,
-  enabled: MaybeRefOrGetter<boolean>,
-) {
-  const auth = useAuthStore()
-
-  return useQuery({
-    queryKey: computed(() => queryKeys.activities.laps(resolveId(id))),
-    queryFn: ({ signal }) =>
-      fetchActivityLaps(resolveId(id), { authenticated: auth.isAuthenticated, signal }),
     enabled: computed(() => resolveId(id) > 0 && toValue(enabled)),
     staleTime: 5 * 60_000,
   })

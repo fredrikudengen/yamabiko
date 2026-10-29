@@ -99,18 +99,6 @@
     "title": "Hjärtfrekvenszoner",
     "zone": "Zon"
   },
-  "laps": {
-    "title": "Varv",
-    "lap": "Varv",
-    "intensity": "Intensitet",
-    "distance": "Distans",
-    "time": "Tid",
-    "tempo": "Tempo / Hastighet",
-    "elevation": "Höjdmeter",
-    "strokeRate": "Tagtfrekvens",
-    "cycles": "Cykler",
-    "hr": "Hjärtfrekvens"
-  },
   "workout": {
     "title": "Träningspass",
     "stepsTitle": "Steg",
@@ -122,28 +110,6 @@
     "exercise": "Övning",
     "stroke": "Simtag",
     "weight": "Vikt"
-  },
-  "gear": {
-    "title": "Utrustning",
-    "notSet": "Ingen utrustning tilldelad",
-    "loading": "Laddar…",
-    "add": "Lägg till utrustning",
-    "change": "Byt utrustning",
-    "remove": "Ta bort utrustning",
-    "addTitle": "Lägg till utrustning",
-    "changeTitle": "Byt utrustning",
-    "selectLabel": "Utrustning",
-    "selectPlaceholder": "Välj utrustning",
-    "noGears": "Ingen kompatibel utrustning hittades. Lägg till utrustning från utrustningssidan först.",
-    "save": "Spara",
-    "cancel": "Avbryt",
-    "close": "Stäng",
-    "saveSuccess": "Utrustning uppdaterad",
-    "saveError": "Kunde inte uppdatera utrustningen",
-    "removeTitle": "Ta bort utrustning",
-    "removeBody": "Ta bort utrustningen kopplad till den här aktiviteten?",
-    "removeSuccess": "Utrustning borttagen",
-    "removeError": "Kunde inte ta bort utrustningen"
   },
   "actions": {
     "menu": "Aktivitetsåtgärder",
@@ -200,9 +166,7 @@
     "hideElevation": "Dölj höjdmeter",
     "hideSpeed": "Dölj hastighet",
     "hidePace": "Dölj tempo",
-    "hideLaps": "Dölj varv",
     "hideWorkoutSetsSteps": "Dölj träningsset och steg",
-    "hideGear": "Dölj utrustning",
     "success": "Aktivitet uppdaterad",
     "error": "Kunde inte uppdatera aktiviteten"
   },

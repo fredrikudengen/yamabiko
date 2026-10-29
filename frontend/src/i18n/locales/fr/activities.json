@@ -99,18 +99,6 @@
     "title": "Zones de fréquence cardiaque",
     "zone": "Zone"
   },
-  "laps": {
-    "title": "Tours",
-    "lap": "Tour",
-    "intensity": "Intensité",
-    "distance": "Distance",
-    "time": "Temps",
-    "tempo": "Allure / Vitesse",
-    "elevation": "Dénivelé",
-    "strokeRate": "Cadence de nage",
-    "cycles": "Cycles",
-    "hr": "Fréquence cardiaque"
-  },
   "workout": {
     "title": "Séance",
     "stepsTitle": "Étapes",
@@ -122,28 +110,6 @@
     "exercise": "Exercice",
     "stroke": "Nage",
     "weight": "Poids"
-  },
-  "gear": {
-    "title": "Équipement",
-    "notSet": "Aucun équipement attribué",
-    "loading": "Chargement…",
-    "add": "Ajouter un équipement",
-    "change": "Changer l'équipement",
-    "remove": "Retirer l'équipement",
-    "addTitle": "Ajouter un équipement",
-    "changeTitle": "Changer l'équipement",
-    "selectLabel": "Équipement",
-    "selectPlaceholder": "Sélectionner un équipement",
-    "noGears": "Aucun équipement compatible trouvé. Ajoutez d'abord un équipement depuis la page équipements.",
-    "save": "Enregistrer",
-    "cancel": "Annuler",
-    "close": "Fermer",
-    "saveSuccess": "Équipement mis à jour",
-    "saveError": "Impossible de mettre à jour l'équipement",
-    "removeTitle": "Retirer l'équipement",
-    "removeBody": "Retirer l'équipement associé à cette activité ?",
-    "removeSuccess": "Équipement retiré",
-    "removeError": "Impossible de retirer l'équipement"
   },
   "actions": {
     "menu": "Actions sur l'activité",
@@ -200,9 +166,7 @@
     "hideElevation": "Masquer le dénivelé",
     "hideSpeed": "Masquer la vitesse",
     "hidePace": "Masquer l'allure",
-    "hideLaps": "Masquer les tours",
     "hideWorkoutSetsSteps": "Masquer les séries et étapes de séance",
-    "hideGear": "Masquer l'équipement",
     "success": "Activité mise à jour",
     "error": "Impossible de mettre à jour l'activité"
   },

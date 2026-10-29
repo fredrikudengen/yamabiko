@@ -48,9 +48,7 @@ const HIDE_FIELDS: { key: HideKey; labelKey: string }[] = [
   { key: 'hideElevation', labelKey: 'settings.profile.privacy.hideElevation' },
   { key: 'hideSpeed', labelKey: 'settings.profile.privacy.hideSpeed' },
   { key: 'hidePace', labelKey: 'settings.profile.privacy.hidePace' },
-  { key: 'hideLaps', labelKey: 'settings.profile.privacy.hideLaps' },
   { key: 'hideWorkoutSetsSteps', labelKey: 'settings.profile.privacy.hideWorkoutSetsSteps' },
-  { key: 'hideGear', labelKey: 'settings.profile.privacy.hideGear' },
 ]
 
 /**

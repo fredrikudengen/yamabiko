@@ -99,18 +99,6 @@
     "title": "Herzfrequenzzonen",
     "zone": "Zone"
   },
-  "laps": {
-    "title": "Runden",
-    "lap": "Runde",
-    "intensity": "Intensität",
-    "distance": "Distanz",
-    "time": "Zeit",
-    "tempo": "Pace / Tempo",
-    "elevation": "Höhe",
-    "strokeRate": "Zugfrequenz",
-    "cycles": "Zyklen",
-    "hr": "Herzfrequenz"
-  },
   "workout": {
     "title": "Training",
     "stepsTitle": "Schritte",
@@ -122,28 +110,6 @@
     "exercise": "Übung",
     "stroke": "Zug",
     "weight": "Gewicht"
-  },
-  "gear": {
-    "title": "Ausrüstung",
-    "notSet": "Keine Ausrüstung zugewiesen",
-    "loading": "Lädt…",
-    "add": "Ausrüstung hinzufügen",
-    "change": "Ausrüstung ändern",
-    "remove": "Ausrüstung entfernen",
-    "addTitle": "Ausrüstung hinzufügen",
-    "changeTitle": "Ausrüstung ändern",
-    "selectLabel": "Ausrüstung",
-    "selectPlaceholder": "Ausrüstung auswählen",
-    "noGears": "Keine kompatible Ausrüstung gefunden. Füge zuerst Ausrüstung auf der Ausrüstungsseite hinzu.",
-    "save": "Speichern",
-    "cancel": "Abbrechen",
-    "close": "Schließen",
-    "saveSuccess": "Ausrüstung aktualisiert",
-    "saveError": "Ausrüstung konnte nicht aktualisiert werden",
-    "removeTitle": "Ausrüstung entfernen",
-    "removeBody": "Die dieser Aktivität zugewiesene Ausrüstung entfernen?",
-    "removeSuccess": "Ausrüstung entfernt",
-    "removeError": "Ausrüstung konnte nicht entfernt werden"
   },
   "actions": {
     "menu": "Aktivitätsaktionen",
@@ -200,9 +166,7 @@
     "hideElevation": "Höhe verbergen",
     "hideSpeed": "Tempo verbergen",
     "hidePace": "Pace verbergen",
-    "hideLaps": "Runden verbergen",
     "hideWorkoutSetsSteps": "Trainingssätze & -schritte verbergen",
-    "hideGear": "Ausrüstung verbergen",
     "success": "Aktivität aktualisiert",
     "error": "Aktivität konnte nicht aktualisiert werden"
   },

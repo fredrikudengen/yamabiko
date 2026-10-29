@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
-import { buildActivityMetrics, formatLapTempo } from '@/features/activities/utils/metrics'
+import { buildActivityMetrics } from '@/features/activities/utils/metrics'
 import {
   buildMetricVisibility,
   canViewField,
@@ -213,13 +213,5 @@ describe('buildActivityMetrics', () => {
     expect(keys).not.toContain('avgHr')
     expect(keys).not.toContain('maxHr')
     expect(keys).toContain('pace')
-  })
-})
-
-describe('formatLapTempo', () => {
-  it('uses pace for running and speed for cycling', () => {
-    expect(formatLapTempo(0.3, null, 1, 'metric')).toBe('5:00 min/km')
-    expect(formatLapTempo(null, 10, 4, 'metric')).toBe('36.00 km/h')
-    expect(formatLapTempo(null, null, 1, 'metric')).toBe('--')
   })
 })

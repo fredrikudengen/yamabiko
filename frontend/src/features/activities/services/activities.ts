@@ -10,8 +10,6 @@ import type {
   ActivityEditInput,
   ActivityExerciseTitle,
   ActivityExerciseTitleDto,
-  ActivityLap,
-  ActivityLapDto,
   ActivitySetDto,
   ActivityStats,
   ActivityStream,
@@ -150,28 +148,6 @@ export function mapActivityStream(dto: ActivityStreamDto): ActivityStream {
     streamType: dto.stream_type,
     waypoints: (dto.stream_waypoints ?? []) as StreamWaypoint[],
     hrZones: mapHrZones(dto.zone_percentages),
-  }
-}
-
-/**
- * Maps a lap DTO to the domain model.
- *
- * @param dto - The lap wire payload.
- * @returns The lap domain model.
- */
-export function mapActivityLap(dto: ActivityLapDto): ActivityLap {
-  return {
-    id: dto.id,
-    totalDistance: dto.total_distance ?? null,
-    totalElapsedTime: dto.total_elapsed_time ?? null,
-    totalTimerTime: dto.total_timer_time ?? null,
-    enhancedAvgPace: dto.enhanced_avg_pace ?? null,
-    enhancedAvgSpeed: dto.enhanced_avg_speed ?? null,
-    totalAscent: dto.total_ascent ?? null,
-    avgHeartRate: dto.avg_heart_rate ?? null,
-    avgCadence: dto.avg_cadence ?? null,
-    totalCycles: dto.total_cycles ?? null,
-    intensity: dto.intensity ?? null,
   }
 }
 
@@ -520,29 +496,6 @@ export async function fetchActivityStreams(
     signal: context.signal,
   })
   return (dtos ?? []).map(mapActivityStream)
-}
-
-/**
- * Fetches all laps for an activity (auth or public endpoint).
- *
- * @param id - Activity identifier.
- * @param context - Auth + cancellation context.
- * @returns The activity's laps.
- */
-export async function fetchActivityLaps(
-  id: number,
-  context: ActivityFetchContext,
-): Promise<ActivityLap[]> {
-  const path = resourcePath(
-    context.authenticated,
-    `/activities_laps/activity_id/${id}/all`,
-    `/public/activities_laps/activity_id/${id}/all`,
-  )
-  const dtos = await apiFetch<ActivityLapDto[] | null>(path, {
-    auth: context.authenticated,
-    signal: context.signal,
-  })
-  return (dtos ?? []).map(mapActivityLap)
 }
 
 /**

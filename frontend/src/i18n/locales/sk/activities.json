@@ -99,18 +99,6 @@
     "title": "Zóny tepovej frekvencie",
     "zone": "Zóna"
   },
-  "laps": {
-    "title": "Okruhy",
-    "lap": "Okruh",
-    "intensity": "Intenzita",
-    "distance": "Vzdialenosť",
-    "time": "Čas",
-    "tempo": "Tempo / Rýchlosť",
-    "elevation": "Prevýšenie",
-    "strokeRate": "Frekvencia záberov",
-    "cycles": "Cykly",
-    "hr": "Tepová frekvencia"
-  },
   "workout": {
     "title": "Tréning",
     "stepsTitle": "Kroky",
@@ -122,28 +110,6 @@
     "exercise": "Cvik",
     "stroke": "Záber",
     "weight": "Hmotnosť"
-  },
-  "gear": {
-    "title": "Vybavenie",
-    "notSet": "Nepriradené vybavenie",
-    "loading": "Načítavanie…",
-    "add": "Pridať vybavenie",
-    "change": "Zmeniť vybavenie",
-    "remove": "Odstrániť vybavenie",
-    "addTitle": "Pridať vybavenie",
-    "changeTitle": "Zmeniť vybavenie",
-    "selectLabel": "Vybavenie",
-    "selectPlaceholder": "Vyberte vybavenie",
-    "noGears": "Nenašlo sa žiadne kompatibilné vybavenie. Najprv pridajte vybavenie na stránke vybavenia.",
-    "save": "Uložiť",
-    "cancel": "Zrušiť",
-    "close": "Zavrieť",
-    "saveSuccess": "Vybavenie aktualizované",
-    "saveError": "Vybavenie sa nepodarilo aktualizovať",
-    "removeTitle": "Odstrániť vybavenie",
-    "removeBody": "Odstrániť vybavenie priradené k tejto aktivite?",
-    "removeSuccess": "Vybavenie odstránené",
-    "removeError": "Vybavenie sa nepodarilo odstrániť"
   },
   "actions": {
     "menu": "Akcie aktivity",
@@ -200,9 +166,7 @@
     "hideElevation": "Skryť prevýšenie",
     "hideSpeed": "Skryť rýchlosť",
     "hidePace": "Skryť tempo",
-    "hideLaps": "Skryť okruhy",
     "hideWorkoutSetsSteps": "Skryť série a kroky tréningu",
-    "hideGear": "Skryť vybavenie",
     "success": "Aktivita aktualizovaná",
     "error": "Aktivitu sa nepodarilo aktualizovať"
   },

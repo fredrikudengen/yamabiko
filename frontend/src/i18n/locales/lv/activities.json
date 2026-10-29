@@ -99,18 +99,6 @@
     "title": "Sirdsdarbības zonas",
     "zone": "Zona"
   },
-  "laps": {
-    "title": "Apļi",
-    "lap": "Aplis",
-    "intensity": "Intensitāte",
-    "distance": "Distance",
-    "time": "Laiks",
-    "tempo": "Temps / Ātrums",
-    "elevation": "Augstuma ieguvums",
-    "strokeRate": "Vēzienu biežums",
-    "cycles": "Cikli",
-    "hr": "Sirdsdarbība"
-  },
   "workout": {
     "title": "Treniņš",
     "stepsTitle": "Soļi",
@@ -122,28 +110,6 @@
     "exercise": "Vingrinājums",
     "stroke": "Vēziens",
     "weight": "Svars"
-  },
-  "gear": {
-    "title": "Inventārs",
-    "notSet": "Nav piešķirts inventārs",
-    "loading": "Notiek ielāde…",
-    "add": "Pievienot inventāru",
-    "change": "Mainīt inventāru",
-    "remove": "Noņemt inventāru",
-    "addTitle": "Pievienot inventāru",
-    "changeTitle": "Mainīt inventāru",
-    "selectLabel": "Inventārs",
-    "selectPlaceholder": "Atlasiet inventāru",
-    "noGears": "Nav atrasts saderīgs inventārs. Vispirms pievienojiet inventāru inventāra lapā.",
-    "save": "Saglabāt",
-    "cancel": "Atcelt",
-    "close": "Aizvērt",
-    "saveSuccess": "Inventārs atjaunināts",
-    "saveError": "Neizdevās atjaunināt inventāru",
-    "removeTitle": "Noņemt inventāru",
-    "removeBody": "Noņemt ar šo aktivitāti saistīto inventāru?",
-    "removeSuccess": "Inventārs noņemts",
-    "removeError": "Neizdevās noņemt inventāru"
   },
   "actions": {
     "menu": "Aktivitātes darbības",
@@ -200,9 +166,7 @@
     "hideElevation": "Slēpt augstumu",
     "hideSpeed": "Slēpt ātrumu",
     "hidePace": "Slēpt tempu",
-    "hideLaps": "Slēpt apļus",
     "hideWorkoutSetsSteps": "Slēpt treniņa piegājienus un soļus",
-    "hideGear": "Slēpt inventāru",
     "success": "Aktivitāte atjaunināta",
     "error": "Neizdevās atjaunināt aktivitāti"
   },

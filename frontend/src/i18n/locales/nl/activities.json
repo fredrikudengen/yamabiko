@@ -99,18 +99,6 @@
     "title": "Hartslagzones",
     "zone": "Zone"
   },
-  "laps": {
-    "title": "Rondes",
-    "lap": "Ronde",
-    "intensity": "Intensiteit",
-    "distance": "Afstand",
-    "time": "Tijd",
-    "tempo": "Tempo / Snelheid",
-    "elevation": "Hoogte",
-    "strokeRate": "Slagfrequentie",
-    "cycles": "Cycli",
-    "hr": "Hartslag"
-  },
   "workout": {
     "title": "Training",
     "stepsTitle": "Stappen",
@@ -122,28 +110,6 @@
     "exercise": "Oefening",
     "stroke": "Slag",
     "weight": "Gewicht"
-  },
-  "gear": {
-    "title": "Uitrusting",
-    "notSet": "Geen uitrusting toegewezen",
-    "loading": "Laden…",
-    "add": "Uitrusting toevoegen",
-    "change": "Uitrusting wijzigen",
-    "remove": "Uitrusting verwijderen",
-    "addTitle": "Uitrusting toevoegen",
-    "changeTitle": "Uitrusting wijzigen",
-    "selectLabel": "Uitrusting",
-    "selectPlaceholder": "Selecteer uitrusting",
-    "noGears": "Geen compatibele uitrusting gevonden. Voeg eerst uitrusting toe op de uitrustingspagina.",
-    "save": "Opslaan",
-    "cancel": "Annuleren",
-    "close": "Sluiten",
-    "saveSuccess": "Uitrusting bijgewerkt",
-    "saveError": "Uitrusting kon niet worden bijgewerkt",
-    "removeTitle": "Uitrusting verwijderen",
-    "removeBody": "De uitrusting van deze activiteit verwijderen?",
-    "removeSuccess": "Uitrusting verwijderd",
-    "removeError": "Uitrusting kon niet worden verwijderd"
   },
   "actions": {
     "menu": "Activiteitsacties",
@@ -200,9 +166,7 @@
     "hideElevation": "Hoogte verbergen",
     "hideSpeed": "Snelheid verbergen",
     "hidePace": "Tempo verbergen",
-    "hideLaps": "Rondes verbergen",
     "hideWorkoutSetsSteps": "Trainingssets en -stappen verbergen",
-    "hideGear": "Uitrusting verbergen",
     "success": "Activiteit bijgewerkt",
     "error": "Activiteit kon niet worden bijgewerkt"
   },

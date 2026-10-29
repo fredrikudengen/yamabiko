@@ -99,18 +99,6 @@
     "title": "Sykealueet",
     "zone": "Alue"
   },
-  "laps": {
-    "title": "Kierrokset",
-    "lap": "Kierros",
-    "intensity": "Intensiteetti",
-    "distance": "Matka",
-    "time": "Aika",
-    "tempo": "Tahti / Nopeus",
-    "elevation": "Nousu",
-    "strokeRate": "Vetotiheys",
-    "cycles": "Syklit",
-    "hr": "Syke"
-  },
   "workout": {
     "title": "Harjoitus",
     "stepsTitle": "Vaiheet",
@@ -122,28 +110,6 @@
     "exercise": "Liike",
     "stroke": "Veto",
     "weight": "Paino"
-  },
-  "gear": {
-    "title": "Varusteet",
-    "notSet": "Ei varustetta määritetty",
-    "loading": "Ladataan…",
-    "add": "Lisää varuste",
-    "change": "Vaihda varuste",
-    "remove": "Poista varuste",
-    "addTitle": "Lisää varuste",
-    "changeTitle": "Vaihda varuste",
-    "selectLabel": "Varuste",
-    "selectPlaceholder": "Valitse varuste",
-    "noGears": "Yhteensopivia varusteita ei löytynyt. Lisää varuste ensin varustesivulta.",
-    "save": "Tallenna",
-    "cancel": "Peruuta",
-    "close": "Sulje",
-    "saveSuccess": "Varuste päivitetty",
-    "saveError": "Varustetta ei voitu päivittää",
-    "removeTitle": "Poista varuste",
-    "removeBody": "Poistetaanko tähän aktiviteettiin liitetty varuste?",
-    "removeSuccess": "Varuste poistettu",
-    "removeError": "Varustetta ei voitu poistaa"
   },
   "actions": {
     "menu": "Aktiviteettitoiminnot",
@@ -200,9 +166,7 @@
     "hideElevation": "Piilota korkeus",
     "hideSpeed": "Piilota nopeus",
     "hidePace": "Piilota tahti",
-    "hideLaps": "Piilota kierrokset",
     "hideWorkoutSetsSteps": "Piilota harjoituksen sarjat ja vaiheet",
-    "hideGear": "Piilota varusteet",
     "success": "Aktiviteetti päivitetty",
     "error": "Aktiviteettia ei voitu päivittää"
   },

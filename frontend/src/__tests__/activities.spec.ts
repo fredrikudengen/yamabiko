@@ -1,20 +1,18 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
-import type { ActivityDto, ActivityLapDto, ActivityStreamDto } from '@/features/activities/types'
+import type { ActivityDto, ActivityStreamDto } from '@/features/activities/types'
 
 import { apiFetch } from '@/services/http'
 import {
   deleteActivity,
   editActivity,
   fetchActivity,
-  fetchActivityLaps,
   fetchActivityStreams,
   fetchUserActivitiesPage,
   fetchUserActivityTypeCodes,
   fetchUserActivityTypeMap,
   fetchUserWeekActivities,
   mapActivity,
-  mapActivityLap,
   mapActivityStream,
   searchActivitiesByName,
   setActivityGear,
@@ -140,27 +138,6 @@ describe('mapActivityStream', () => {
   })
 })
 
-describe('mapActivityLap', () => {
-  it('maps the consumed lap fields', () => {
-    const dto: ActivityLapDto = {
-      id: 2,
-      activity_id: 5,
-      start_time: '2024-05-01T07:00:00',
-      total_distance: 1000,
-      total_elapsed_time: 300,
-      enhanced_avg_pace: 0.3,
-      avg_heart_rate: 150,
-    }
-    expect(mapActivityLap(dto)).toMatchObject({
-      id: 2,
-      totalDistance: 1000,
-      totalElapsedTime: 300,
-      enhancedAvgPace: 0.3,
-      avgHeartRate: 150,
-    })
-  })
-})
-
 describe('fetchActivity', () => {
   it('uses the authenticated endpoint when logged in', async () => {
     vi.mocked(apiFetch).mockResolvedValueOnce(activityDto)
@@ -245,22 +222,6 @@ describe('fetchActivityStreams', () => {
   it('maps a null response to an empty array', async () => {
     vi.mocked(apiFetch).mockResolvedValueOnce(null)
     expect(await fetchActivityStreams(5, { authenticated: true })).toEqual([])
-  })
-})
-
-describe('fetchActivityLaps', () => {
-  it('requests the authenticated and public lap endpoints', async () => {
-    vi.mocked(apiFetch).mockResolvedValue([])
-    await fetchActivityLaps(5, { authenticated: true })
-    expect(apiFetch).toHaveBeenCalledWith(
-      '/activities_laps/activity_id/5/all',
-      expect.objectContaining({ auth: true }),
-    )
-    await fetchActivityLaps(5, { authenticated: false })
-    expect(apiFetch).toHaveBeenCalledWith(
-      '/public/activities_laps/activity_id/5/all',
-      expect.objectContaining({ auth: false }),
-    )
   })
 })
 

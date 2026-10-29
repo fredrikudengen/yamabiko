@@ -99,18 +99,6 @@
     "title": "Zone di frequenza cardiaca",
     "zone": "Zona"
   },
-  "laps": {
-    "title": "Giri",
-    "lap": "Giro",
-    "intensity": "Intensità",
-    "distance": "Distanza",
-    "time": "Tempo",
-    "tempo": "Ritmo / Velocità",
-    "elevation": "Dislivello",
-    "strokeRate": "Frequenza di bracciata",
-    "cycles": "Cicli",
-    "hr": "Frequenza cardiaca"
-  },
   "workout": {
     "title": "Allenamento",
     "stepsTitle": "Passi",
@@ -122,28 +110,6 @@
     "exercise": "Esercizio",
     "stroke": "Stile",
     "weight": "Peso"
-  },
-  "gear": {
-    "title": "Attrezzatura",
-    "notSet": "Nessuna attrezzatura assegnata",
-    "loading": "Caricamento…",
-    "add": "Aggiungi attrezzatura",
-    "change": "Cambia attrezzatura",
-    "remove": "Rimuovi attrezzatura",
-    "addTitle": "Aggiungi attrezzatura",
-    "changeTitle": "Cambia attrezzatura",
-    "selectLabel": "Attrezzatura",
-    "selectPlaceholder": "Seleziona un'attrezzatura",
-    "noGears": "Nessuna attrezzatura compatibile trovata. Aggiungi prima l'attrezzatura dalla pagina attrezzatura.",
-    "save": "Salva",
-    "cancel": "Annulla",
-    "close": "Chiudi",
-    "saveSuccess": "Attrezzatura aggiornata",
-    "saveError": "Impossibile aggiornare l'attrezzatura",
-    "removeTitle": "Rimuovi attrezzatura",
-    "removeBody": "Rimuovere l'attrezzatura associata a questa attività?",
-    "removeSuccess": "Attrezzatura rimossa",
-    "removeError": "Impossibile rimuovere l'attrezzatura"
   },
   "actions": {
     "menu": "Azioni attività",
@@ -200,9 +166,7 @@
     "hideElevation": "Nascondi dislivello",
     "hideSpeed": "Nascondi velocità",
     "hidePace": "Nascondi ritmo",
-    "hideLaps": "Nascondi giri",
     "hideWorkoutSetsSteps": "Nascondi serie e passi dell'allenamento",
-    "hideGear": "Nascondi attrezzatura",
     "success": "Attività aggiornata",
     "error": "Impossibile aggiornare l'attività"
   },

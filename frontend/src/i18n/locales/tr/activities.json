@@ -99,18 +99,6 @@
     "title": "Kalp atış hızı bölgeleri",
     "zone": "Bölge"
   },
-  "laps": {
-    "title": "Turlar",
-    "lap": "Tur",
-    "intensity": "Yoğunluk",
-    "distance": "Mesafe",
-    "time": "Süre",
-    "tempo": "Tempo / Hız",
-    "elevation": "Yükseklik",
-    "strokeRate": "Kulaç oranı",
-    "cycles": "Döngüler",
-    "hr": "Kalp atış hızı"
-  },
   "workout": {
     "title": "Antrenman",
     "stepsTitle": "Adımlar",
@@ -122,28 +110,6 @@
     "exercise": "Egzersiz",
     "stroke": "Kulaç",
     "weight": "Ağırlık"
-  },
-  "gear": {
-    "title": "Ekipman",
-    "notSet": "Atanmış ekipman yok",
-    "loading": "Yükleniyor…",
-    "add": "Ekipman ekle",
-    "change": "Ekipmanı değiştir",
-    "remove": "Ekipmanı kaldır",
-    "addTitle": "Ekipman ekle",
-    "changeTitle": "Ekipmanı değiştir",
-    "selectLabel": "Ekipman",
-    "selectPlaceholder": "Bir ekipman seçin",
-    "noGears": "Uyumlu ekipman bulunamadı. Önce ekipman sayfasından ekipman ekleyin.",
-    "save": "Kaydet",
-    "cancel": "İptal",
-    "close": "Kapat",
-    "saveSuccess": "Ekipman güncellendi",
-    "saveError": "Ekipman güncellenemedi",
-    "removeTitle": "Ekipmanı kaldır",
-    "removeBody": "Bu etkinlikle ilişkili ekipman kaldırılsın mı?",
-    "removeSuccess": "Ekipman kaldırıldı",
-    "removeError": "Ekipman kaldırılamadı"
   },
   "actions": {
     "menu": "Etkinlik eylemleri",
@@ -200,9 +166,7 @@
     "hideElevation": "Yüksekliği gizle",
     "hideSpeed": "Hızı gizle",
     "hidePace": "Tempoyu gizle",
-    "hideLaps": "Turları gizle",
     "hideWorkoutSetsSteps": "Antrenman setlerini ve adımlarını gizle",
-    "hideGear": "Ekipmanı gizle",
     "success": "Etkinlik güncellendi",
     "error": "Etkinlik güncellenemedi"
   },
