@@ -12,7 +12,7 @@
 If you discover a security vulnerability, please follow these steps:
 
 1. **Do not** open a public issue;
-2. Send an email to joao@endurain.com with the details of the vulnerability;
+2. Send an email to fredrikudengen@proton.me with the details of the vulnerability. For problems in code that comes from Endurain itself, you can also report to the [Endurain project](https://github.com/endurain-project/endurain/security);
 3. Include the following in your report:
 - Steps to reproduce the vulnerability;
 - Potential impact;

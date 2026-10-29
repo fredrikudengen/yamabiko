@@ -1,5 +1,5 @@
 blank_issues_enabled: false
 contact_links:
   - name: 📚 Documentation
-    url: https://docs.endurain.com
-    about: Please check our documentation before creating an issue.
+    url: https://github.com/fredrikudengen/yamabiko/tree/master/docs
+    about: Please check the documentation before creating an issue.

@@ -1,5 +1,5 @@
-site_name: Endurain documentation
-repo_url: https://github.com/endurain-project/endurain
+site_name: Yamabiko documentation
+repo_url: https://github.com/fredrikudengen/yamabiko
 theme:
   name: material
   logo: assets/brand_logo_light_theme.png
