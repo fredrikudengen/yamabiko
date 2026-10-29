@@ -990,6 +990,49 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/coverage": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Coverage
+         * @description Where the user has been, counted in cells, with how many tours passed through each.
+         */
+        get: operations["get_coverage_api_v1_coverage_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/coverage/refresh": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Refresh Coverage
+         * @description Rebuild the grid from every activity the user owns.
+         *
+         *     Needed after an import that does not go through the hook (a Strava file),
+         *     and after the cells or the filling rules change.
+         */
+        post: operations["refresh_coverage_api_v1_coverage_refresh_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/followers/accept/targetUser/{target_user_id}": {
         parameters: {
             query?: never;
@@ -1716,6 +1759,106 @@ export interface paths {
          *             or unauthorized.
          */
         delete: operations["delete_gear_api_v1_gears__gear_id__delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/googlehealth/auth-url": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Googlehealth Auth Url
+         * @description Start linking: returns the Google consent URL to open in a browser.
+         */
+        post: operations["googlehealth_auth_url_api_v1_googlehealth_auth_url_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/googlehealth/callback": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Googlehealth Callback
+         * @description Where Google sends the browser after consent; sends it on to the settings page.
+         */
+        get: operations["googlehealth_callback_api_v1_googlehealth_callback_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/googlehealth/link": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /**
+         * Googlehealth Unlink
+         * @description Forget the stored tokens. (Access can also be revoked in the Google account settings.)
+         */
+        delete: operations["googlehealth_unlink_api_v1_googlehealth_link_delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/googlehealth/status": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Googlehealth Status
+         * @description Whether the OAuth client is configured and whether this user is linked. Never returns tokens.
+         */
+        get: operations["googlehealth_status_api_v1_googlehealth_status_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/googlehealth/sync": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Googlehealth Sync
+         * @description Import new exercises from the last ``days`` days in the background.
+         */
+        post: operations["googlehealth_sync_api_v1_googlehealth_sync_post"];
+        delete?: never;
         options?: never;
         head?: never;
         patch?: never;
@@ -4442,6 +4585,155 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/segments": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List Segments
+         * @description The user's segments, by name, each with how many activities have passed it.
+         */
+        get: operations["list_segments_api_v1_segments_get"];
+        put?: never;
+        /**
+         * Create Segment
+         * @description Create a segment and find the activities that pass it.
+         */
+        post: operations["create_segment_api_v1_segments_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/segments/activities/{activity_id}/efforts": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Activity Efforts
+         * @description The segments one of the user's activities has passed.
+         */
+        get: operations["get_activity_efforts_api_v1_segments_activities__activity_id__efforts_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/segments/parse-coordinates": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Parse Coordinates
+         * @description Turn a pasted ``60.39, 5.32`` into latitude and longitude, for the editor's coordinate field.
+         */
+        post: operations["parse_coordinates_api_v1_segments_parse_coordinates_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/segments/preview": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Preview Segment
+         * @description Which of the user's activities would pass these nodes, with times. Nothing is saved.
+         */
+        post: operations["preview_segment_api_v1_segments_preview_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/segments/{segment_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Segment */
+        get: operations["get_segment_api_v1_segments__segment_id__get"];
+        /**
+         * Update Segment
+         * @description Change the name and nodes, then recompute the efforts (old ones from the earlier nodes are dropped).
+         */
+        put: operations["update_segment_api_v1_segments__segment_id__put"];
+        post?: never;
+        /**
+         * Delete Segment
+         * @description Delete the segment and its efforts.
+         */
+        delete: operations["delete_segment_api_v1_segments__segment_id__delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/segments/{segment_id}/efforts": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Segment Efforts
+         * @description All passes of the segment, oldest first, for comparing tours.
+         */
+        get: operations["get_segment_efforts_api_v1_segments__segment_id__efforts_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/segments/{segment_id}/refresh": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Refresh Segment
+         * @description Recompute the segment's efforts from the user's activities (for example after the matcher changed).
+         */
+        post: operations["refresh_segment_api_v1_segments__segment_id__refresh_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/server_settings": {
         parameters: {
             query?: never;
@@ -5450,6 +5742,8 @@ export interface components {
             garminconnect_gear_id?: string | null;
             /** Gear Id */
             gear_id?: number | null;
+            /** Googlehealth Activity Id */
+            googlehealth_activity_id?: string | null;
             /** Hide Cadence */
             hide_cadence?: boolean | null;
             /** Hide Elevation */
@@ -5993,6 +6287,18 @@ export interface components {
          */
         BristolType: 1 | 2 | 3 | 4 | 5 | 6 | 7;
         /**
+         * CellOut
+         * @description One cell and how many of the user's tours passed through it.
+         */
+        CellOut: {
+            /** Count */
+            count: number;
+            /** X */
+            x: number;
+            /** Y */
+            y: number;
+        };
+        /**
          * Color
          * @description Enumeration of common stool color descriptions.
          *
@@ -6008,6 +6314,22 @@ export interface components {
          * @enum {string}
          */
         Color: "brown" | "dark_brown" | "light_brown" | "yellow" | "green" | "black" | "red" | "white";
+        /**
+         * CoverageOut
+         * @description The user's coverage at one zoom.
+         *
+         *     ``zoom`` is the grid the cells are given at, which the client needs to turn
+         *     ``x`` and ``y`` back into a box on the map. ``max_count`` saves the client a
+         *     pass over the cells to scale a legend.
+         */
+        CoverageOut: {
+            /** Cells */
+            cells: components["schemas"]["CellOut"][];
+            /** Max Count */
+            max_count: number;
+            /** Zoom */
+            zoom: number;
+        };
         /**
          * Currency
          * @description An enumeration representing supported currencies.
@@ -6062,6 +6384,66 @@ export interface components {
              * @default 0
              */
             total_elevation_gain: number;
+        };
+        /**
+         * EffortOut
+         * @description One pass of a segment. Times in seconds; ``moving_s`` is without long stops and stream gaps.
+         */
+        EffortOut: {
+            /** Activity Id */
+            activity_id: number;
+            /** Activity Name */
+            activity_name: string | null;
+            /** Average Hr */
+            average_hr: number | null;
+            /** Details */
+            details: {
+                [key: string]: unknown;
+            } | null;
+            /** Distance M */
+            distance_m: number;
+            /** Elapsed S */
+            elapsed_s: number;
+            /** Elevation Gain M */
+            elevation_gain_m: number | null;
+            /** Elevation Loss M */
+            elevation_loss_m: number | null;
+            /**
+             * End Time
+             * Format: date-time
+             */
+            end_time: string;
+            /** Gap S */
+            gap_s: number;
+            /** Id */
+            id: number;
+            /** Matcher Version */
+            matcher_version: number;
+            /** Max Hr */
+            max_hr: number | null;
+            /** Moving S */
+            moving_s: number;
+            /** Net Elevation M */
+            net_elevation_m: number | null;
+            /** Rank Moving */
+            rank_moving: number;
+            /** Rank Total */
+            rank_total: number;
+            /** Segment Effort Count */
+            segment_effort_count: number;
+            /** Segment Id */
+            segment_id: number;
+            /** Segment Name */
+            segment_name: string;
+            /** Source */
+            source: string;
+            /**
+             * Start Time
+             * Format: date-time
+             */
+            start_time: string;
+            /** Stopped S */
+            stopped_s: number;
         };
         /**
          * FastingStatus
@@ -9331,6 +9713,57 @@ export interface components {
             type_breakdown?: components["schemas"]["TypeBreakdownItem"][] | null;
         };
         /**
+         * NearMissOut
+         * @description An activity that came near both nodes but does not match; ``reason`` says why.
+         *
+         *     Reasons: ``start_not_reached``, ``end_not_reached``, ``both_not_reached`` (the radius
+         *     was too small; the closest-approach distances say how large it would have to be) and
+         *     ``wrong_order`` (it passed both, but the end before the start).
+         */
+        NearMissOut: {
+            /** Activity Id */
+            activity_id: number;
+            /** Activity Name */
+            activity_name: string | null;
+            /** Closest End M */
+            closest_end_m: number;
+            /** Closest Start M */
+            closest_start_m: number;
+            /** Reason */
+            reason: string;
+            /**
+             * Start Time
+             * Format: date-time
+             */
+            start_time: string;
+        };
+        /**
+         * NodeIn
+         * @description A node as the client sends it: ``lat`` and ``lon``, or one ``coordinates`` string such as ``60.39, 5.32``.
+         */
+        NodeIn: {
+            /** Coordinates */
+            coordinates?: string | null;
+            /** Lat */
+            lat?: number | null;
+            /** Lon */
+            lon?: number | null;
+            /**
+             * Radius M
+             * @default 50
+             */
+            radius_m: number;
+        };
+        /** NodeOut */
+        NodeOut: {
+            /** Lat */
+            lat: number;
+            /** Lon */
+            lon: number;
+            /** Radius M */
+            radius_m: number;
+        };
+        /**
          * NotificationRead
          * @description Schema for reading a notification record.
          *
@@ -9374,6 +9807,18 @@ export interface components {
              * @description FK to user
              */
             user_id: number;
+        };
+        /** ParseCoordinatesIn */
+        ParseCoordinatesIn: {
+            /** Text */
+            text: string;
+        };
+        /** ParsedCoordinatesOut */
+        ParsedCoordinatesOut: {
+            /** Lat */
+            lat: number;
+            /** Lon */
+            lon: number;
         };
         /**
          * PasswordResetConfirm
@@ -9435,6 +9880,77 @@ export interface components {
          */
         PasswordType: "strict" | "length_only";
         /**
+         * PreviewIn
+         * @description Two nodes to try out before saving.
+         */
+        PreviewIn: {
+            end: components["schemas"]["NodeIn"];
+            start: components["schemas"]["NodeIn"];
+        };
+        /** PreviewMatchOut */
+        PreviewMatchOut: {
+            /** Activity Id */
+            activity_id: number;
+            /** Activity Name */
+            activity_name: string | null;
+            /** Average Hr */
+            average_hr: number | null;
+            /** Closest End M */
+            closest_end_m: number;
+            /** Closest Start M */
+            closest_start_m: number;
+            /** Distance M */
+            distance_m: number;
+            /** Elapsed S */
+            elapsed_s: number;
+            /** Elevation Gain M */
+            elevation_gain_m: number | null;
+            /** Elevation Loss M */
+            elevation_loss_m: number | null;
+            /**
+             * End Time
+             * Format: date-time
+             */
+            end_time: string;
+            /** End Visit Times */
+            end_visit_times: string[];
+            /** End Visits */
+            end_visits: number;
+            /** Gap S */
+            gap_s: number;
+            /** Max Hr */
+            max_hr: number | null;
+            /** Moving S */
+            moving_s: number;
+            /** Net Elevation M */
+            net_elevation_m: number | null;
+            /** Source */
+            source: string;
+            /**
+             * Start Time
+             * Format: date-time
+             */
+            start_time: string;
+            /** Start Visit Times */
+            start_visit_times: string[];
+            /** Start Visits */
+            start_visits: number;
+            /** Stopped S */
+            stopped_s: number;
+        };
+        /**
+         * PreviewOut
+         * @description Which of the user's activities pass the nodes, and which nearly do, oldest first. Nothing is saved.
+         */
+        PreviewOut: {
+            /** Matches */
+            matches: components["schemas"]["PreviewMatchOut"][];
+            /** Near Misses */
+            near_misses: components["schemas"]["NearMissOut"][];
+            /** Similar Segments */
+            similar_segments: components["schemas"]["SimilarSegmentOut"][];
+        };
+        /**
          * ProfileUpdate
          * @description Schema for self-service profile updates.
          *
@@ -9484,6 +10000,73 @@ export interface components {
             units?: components["schemas"]["Units"] | null;
             /** Username */
             username?: string | null;
+        };
+        /**
+         * RefreshOut
+         * @description The result of rebuilding the coverage grid.
+         */
+        RefreshOut: {
+            /** Activities */
+            activities: number;
+            /** Cells */
+            cells: number;
+        };
+        /**
+         * SegmentIn
+         * @description Create or change a segment.
+         */
+        SegmentIn: {
+            end: components["schemas"]["NodeIn"];
+            /** Name */
+            name: string;
+            start: components["schemas"]["NodeIn"];
+        };
+        /** SegmentOut */
+        SegmentOut: {
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /** Effort Count */
+            effort_count: number;
+            end: components["schemas"]["NodeOut"];
+            /** Id */
+            id: number;
+            /** Name */
+            name: string;
+            start: components["schemas"]["NodeOut"];
+            /**
+             * Updated At
+             * Format: date-time
+             */
+            updated_at: string;
+        };
+        /**
+         * SegmentSavedOut
+         * @description The answer to create and update: the segment, plus segments it looks like (a hint, not an error).
+         */
+        SegmentSavedOut: {
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /** Effort Count */
+            effort_count: number;
+            end: components["schemas"]["NodeOut"];
+            /** Id */
+            id: number;
+            /** Name */
+            name: string;
+            /** Similar Segments */
+            similar_segments: components["schemas"]["SimilarSegmentOut"][];
+            start: components["schemas"]["NodeOut"];
+            /**
+             * Updated At
+             * Format: date-time
+             */
+            updated_at: string;
         };
         /**
          * ServerSettingsEdit
@@ -9859,6 +10442,13 @@ export interface components {
              * @description Human-readable result message
              */
             message: string;
+        };
+        /** SimilarSegmentOut */
+        SimilarSegmentOut: {
+            /** Id */
+            id: number;
+            /** Name */
+            name: string;
         };
         /**
          * SleepScore
@@ -13098,6 +13688,57 @@ export interface operations {
             };
         };
     };
+    get_coverage_api_v1_coverage_get: {
+        parameters: {
+            query?: {
+                zoom?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CoverageOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    refresh_coverage_api_v1_coverage_refresh_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RefreshOut"];
+                };
+            };
+        };
+    };
     accept_follow_api_v1_followers_accept_targetUser__target_user_id__put: {
         parameters: {
             query?: never;
@@ -14021,6 +14662,128 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    googlehealth_auth_url_api_v1_googlehealth_auth_url_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+        };
+    };
+    googlehealth_callback_api_v1_googlehealth_callback_get: {
+        parameters: {
+            query?: {
+                state?: string | null;
+                code?: string | null;
+                error?: string | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    googlehealth_unlink_api_v1_googlehealth_link_delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    googlehealth_status_api_v1_googlehealth_status_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+        };
+    };
+    googlehealth_sync_api_v1_googlehealth_sync_post: {
+        parameters: {
+            query?: {
+                days?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
             };
             /** @description Validation Error */
             422: {
@@ -16686,6 +17449,313 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["UsersRead"] | null;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_segments_api_v1_segments_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SegmentOut"][];
+                };
+            };
+        };
+    };
+    create_segment_api_v1_segments_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SegmentIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SegmentSavedOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_activity_efforts_api_v1_segments_activities__activity_id__efforts_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                activity_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EffortOut"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    parse_coordinates_api_v1_segments_parse_coordinates_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ParseCoordinatesIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ParsedCoordinatesOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    preview_segment_api_v1_segments_preview_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PreviewIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PreviewOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_segment_api_v1_segments__segment_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                segment_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SegmentOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    update_segment_api_v1_segments__segment_id__put: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                segment_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SegmentIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SegmentSavedOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    delete_segment_api_v1_segments__segment_id__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                segment_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_segment_efforts_api_v1_segments__segment_id__efforts_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                segment_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EffortOut"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    refresh_segment_api_v1_segments__segment_id__refresh_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                segment_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SegmentOut"];
                 };
             };
             /** @description Validation Error */

@@ -17,6 +17,7 @@ import activities.activity.utils as activities_utils
 import core.config as core_config
 import core.file_uploads as file_uploads
 import core.logger as core_logger
+import coverage_map.service as coverage_service
 import google_health.client as google_health_client
 import google_health.crud as google_health_crud
 import google_health.filters as google_health_filters
@@ -86,6 +87,8 @@ async def import_exercise(
     else:
         # Find the user's segments this activity passes. Never raises: a failure is logged.
         segments_service.refresh_efforts_after_import(stored, user_id, db)
+        # Add it to the coverage map. Never raises either; the grid can be rebuilt.
+        coverage_service.refresh_cells_after_import(stored, user_id, db)
     return stored
 
 

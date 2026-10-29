@@ -11,7 +11,9 @@ node_modules
 .DS_Store
 dist
 dist-ssr
-coverage
+# Anchored: an unanchored `coverage` also hides any source folder of
+# that name, which silently dropped a feature from a commit once.
+/coverage
 *.local
 
 # Editor directories and files
