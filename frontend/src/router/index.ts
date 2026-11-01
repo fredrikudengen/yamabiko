@@ -99,6 +99,12 @@ const router = createRouter({
       meta: { requiresAuth: true, cardless: true },
     },
     {
+      path: '/coverage',
+      name: 'coverage',
+      component: () => import('@/features/coverageMap/views/CoverageMapView.vue'),
+      meta: { requiresAuth: true, cardless: true },
+    },
+    {
       // Declared before `/segments/:id` so "new" is not read as an id.
       path: '/segments/new',
       name: 'segment-new',

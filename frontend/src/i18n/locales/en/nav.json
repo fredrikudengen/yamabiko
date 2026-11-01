@@ -19,5 +19,6 @@
   "updateAvailable": "Update available",
   "updateAvailableTitle": "Version {version} is available",
   "updateViewRelease": "View release notes",
-  "segments": "Segments"
+  "segments": "Segments",
+  "coverage": "Map"
 }

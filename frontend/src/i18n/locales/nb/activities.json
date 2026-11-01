@@ -354,5 +354,29 @@
       "deleteTitle": "Slette segmentet?",
       "deleteDescription": "«{name}» og tidene fjernes. Turene dine røres ikke."
     }
+  },
+  "coverage": {
+    "title": "Kart",
+    "subtitle": "Hver celle turene dine har vært innom. Jo mørkere rødt, jo flere turer har gått der.",
+    "loadError": "Klarte ikke å laste kartet ditt.",
+    "refresh": "Bygg opp igjen",
+    "fitAll": "Vis alt",
+    "cellTooltip": "1 tur | {count} turer",
+    "summary": "{cells} celler på rundt {metres} m.",
+    "cellSize": {
+      "label": "Cellestørrelse",
+      "option": "Rundt {metres} m"
+    },
+    "legend": {
+      "title": "Turer:",
+      "andUp": "{from}+"
+    },
+    "map": {
+      "label": "Kart over hvor du har gått"
+    },
+    "empty": {
+      "title": "Ingenting på kartet ennå",
+      "description": "Turer med GPS-spor dukker opp her. Er turene dine importert fra filer, trykk Bygg opp igjen."
+    }
   }
 }

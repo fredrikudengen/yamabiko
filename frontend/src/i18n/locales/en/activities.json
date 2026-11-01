@@ -355,5 +355,29 @@
       "deleteTitle": "Delete segment?",
       "deleteDescription": "\"{name}\" and its times are removed. Your tours are not touched."
     }
+  },
+  "coverage": {
+    "title": "Map",
+    "subtitle": "Every cell your tours have passed through. The darker the red, the more tours went that way.",
+    "loadError": "Could not load your map.",
+    "refresh": "Rebuild",
+    "fitAll": "Show everything",
+    "cellTooltip": "1 tour | {count} tours",
+    "summary": "{cells} cells of about {metres} m.",
+    "cellSize": {
+      "label": "Cell size",
+      "option": "About {metres} m"
+    },
+    "legend": {
+      "title": "Tours:",
+      "andUp": "{from}+"
+    },
+    "map": {
+      "label": "Map of where you have been"
+    },
+    "empty": {
+      "title": "Nothing on the map yet",
+      "description": "Tours with a GPS track show up here. If yours were imported from files, press Rebuild."
+    }
   }
 }

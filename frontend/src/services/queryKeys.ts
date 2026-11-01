@@ -478,6 +478,18 @@ export const queryKeys = {
   },
 
   /**
+   * The coverage map: which cells the user's tours have passed through. One
+   * entry per cell size; `all()` is the broad prefix the rebuild invalidates,
+   * since it changes every cell size at once.
+   */
+  coverage: {
+    /** Broad prefix; invalidating this cascades to every cell size. */
+    all: () => ['coverage'] as const,
+    /** @param zoom - Zoom of the grid the cells are counted at. */
+    grid: (zoom: number) => ['coverage', 'grid', zoom] as const,
+  },
+
+  /**
    * The authenticated user's account security state (MFA, backup codes, active
    * sessions). `all()` is the broad prefix the security mutations invalidate so
    * the affected cards refetch the server-authoritative state.
