@@ -50,6 +50,24 @@ def get_coverage(
     )
 
 
+@router.get("/cells/{x}/{y}", response_model=list[coverage_schema.CellTourOut])
+def get_cell_tours(
+    x: int,
+    y: int,
+    _validate_access_token: _Validated,
+    _check_scopes: _CanRead,
+    token_user_id: _UserId,
+    db: _Db,
+    zoom: Annotated[int, Query(ge=coverage_tiles.MIN_ZOOM, le=coverage_tiles.MAX_ZOOM)] = DEFAULT_ZOOM,
+) -> list[coverage_schema.CellTourOut]:
+    """The user's tours that passed through one cell, newest first, for the map's cell popup."""
+    try:
+        tours = coverage_crud.tours_in_cell(token_user_id, zoom, x, y, db)
+    except ValueError as err:
+        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_CONTENT, detail=str(err)) from err
+    return [coverage_schema.CellTourOut(id=tour.id, name=tour.name, start_time=tour.start_time) for tour in tours]
+
+
 @router.post("/refresh", response_model=coverage_schema.RefreshOut)
 def refresh_coverage(
     _validate_access_token: _Validated, _check_scopes: _CanWrite, token_user_id: _UserId, db: _Db

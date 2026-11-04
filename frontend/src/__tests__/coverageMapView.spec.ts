@@ -26,15 +26,24 @@ vi.mock('@/features/coverageMap/composables/useCoverage', () => ({
     }
   },
   useRefreshCoverageMutation: () => ({ isPending: ref(false), mutate: () => undefined }),
+  useCellToursQuery: () => ({ data: ref([]), isPending: ref(false), isError: ref(false) }),
 }))
 
 /** Stands in for the Leaflet map: records what it is given and can report a zoom. */
 const MapStub = defineComponent({
   name: 'CoverageMap',
-  props: { cells: Array, zoom: Number, tooltip: Function },
-  emits: ['zoom'],
+  props: { cells: Array, zoom: Number, tooltip: Function, selected: Object },
+  emits: ['zoom', 'select'],
   setup: () => ({ fitAll: () => undefined }),
   template: '<div />',
+})
+
+/** Stands in for the list of tours, so the test sees which cell it was given. */
+const ToursStub = defineComponent({
+  name: 'CoverageCellTours',
+  props: { cell: Object },
+  emits: ['close'],
+  template: '<div data-testid="tours" />',
 })
 
 function grid(zoom: number): Coverage {
@@ -43,7 +52,7 @@ function grid(zoom: number): Coverage {
 
 function mountView() {
   return mount(CoverageMapView, {
-    global: { plugins: [i18n], stubs: { CoverageMap: MapStub } },
+    global: { plugins: [i18n], stubs: { CoverageMap: MapStub, CoverageCellTours: ToursStub } },
   })
 }
 
@@ -94,6 +103,26 @@ describe('CoverageMapView', () => {
     const select = wrapper.find('select').element as HTMLSelectElement
     expect(select.options[0]?.value).toBe('auto')
     expect(select.value).toBe('auto')
+    wrapper.unmount()
+  })
+
+  it('lists the tours of a clicked cell and outlines it, until closed', async () => {
+    data.value = grid(16)
+    const wrapper = mountView()
+    const picked = { x: 34_001, y: 19_000, zoom: 16 }
+
+    expect(wrapper.findComponent(ToursStub).exists()).toBe(false)
+    wrapper.findComponent(MapStub).vm.$emit('select', picked)
+    await wrapper.vm.$nextTick()
+
+    expect(wrapper.findComponent(ToursStub).props('cell')).toEqual(picked)
+    expect(wrapper.findComponent(MapStub).props('selected')).toEqual(picked)
+
+    wrapper.findComponent(ToursStub).vm.$emit('close')
+    await wrapper.vm.$nextTick()
+
+    expect(wrapper.findComponent(ToursStub).exists()).toBe(false)
+    expect(wrapper.findComponent(MapStub).props('selected')).toBeNull()
     wrapper.unmount()
   })
 })

@@ -487,6 +487,8 @@ export const queryKeys = {
     all: () => ['coverage'] as const,
     /** @param zoom - Zoom of the grid the cells are counted at. */
     grid: (zoom: number) => ['coverage', 'grid', zoom] as const,
+    /** The tours in one cell; under `all()` so a rebuild refetches it too. */
+    cell: (zoom: number, x: number, y: number) => ['coverage', 'cell', zoom, x, y] as const,
   },
 
   /**

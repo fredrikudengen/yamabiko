@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from datetime import datetime
+
 from pydantic import BaseModel
 
 
@@ -24,6 +26,14 @@ class CoverageOut(BaseModel):
     zoom: int
     cells: list[CellOut]
     max_count: int
+
+
+class CellTourOut(BaseModel):
+    """One tour that passed through a cell: enough to name it and link to it."""
+
+    id: int
+    name: str | None
+    start_time: datetime
 
 
 class RefreshOut(BaseModel):

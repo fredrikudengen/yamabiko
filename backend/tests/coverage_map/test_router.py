@@ -118,3 +118,61 @@ class TestRefresh:
         add_activity(build_route(ASCENT), user_id=8)
 
         assert client.post("/coverage/refresh").json() == {"activities": 0, "cells": 0}
+
+
+class TestCellTours:
+    def _a_cell_of(self, client, zoom=ZOOM) -> tuple[int, int]:
+        return next(iter(_cells(client.get(f"/coverage?zoom={zoom}").json())))
+
+    def test_lists_the_tours_that_passed_through_with_name_and_start(self, client, db, add_activity):
+        activity_id = add_activity(build_route(ASCENT), name="Ulriken")
+        service.refresh_activity_cells(activity_id, db)
+        x, y = self._a_cell_of(client)
+
+        body = client.get(f"/coverage/cells/{x}/{y}?zoom={ZOOM}").json()
+
+        assert len(body) == 1
+        assert body[0]["id"] == activity_id
+        assert body[0]["name"] == "Ulriken"
+        assert body[0]["start_time"].startswith("2026-10-14T07:00:00")
+
+    def test_newest_tour_comes_first(self, client, db, add_activity):
+        older = add_activity(build_route(ASCENT), day=0)
+        newer = add_activity(build_route(ASCENT), day=5)
+        for activity_id in (older, newer):
+            service.refresh_activity_cells(activity_id, db)
+        x, y = self._a_cell_of(client)
+
+        body = client.get(f"/coverage/cells/{x}/{y}?zoom={ZOOM}").json()
+
+        assert [tour["id"] for tour in body] == [newer, older]
+
+    @pytest.mark.parametrize("zoom", [ZOOM, ZOOM - 1, ZOOM - 3, tiles.MIN_ZOOM])
+    def test_every_cell_lists_as_many_tours_as_the_map_counts(self, client, db, add_activity, zoom):
+        # Two routes that share the start, so some cells hold one tour and some two.
+        service.refresh_activity_cells(add_activity(build_route(ASCENT)), db)
+        service.refresh_activity_cells(add_activity(build_route([("walk", (0, 600))]), day=1), db)
+
+        counts = _cells(client.get(f"/coverage?zoom={zoom}").json())
+
+        assert 2 in counts.values()
+        for (x, y), count in counts.items():
+            assert len(client.get(f"/coverage/cells/{x}/{y}?zoom={zoom}").json()) == count
+
+    def test_a_cell_nobody_walked_through_is_empty(self, client, db, add_activity):
+        service.refresh_activity_cells(add_activity(build_route(ASCENT)), db)
+        x, y = self._a_cell_of(client)
+
+        assert client.get(f"/coverage/cells/{x + 50}/{y + 50}?zoom={ZOOM}").json() == []
+
+    def test_another_users_tours_are_not_listed(self, client, db, add_activity, current_user):
+        service.refresh_activity_cells(add_activity(build_route(ASCENT), user_id=8), db)
+        current_user["id"] = 8
+        x, y = self._a_cell_of(client)
+        current_user["id"] = 7
+
+        assert client.get(f"/coverage/cells/{x}/{y}?zoom={ZOOM}").json() == []
+
+    @pytest.mark.parametrize(("x", "y", "zoom"), [(-1, 0, ZOOM), (0, 2**ZOOM, ZOOM), (2**8, 0, 8), (0, 0, 7)])
+    def test_a_cell_off_the_grid_is_refused(self, client, x, y, zoom):
+        assert client.get(f"/coverage/cells/{x}/{y}?zoom={zoom}").status_code == 422

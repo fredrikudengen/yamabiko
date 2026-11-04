@@ -9,6 +9,7 @@ import nbActivities from '@/i18n/locales/nb/activities.json'
 import { apiFetch } from '@/services/http'
 import CoverageLegend from '@/features/coverageMap/components/CoverageLegend.vue'
 import {
+  fetchCellTours,
   fetchCoverage,
   mapCoverage,
   refreshCoverage,
@@ -71,11 +72,36 @@ describe('the coverage service', () => {
     expect(mocked).toHaveBeenCalledWith('/coverage/refresh', { method: 'POST' })
     expect(result).toEqual({ activities: 31, cells: 2400 })
   })
+
+  it('asks for the tours of a cell at the grid it was drawn with', async () => {
+    mocked.mockResolvedValue([])
+
+    await fetchCellTours({ x: 8500, y: 4750, zoom: 14 })
+
+    expect(mocked.mock.calls[0]?.[0]).toBe('/coverage/cells/8500/4750?zoom=14')
+  })
+
+  it("keeps each tour's id, name and start, unnamed ones included", async () => {
+    mocked.mockResolvedValue([
+      { id: 12, name: 'Ulriken', start_time: '2026-10-20T07:00:00Z' },
+      { id: 3, name: null, start_time: '2026-09-01T07:00:00Z' },
+    ])
+
+    expect(await fetchCellTours({ x: 1, y: 1, zoom: 16 })).toEqual([
+      { id: 12, name: 'Ulriken', startTime: '2026-10-20T07:00:00Z' },
+      { id: 3, name: null, startTime: '2026-09-01T07:00:00Z' },
+    ])
+  })
 })
 
 describe('the coverage query keys', () => {
   it('cache each cell size on its own, so switching back does not refetch', () => {
     expect(queryKeys.coverage.grid(16)).not.toEqual(queryKeys.coverage.grid(17))
+  })
+
+  it("put a cell's tours under the prefix the rebuild invalidates", () => {
+    expect(queryKeys.coverage.cell(16, 1, 2).slice(0, 1)).toEqual([...queryKeys.coverage.all()])
+    expect(queryKeys.coverage.cell(16, 1, 2)).not.toEqual(queryKeys.coverage.cell(15, 1, 2))
   })
 
   it('share a prefix the rebuild can invalidate in one go', () => {

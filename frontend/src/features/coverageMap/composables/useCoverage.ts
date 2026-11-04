@@ -1,8 +1,14 @@
 import { keepPreviousData, useQuery } from '@tanstack/vue-query'
 import { computed, toValue, type MaybeRefOrGetter } from 'vue'
 
+import type { CellRef } from '@/features/coverageMap/types'
+
 import { useInvalidatingMutation } from '@/composables/useInvalidatingMutation'
-import { fetchCoverage, refreshCoverage } from '@/features/coverageMap/services/coverage'
+import {
+  fetchCellTours,
+  fetchCoverage,
+  refreshCoverage,
+} from '@/features/coverageMap/services/coverage'
 import { queryKeys } from '@/services/queryKeys'
 
 /**
@@ -20,6 +26,25 @@ export function useCoverageQuery(zoom: MaybeRefOrGetter<number>) {
     queryKey: computed(() => queryKeys.coverage.grid(toValue(zoom))),
     queryFn: ({ signal }) => fetchCoverage(toValue(zoom), signal),
     placeholderData: keepPreviousData,
+    staleTime: 10 * 60 * 1000,
+  })
+}
+
+/**
+ * The tours that passed through a picked cell. Idle while nothing is picked.
+ *
+ * @param cell - The picked cell, or `null`.
+ */
+export function useCellToursQuery(cell: MaybeRefOrGetter<CellRef | null>) {
+  return useQuery({
+    queryKey: computed(() => {
+      const picked = toValue(cell)
+      return picked
+        ? queryKeys.coverage.cell(picked.zoom, picked.x, picked.y)
+        : queryKeys.coverage.cell(0, 0, 0)
+    }),
+    queryFn: ({ signal }) => fetchCellTours(toValue(cell) as CellRef, signal),
+    enabled: computed(() => toValue(cell) !== null),
     staleTime: 10 * 60 * 1000,
   })
 }

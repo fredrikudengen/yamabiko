@@ -16,13 +16,19 @@ import { EmptyState } from '@/components/ui/empty-state'
 import { ErrorState } from '@/components/ui/error-state'
 import { Select } from '@/components/ui/select'
 import { Skeleton } from '@/components/ui/skeleton'
+import CoverageCellTours from '@/features/coverageMap/components/CoverageCellTours.vue'
 import CoverageLegend from '@/features/coverageMap/components/CoverageLegend.vue'
 import CoverageMap from '@/features/coverageMap/components/CoverageMap.vue'
 import {
   useCoverageQuery,
   useRefreshCoverageMutation,
 } from '@/features/coverageMap/composables/useCoverage'
-import { CELL_ZOOMS, DEFAULT_CELL_ZOOM, type CellSizeChoice } from '@/features/coverageMap/types'
+import {
+  CELL_ZOOMS,
+  DEFAULT_CELL_ZOOM,
+  type CellRef,
+  type CellSizeChoice,
+} from '@/features/coverageMap/types'
 import { autoCellZoom, roundedCellSizeM } from '@/features/coverageMap/utils/tiles'
 
 const { t, n } = useI18n()
@@ -44,6 +50,8 @@ const zoom = computed(() => (sizeChoice.value === 'auto' ? autoZoom.value : size
 const query = useCoverageQuery(zoom)
 const refresh = useRefreshCoverageMutation()
 const mapRef = ref<InstanceType<typeof CoverageMap> | null>(null)
+/** The cell whose tours are listed, or `null` when the list is closed. */
+const selectedCell = ref<CellRef | null>(null)
 
 /**
  * The grid the cells on screen belong to. While a new size loads the previous
@@ -143,13 +151,21 @@ function cellTooltip(count: number): string {
     </EmptyState>
 
     <template v-else>
-      <Card class="h-96 overflow-hidden p-0 lg:h-150">
+      <Card class="relative h-96 overflow-hidden p-0 lg:h-150">
         <CoverageMap
           ref="mapRef"
           :cells="cells"
           :zoom="shownZoom"
           :tooltip="cellTooltip"
+          :selected="selectedCell"
           @zoom="mapZoom = $event"
+          @select="selectedCell = $event"
+        />
+        <CoverageCellTours
+          v-if="selectedCell"
+          :cell="selectedCell"
+          class="absolute top-3 right-3 z-10"
+          @close="selectedCell = null"
         />
       </Card>
       <div class="flex flex-wrap items-center justify-between gap-2">
