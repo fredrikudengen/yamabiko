@@ -1,6 +1,12 @@
 import { describe, expect, it } from 'vitest'
 
-import { cellBounds, cellSizeM, roundedCellSizeM } from '@/features/coverageMap/utils/tiles'
+import {
+  AUTO_ZOOM_OFFSET,
+  autoCellZoom,
+  cellBounds,
+  cellSizeM,
+  roundedCellSizeM,
+} from '@/features/coverageMap/utils/tiles'
 
 // Fløyen, Bergen.
 const BERGEN_LAT = 60.396
@@ -75,5 +81,22 @@ describe('cell size', () => {
     expect(roundedCellSizeM(BERGEN_LAT, 17)).toBe(150)
     expect(roundedCellSizeM(BERGEN_LAT, 16)).toBe(300)
     expect(roundedCellSizeM(BERGEN_LAT, 13) % 100).toBe(0)
+  })
+})
+
+describe('automatic cell size', () => {
+  it('counts three levels finer than the map, so a cell is 32 px on screen', () => {
+    expect(AUTO_ZOOM_OFFSET).toBe(3)
+    expect(autoCellZoom(10)).toBe(13)
+    expect(autoCellZoom(12)).toBe(15)
+  })
+
+  it('rounds a fractional map zoom down, so a cell is never smaller than intended', () => {
+    expect(autoCellZoom(10.9)).toBe(13)
+  })
+
+  it('stays within the grids the API counts at', () => {
+    expect(autoCellZoom(0)).toBe(8)
+    expect(autoCellZoom(18)).toBe(17)
   })
 })

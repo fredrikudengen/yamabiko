@@ -4,8 +4,30 @@
  * through; this turns a cell back into the box to draw on the map.
  */
 
+import { MAX_CELL_ZOOM, MIN_CELL_ZOOM } from '@/features/coverageMap/types'
+
 /** Circumference of the sphere Web Mercator wraps (m). */
 const EQUATOR_M = 40_075_016.686
+
+/**
+ * How many grid levels finer than the map the automatic cell size is. A map
+ * tile is 256 px and spans one cell of the grid at the map's own zoom, so three
+ * levels finer is 256 / 2³ = 32 px per cell: big enough to see and hover, small
+ * enough to keep the shape of the walked area.
+ */
+export const AUTO_ZOOM_OFFSET = 3
+
+/**
+ * The grid to count at for a map zoom, so a cell keeps about the same size on
+ * screen however far out the map is.
+ *
+ * @param mapZoom - The map's zoom (may be fractional).
+ * @returns A grid zoom the API accepts.
+ */
+export function autoCellZoom(mapZoom: number): number {
+  const zoom = Math.floor(mapZoom) + AUTO_ZOOM_OFFSET
+  return Math.min(MAX_CELL_ZOOM, Math.max(MIN_CELL_ZOOM, zoom))
+}
 
 /** A cell's geographic box, in the order Leaflet's bounds want. */
 export interface CellBounds {

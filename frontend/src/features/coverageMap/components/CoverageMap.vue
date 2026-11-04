@@ -39,6 +39,17 @@ const props = defineProps<{
   tooltip: (count: number) => string
 }>()
 
+const emit = defineEmits<{
+  /** The map's zoom once it has settled, so the page can pick a cell size. */
+  zoom: [mapZoom: number]
+}>()
+
+/**
+ * How long the map must stay at a zoom before it is reported. Scrolling through
+ * several levels fires `zoomend` at each; only the last should cost a fetch.
+ */
+const ZOOM_SETTLE_MS = 300
+
 const { config } = useAppConfig()
 const container = ref<HTMLElement | null>(null)
 
@@ -50,6 +61,17 @@ let cellLayer: LayerGroup | null = null
 let renderer: Canvas | null = null
 let resizeObserver: ResizeObserver | null = null
 let fitted = false
+let zoomTimer: ReturnType<typeof setTimeout> | undefined
+
+/** Report the zoom once it has stopped changing. */
+function reportZoomSoon(): void {
+  clearTimeout(zoomTimer)
+  zoomTimer = setTimeout(() => {
+    if (map) {
+      emit('zoom', map.getZoom())
+    }
+  }, ZOOM_SETTLE_MS)
+}
 
 /** The box around every cell, for the first fit. */
 function boundsOfAll(): LatLngBoundsExpression | null {
@@ -142,11 +164,16 @@ onMounted(() => {
     resizeObserver = new ResizeObserver(() => map?.invalidateSize())
     resizeObserver.observe(container.value)
   }
+  map.on('zoomend', reportZoomSoon)
   drawCells()
   fitOnce()
+  // The first fit may land on the zoom the map started at, which fires no
+  // `zoomend`; report it anyway so the page always learns the starting zoom.
+  reportZoomSoon()
 })
 
 onBeforeUnmount(() => {
+  clearTimeout(zoomTimer)
   resizeObserver?.disconnect()
   resizeObserver = null
   // Drop the shapes before the map goes: a redraw already queued for the next
