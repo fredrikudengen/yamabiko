@@ -365,7 +365,8 @@
     "summary": "{cells} celler på rundt {metres} m.",
     "cellSize": {
       "label": "Cellestørrelse",
-      "option": "Rundt {metres} m"
+      "option": "Rundt {metres} m",
+      "auto": "Auto (rundt {metres} m)"
     },
     "legend": {
       "title": "Turer:",

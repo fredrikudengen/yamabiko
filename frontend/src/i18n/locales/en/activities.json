@@ -366,7 +366,8 @@
     "summary": "{cells} cells of about {metres} m.",
     "cellSize": {
       "label": "Cell size",
-      "option": "About {metres} m"
+      "option": "About {metres} m",
+      "auto": "Auto (about {metres} m)"
     },
     "legend": {
       "title": "Tours:",

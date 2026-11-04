@@ -1,4 +1,4 @@
-import { useQuery } from '@tanstack/vue-query'
+import { keepPreviousData, useQuery } from '@tanstack/vue-query'
 import { computed, toValue, type MaybeRefOrGetter } from 'vue'
 
 import { useInvalidatingMutation } from '@/composables/useInvalidatingMutation'
@@ -9,12 +9,17 @@ import { queryKeys } from '@/services/queryKeys'
  * The user's coverage at one cell size. Each zoom is cached on its own, so
  * switching cell size back and forth does not refetch.
  *
+ * The previous grid stays in `data` while a new one loads, so zooming the map
+ * does not swap it for a loading placeholder. Draw with `data.zoom`, not the
+ * zoom asked for: until the new grid arrives they differ.
+ *
  * @param zoom - The grid to count at (a ref, getter or plain number).
  */
 export function useCoverageQuery(zoom: MaybeRefOrGetter<number>) {
   return useQuery({
     queryKey: computed(() => queryKeys.coverage.grid(toValue(zoom))),
     queryFn: ({ signal }) => fetchCoverage(toValue(zoom), signal),
+    placeholderData: keepPreviousData,
     staleTime: 10 * 60 * 1000,
   })
 }

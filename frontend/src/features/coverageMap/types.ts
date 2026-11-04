@@ -42,5 +42,16 @@ export interface CoverageRefresh {
 /** The cell sizes the page offers, as zoom levels of the Web Mercator grid. */
 export const CELL_ZOOMS = [15, 16, 17] as const
 
-/** The zoom the page opens at: cells of about 300 m in southern Norway. */
+/**
+ * The grid used until the map has reported its zoom: cells of about 300 m in
+ * southern Norway. Only the first fetch uses it; "auto" takes over once the map
+ * has fitted the cells.
+ */
 export const DEFAULT_CELL_ZOOM = 16
+
+/** The coarsest and finest grids the API counts at (`coverage_map/tiles.py`). */
+export const MIN_CELL_ZOOM = 8
+export const MAX_CELL_ZOOM = 17
+
+/** The cell size picked by the user: one of `CELL_ZOOMS`, or follow the map. */
+export type CellSizeChoice = 'auto' | number

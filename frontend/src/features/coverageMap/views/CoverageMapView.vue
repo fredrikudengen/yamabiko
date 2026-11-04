@@ -22,16 +22,34 @@ import {
   useCoverageQuery,
   useRefreshCoverageMutation,
 } from '@/features/coverageMap/composables/useCoverage'
-import { CELL_ZOOMS, DEFAULT_CELL_ZOOM } from '@/features/coverageMap/types'
-import { roundedCellSizeM } from '@/features/coverageMap/utils/tiles'
+import { CELL_ZOOMS, DEFAULT_CELL_ZOOM, type CellSizeChoice } from '@/features/coverageMap/types'
+import { autoCellZoom, roundedCellSizeM } from '@/features/coverageMap/utils/tiles'
 
 const { t, n } = useI18n()
 
-const zoom = ref<number>(DEFAULT_CELL_ZOOM)
+/**
+ * "Auto" follows the map: zoomed out, the cells get coarser so they stay
+ * visible instead of shrinking below a pixel. A fixed size overrides it.
+ */
+const sizeChoice = ref<CellSizeChoice>('auto')
+/** The map's zoom, once the map has reported it. */
+const mapZoom = ref<number | null>(null)
+
+/** The grid "auto" picks for the map as it is now. */
+const autoZoom = computed(() =>
+  mapZoom.value === null ? DEFAULT_CELL_ZOOM : autoCellZoom(mapZoom.value),
+)
+/** The grid to fetch. */
+const zoom = computed(() => (sizeChoice.value === 'auto' ? autoZoom.value : sizeChoice.value))
 const query = useCoverageQuery(zoom)
 const refresh = useRefreshCoverageMutation()
 const mapRef = ref<InstanceType<typeof CoverageMap> | null>(null)
 
+/**
+ * The grid the cells on screen belong to. While a new size loads the previous
+ * cells stay up, and they must be drawn at their own zoom, not the one asked for.
+ */
+const shownZoom = computed(() => query.data.value?.zoom ?? zoom.value)
 const cells = computed(() => query.data.value?.cells ?? [])
 const maxCount = computed(() => query.data.value?.maxCount ?? 0)
 const loading = computed(() => query.isPending.value)
@@ -47,7 +65,7 @@ const middleLatitude = computed(() => {
   if (cells.value.length === 0) {
     return 60
   }
-  const scale = 2 ** zoom.value
+  const scale = 2 ** shownZoom.value
   const rows = cells.value.map((cell) => cell.y)
   const middleRow = (Math.min(...rows) + Math.max(...rows)) / 2
   return (Math.atan(Math.sinh(Math.PI * (1 - (2 * middleRow) / scale))) * 180) / Math.PI
@@ -62,6 +80,13 @@ function sizeLabel(value: number): string {
     metres: n(roundedCellSizeM(middleLatitude.value, value)),
   })
 }
+
+/** The label for "auto", with the size it picks at the current map zoom. */
+const autoLabel = computed(() =>
+  t('activities.coverage.cellSize.auto', {
+    metres: n(roundedCellSizeM(middleLatitude.value, autoZoom.value)),
+  }),
+)
 
 /**
  * @param count - How many tours passed through a cell.
@@ -81,10 +106,11 @@ function cellTooltip(count: number): string {
       </div>
       <div class="flex flex-wrap items-center gap-2">
         <Select
-          v-model.number="zoom"
+          v-model.number="sizeChoice"
           class="w-auto"
           :aria-label="t('activities.coverage.cellSize.label')"
         >
+          <option value="auto">{{ autoLabel }}</option>
           <option v-for="value in CELL_ZOOMS" :key="value" :value="value">
             {{ sizeLabel(value) }}
           </option>
@@ -118,7 +144,13 @@ function cellTooltip(count: number): string {
 
     <template v-else>
       <Card class="h-96 overflow-hidden p-0 lg:h-150">
-        <CoverageMap ref="mapRef" :cells="cells" :zoom="zoom" :tooltip="cellTooltip" />
+        <CoverageMap
+          ref="mapRef"
+          :cells="cells"
+          :zoom="shownZoom"
+          :tooltip="cellTooltip"
+          @zoom="mapZoom = $event"
+        />
       </Card>
       <div class="flex flex-wrap items-center justify-between gap-2">
         <CoverageLegend :max-count="maxCount" />
@@ -131,7 +163,7 @@ function cellTooltip(count: number): string {
         {{
           t('activities.coverage.summary', {
             cells: n(cells.length),
-            metres: n(roundedCellSizeM(middleLatitude, zoom)),
+            metres: n(roundedCellSizeM(middleLatitude, shownZoom)),
           })
         }}
       </p>

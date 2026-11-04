@@ -144,4 +144,33 @@ describe('CoverageMap', () => {
     expect(drawn).toHaveLength(0)
     wrapper.unmount()
   })
+
+  it('reports the zoom once the map has settled, not before', () => {
+    vi.useFakeTimers()
+    try {
+      const wrapper = mountMap()
+
+      expect(wrapper.emitted('zoom')).toBeUndefined()
+      vi.advanceTimersByTime(300)
+      const reported = wrapper.emitted<[number]>('zoom')
+      expect(reported).toHaveLength(1)
+      expect(typeof reported?.[0]?.[0]).toBe('number')
+      wrapper.unmount()
+    } finally {
+      vi.useRealTimers()
+    }
+  })
+
+  it('reports nothing after it is gone', () => {
+    vi.useFakeTimers()
+    try {
+      const wrapper = mountMap()
+      wrapper.unmount()
+
+      vi.advanceTimersByTime(300)
+      expect(wrapper.emitted('zoom')).toBeUndefined()
+    } finally {
+      vi.useRealTimers()
+    }
+  })
 })
