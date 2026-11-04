@@ -1,4 +1,11 @@
-import type { Coverage, CoverageDto, CoverageRefresh } from '@/features/coverageMap/types'
+import type {
+  CellRef,
+  CellTour,
+  CellTourDto,
+  Coverage,
+  CoverageDto,
+  CoverageRefresh,
+} from '@/features/coverageMap/types'
 
 import { apiFetch } from '@/services/http'
 
@@ -23,6 +30,21 @@ export function mapCoverage(dto: CoverageDto): Coverage {
  */
 export async function fetchCoverage(zoom: number, signal?: AbortSignal): Promise<Coverage> {
   return mapCoverage(await apiFetch<CoverageDto>(`/coverage?zoom=${zoom}`, { signal }))
+}
+
+/**
+ * The tours that passed through one cell, newest first.
+ *
+ * @param cell - The cell, at the grid it was drawn with.
+ * @param signal - Optional abort signal.
+ * @returns Each tour once.
+ */
+export async function fetchCellTours(cell: CellRef, signal?: AbortSignal): Promise<CellTour[]> {
+  const tours = await apiFetch<CellTourDto[]>(
+    `/coverage/cells/${cell.x}/${cell.y}?zoom=${cell.zoom}`,
+    { signal },
+  )
+  return tours.map((tour) => ({ id: tour.id, name: tour.name, startTime: tour.start_time }))
 }
 
 /**

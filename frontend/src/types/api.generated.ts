@@ -1010,6 +1010,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/coverage/cells/{x}/{y}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Cell Tours
+         * @description The user's tours that passed through one cell, newest first, for the map's cell popup.
+         */
+        get: operations["get_cell_tours_api_v1_coverage_cells__x___y__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/coverage/refresh": {
         parameters: {
             query?: never;
@@ -6297,6 +6317,21 @@ export interface components {
             x: number;
             /** Y */
             y: number;
+        };
+        /**
+         * CellTourOut
+         * @description One tour that passed through a cell: enough to name it and link to it.
+         */
+        CellTourOut: {
+            /** Id */
+            id: number;
+            /** Name */
+            name: string | null;
+            /**
+             * Start Time
+             * Format: date-time
+             */
+            start_time: string;
         };
         /**
          * Color
@@ -13706,6 +13741,40 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["CoverageOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_cell_tours_api_v1_coverage_cells__x___y__get: {
+        parameters: {
+            query?: {
+                zoom?: number;
+            };
+            header?: never;
+            path: {
+                x: number;
+                y: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CellTourOut"][];
                 };
             };
             /** @description Validation Error */

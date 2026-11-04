@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from datetime import datetime
 
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
@@ -58,3 +59,57 @@ def cell_counts(user_id: int, zoom: int, db: Session) -> list[CellCount]:
         .group_by(x, y)
     )
     return [CellCount(x=row.x, y=row.y, count=row.tours) for row in db.execute(stmt)]
+
+
+@dataclass(frozen=True)
+class CellTour:
+    """One of the user's tours that passed through a cell."""
+
+    id: int
+    name: str | None
+    start_time: datetime
+
+
+def tours_in_cell(user_id: int, zoom: int, x: int, y: int, db: Session) -> list[CellTour]:
+    """The user's tours that passed through one cell, newest first.
+
+    The cell is given at ``zoom`` and covers a square block of stored cells.
+    The block is looked up as a range of ``cell_x`` and ``cell_y`` rather than
+    by shifting each row, so ``ix_activity_cells_cell`` can serve it.
+
+    Args:
+        user_id: Whose tours to list.
+        zoom: Zoom the cell is given at.
+        x: Cell x at ``zoom``.
+        y: Cell y at ``zoom``.
+        db: Database session.
+
+    Returns:
+        Each tour once, however many of its stored cells lie in the block.
+
+    Raises:
+        ValueError: When ``zoom`` is outside the supported range, or the cell
+            is not on the grid at that zoom.
+    """
+    if not coverage_tiles.MIN_ZOOM <= zoom <= coverage_tiles.MAX_ZOOM:
+        raise ValueError(f"zoom must be between {coverage_tiles.MIN_ZOOM} and {coverage_tiles.MAX_ZOOM}")
+    if not (0 <= x < 2**zoom and 0 <= y < 2**zoom):
+        raise ValueError(f"cell ({x}, {y}) is not on the grid at zoom {zoom}")
+    shift = coverage_tiles.STORE_ZOOM - zoom
+    cell = coverage_models.ActivityCell
+    activity = activities_models.Activity
+    tours_here = (
+        select(cell.activity_id)
+        .where(
+            cell.grid_zoom == coverage_tiles.STORE_ZOOM,
+            cell.cell_x.between(x << shift, ((x + 1) << shift) - 1),
+            cell.cell_y.between(y << shift, ((y + 1) << shift) - 1),
+        )
+        .distinct()
+    )
+    stmt = (
+        select(activity.id, activity.name, activity.start_time)
+        .where(activity.user_id == user_id, activity.id.in_(tours_here))
+        .order_by(activity.start_time.desc(), activity.id.desc())
+    )
+    return [CellTour(id=row.id, name=row.name, start_time=row.start_time) for row in db.execute(stmt)]

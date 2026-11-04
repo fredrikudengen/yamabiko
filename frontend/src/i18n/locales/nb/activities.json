@@ -357,7 +357,7 @@
   },
   "coverage": {
     "title": "Kart",
-    "subtitle": "Hver celle turene dine har vært innom. Jo mørkere rødt, jo flere turer har gått der.",
+    "subtitle": "Hver celle turene dine har vært innom. Jo mørkere rødt, jo flere turer har gått der. Trykk på en celle for å se turene.",
     "loadError": "Klarte ikke å laste kartet ditt.",
     "refresh": "Bygg opp igjen",
     "fitAll": "Vis alt",
@@ -367,6 +367,12 @@
       "label": "Cellestørrelse",
       "option": "Rundt {metres} m",
       "auto": "Auto (rundt {metres} m)"
+    },
+    "cell": {
+      "title": "1 tur her | {count} turer her",
+      "unnamed": "Tur uten navn",
+      "close": "Lukk",
+      "loadError": "Klarte ikke å hente turene her."
     },
     "legend": {
       "title": "Turer:",

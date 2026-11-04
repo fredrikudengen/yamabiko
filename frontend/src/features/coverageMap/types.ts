@@ -33,6 +33,28 @@ export interface Coverage {
   maxCount: number
 }
 
+/** A tour that passed through a cell, as the API sends it. */
+export interface CellTourDto {
+  id: number
+  name: string | null
+  start_time: string
+}
+
+/** A tour that passed through a cell: enough to name it and link to it. */
+export interface CellTour {
+  id: number
+  name: string | null
+  /** ISO start time. */
+  startTime: string
+}
+
+/** A cell picked on the map, at the grid it was drawn with. */
+export interface CellRef {
+  x: number
+  y: number
+  zoom: number
+}
+
 /** The result of rebuilding the grid. */
 export interface CoverageRefresh {
   activities: number

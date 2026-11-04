@@ -25,7 +25,7 @@ import {
 import 'leaflet/dist/leaflet.css'
 import { onBeforeUnmount, onMounted, ref, watch } from 'vue'
 
-import type { CoverageCell } from '@/features/coverageMap/types'
+import type { CellRef, CoverageCell } from '@/features/coverageMap/types'
 
 import { useAppConfig } from '@/features/config/composables/useAppConfig'
 import { CELL_FILL_OPACITY, colorOf } from '@/features/coverageMap/utils/scale'
@@ -37,11 +37,15 @@ const props = defineProps<{
   zoom: number
   /** Text for a cell's tooltip, given its count. */
   tooltip: (count: number) => string
+  /** The picked cell, outlined; it may belong to another grid than `zoom`. */
+  selected?: CellRef | null
 }>()
 
 const emit = defineEmits<{
   /** The map's zoom once it has settled, so the page can pick a cell size. */
   zoom: [mapZoom: number]
+  /** A cell was clicked, given at the grid it was drawn with. */
+  select: [cell: CellRef]
 }>()
 
 /**
@@ -50,11 +54,17 @@ const emit = defineEmits<{
  */
 const ZOOM_SETTLE_MS = 300
 
+/** Outline of the picked cell: dark enough to stand out on every red bucket. */
+const SELECTED_OUTLINE = '#1e293b'
+
 const { config } = useAppConfig()
 const container = ref<HTMLElement | null>(null)
 
 let map: LeafletMap | null = null
 let cellLayer: LayerGroup | null = null
+// Its own layer above the cells, so picking a cell redraws one outline rather
+// than every cell.
+let selectionLayer: LayerGroup | null = null
 // One canvas for every rectangle, made once. A renderer per redraw would leave
 // the old canvases on the map: clearing the layer group drops the rectangles,
 // not the renderer they were drawn on.
@@ -120,8 +130,29 @@ function drawCells(): void {
       },
     )
       .bindTooltip(props.tooltip(cell.count), { sticky: true })
+      .on('click', () => emit('select', { x: cell.x, y: cell.y, zoom: props.zoom }))
       .addTo(cellLayer)
   }
+}
+
+function drawSelection(): void {
+  if (!map || !selectionLayer || !renderer) {
+    return
+  }
+  selectionLayer.clearLayers()
+  const cell = props.selected
+  if (!cell) {
+    return
+  }
+  const box = cellBounds(cell.x, cell.y, cell.zoom)
+  rectangle(
+    [
+      [box.south, box.west],
+      [box.north, box.east],
+    ],
+    // Not interactive: clicks go through to the cell underneath.
+    { renderer, color: SELECTED_OUTLINE, weight: 2, fill: false, interactive: false },
+  ).addTo(selectionLayer)
 }
 
 /** Fit to the cells the first time there are any; later changes keep the view. */
@@ -158,6 +189,7 @@ onMounted(() => {
   }).addTo(map)
   renderer = createCanvas({ padding: 0.2 }).addTo(map)
   cellLayer = layerGroup().addTo(map)
+  selectionLayer = layerGroup().addTo(map)
   // The layout around the map changes, and Leaflet only learns its new size if
   // told; otherwise tiles stop loading and the map greys out.
   if (typeof ResizeObserver !== 'undefined') {
@@ -166,6 +198,7 @@ onMounted(() => {
   }
   map.on('zoomend', reportZoomSoon)
   drawCells()
+  drawSelection()
   fitOnce()
   // The first fit may land on the zoom the map started at, which fires no
   // `zoomend`; report it anyway so the page always learns the starting zoom.
@@ -179,10 +212,12 @@ onBeforeUnmount(() => {
   // Drop the shapes before the map goes: a redraw already queued for the next
   // frame would otherwise run against a canvas that no longer exists.
   cellLayer?.clearLayers()
+  selectionLayer?.clearLayers()
   renderer?.remove()
   map?.remove()
   map = null
   cellLayer = null
+  selectionLayer = null
   renderer = null
 })
 
@@ -190,9 +225,14 @@ watch(
   () => [props.cells, props.zoom],
   () => {
     drawCells()
+    // One canvas paints in the order shapes were added, so new cells would
+    // cover the outline; put it back on top.
+    drawSelection()
     fitOnce()
   },
 )
+
+watch(() => props.selected, drawSelection)
 
 defineExpose({ fitAll })
 </script>

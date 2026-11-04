@@ -358,7 +358,7 @@
   },
   "coverage": {
     "title": "Map",
-    "subtitle": "Every cell your tours have passed through. The darker the red, the more tours went that way.",
+    "subtitle": "Every cell your tours have passed through. The darker the red, the more tours went that way. Click a cell to see the tours.",
     "loadError": "Could not load your map.",
     "refresh": "Rebuild",
     "fitAll": "Show everything",
@@ -368,6 +368,12 @@
       "label": "Cell size",
       "option": "About {metres} m",
       "auto": "Auto (about {metres} m)"
+    },
+    "cell": {
+      "title": "1 tour here | {count} tours here",
+      "unnamed": "Untitled tour",
+      "close": "Close",
+      "loadError": "Could not load the tours here."
     },
     "legend": {
       "title": "Tours:",
