@@ -17,7 +17,6 @@ import activities.activity_file_import.utils as activity_file_import_utils
 import core.config as core_config
 import core.logger as core_logger
 import core.timezone as core_timezone
-import users.users_default_gear.utils as user_default_gear_utils
 import users.users_privacy_settings.models as users_privacy_settings_models
 
 # Re-export for backwards compatibility (migration_3.py calls
@@ -466,12 +465,6 @@ def _compute_derived_metrics(
 
     state.activity_type = activities_utils.define_activity_type(
         str(state.activity_type),
-    )
-
-    state.gear_id = user_default_gear_utils.get_user_default_gear_by_activity_type(
-        user_id,
-        state.activity_type,
-        db,
     )
 
     if state.is_heart_rate_set:

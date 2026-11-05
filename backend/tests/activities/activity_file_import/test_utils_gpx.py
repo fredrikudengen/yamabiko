@@ -72,11 +72,6 @@ def _patch_parser_side_effects(monkeypatch) -> None:
         "resolve_timezone_from_lat_lon",
         lambda _lat, _lon, fallback: fallback,
     )
-    monkeypatch.setattr(
-        utils_gpx.user_default_gear_utils,
-        "get_user_default_gear_by_activity_type",
-        lambda _user_id, _activity_type, _db: None,
-    )
 
 
 class TestParseGpxFile:

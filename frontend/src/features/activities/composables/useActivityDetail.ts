@@ -8,7 +8,6 @@ import type {
   ActivityMedia,
   ActivityOwner,
 } from '@/features/activities/types'
-import type { Gear } from '@/features/gears/types'
 import type { Units } from '@/features/activities/utils/format'
 
 import { queryKeys } from '@/services/queryKeys'
@@ -18,7 +17,6 @@ import {
   fetchPublicServerSettings,
 } from '@/features/config/services/serverSettings'
 import { useAuthStore } from '@/features/auth/stores/auth'
-import { fetchGearsByType } from '@/features/gears/services/gears'
 import { fetchActivityOwner } from '@/features/activities/services/activityOwner'
 import {
   deleteActivity,
@@ -28,7 +26,6 @@ import {
   fetchActivitySets,
   fetchActivityStreams,
   fetchActivityWorkoutSteps,
-  setActivityGear,
 } from '@/features/activities/services/activities'
 import {
   deleteActivityMedia,
@@ -177,50 +174,6 @@ export function useActivityExerciseTitlesQuery(enabled: MaybeRefOrGetter<boolean
 }
 
 /**
- * The gears that can be associated with an activity of the given gear type, for
- * the activity gear picker. Gated on authentication and a valid (non-`null`)
- * gear type so non-gear activities never fetch.
- *
- * @param gearType - Reactive numeric gear type, or `null` when the activity
- *   family has no associated gear.
- * @returns The TanStack query result for the matching gears.
- */
-export function useActivityGearOptionsQuery(gearType: MaybeRefOrGetter<number | null>) {
-  const auth = useAuthStore()
-  const type = computed(() => toValue(gearType))
-
-  return useQuery<Gear[]>({
-    queryKey: computed(() => queryKeys.gears.byType(type.value ?? 0)),
-    queryFn: ({ signal }) => fetchGearsByType(type.value as number, signal),
-    enabled: computed(() => auth.isAuthenticated && (type.value ?? 0) > 0),
-    staleTime: 5 * 60_000,
-  })
-}
-
-/**
- * Sets (or clears, with `gearId: null`) the gear associated with an activity.
- * On success it writes the returned activity straight into the detail cache;
- * on settle it invalidates the activities and gears domains so lists and gear
- * activity counts refetch the server-authoritative state.
- *
- * @returns The TanStack mutation for updating an activity's gear.
- */
-export function useSetActivityGearMutation() {
-  const client = useQueryClient()
-
-  return useMutation<Activity, Error, { activity: Activity; gearId: number | null }>({
-    mutationFn: ({ activity, gearId }) => setActivityGear(activity, gearId),
-    onSuccess: (updated) => {
-      client.setQueryData(queryKeys.activities.detail(updated.id), updated)
-    },
-    onSettled: () => {
-      void client.invalidateQueries({ queryKey: queryKeys.activities.all() })
-      void client.invalidateQueries({ queryKey: queryKeys.gears.all() })
-    },
-  })
-}
-
-/**
  * The unit system to present an activity in: the authenticated user's
  * preference, or the instance default (public server settings) for anonymous
  * public viewers. Mirrors v1's auth-vs-public unit resolution. Shares the
@@ -252,9 +205,9 @@ export function useDisplayUnits(): ComputedRef<Units> {
 }
 
 /**
- * Deletes an activity. On settle it invalidates the activities and gears
- * domains so lists and gear activity counts drop the removed activity. The
- * caller navigates away from the (now-gone) detail view on success.
+ * Deletes an activity. On settle it invalidates the activities domain so
+ * lists drop the removed activity. The caller navigates away from the
+ * (now-gone) detail view on success.
  *
  * @returns The TanStack mutation for deleting an activity.
  */
@@ -265,7 +218,6 @@ export function useDeleteActivityMutation() {
     mutationFn: (id) => deleteActivity(id),
     onSettled: () => {
       void client.invalidateQueries({ queryKey: queryKeys.activities.all() })
-      void client.invalidateQueries({ queryKey: queryKeys.gears.all() })
     },
   })
 }

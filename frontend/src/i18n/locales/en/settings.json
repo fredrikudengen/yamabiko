@@ -599,7 +599,7 @@
   },
   "integrations": {
     "title": "Integrations",
-    "subtitle": "Connect Strava and Garmin Connect to import your activities and gear",
+    "subtitle": "Connect Google Health to import your activities",
     "cancel": "Cancel",
     "close": "Close",
     "connect": "Connect",
@@ -629,7 +629,7 @@
   },
   "import": {
     "title": "Import",
-    "subtitle": "Import activities and gear from files or a Strava bulk export",
+    "subtitle": "Import activities from files or a Strava bulk export",
     "beta": "Beta",
     "bulk": {
       "title": "Bulk import",
@@ -641,16 +641,9 @@
     "strava": {
       "title": "Strava import",
       "subtitle": "Import from a Strava bulk export placed in the server's strava-import folder",
-      "import": "Import",
       "activities": "Import activities",
-      "bikes": "Import bikes",
-      "shoes": "Import shoes",
       "activitiesQueued": "Strava activities queued for import; see logs for status\u2026",
-      "activitiesError": "Couldn't queue the Strava activities import. Please try again.",
-      "bikesSuccess": "Strava bikes imported",
-      "bikesError": "Couldn't import Strava bikes. Please try again.",
-      "shoesSuccess": "Strava shoes imported",
-      "shoesError": "Couldn't import Strava shoes. Please try again."
+      "activitiesError": "Couldn't queue the Strava activities import. Please try again."
     }
   },
   "profile": {
@@ -717,41 +710,6 @@
       "saving": "Saving…",
       "saveSuccess": "Privacy settings updated",
       "saveError": "Couldn't update privacy settings. Please try again."
-    },
-    "defaultGear": {
-      "title": "Default gear",
-      "subtitle": "Gear assigned automatically to new activities, by type",
-      "notDefined": "Not defined",
-      "unavailable": "Default gear isn't available for your account yet.",
-      "save": "Save default gear",
-      "saving": "Saving…",
-      "saveSuccess": "Default gear updated",
-      "saveError": "Couldn't update default gear. Please try again.",
-      "error": {
-        "title": "Couldn't load default gear",
-        "description": "Something went wrong while loading your gear. You can try again.",
-        "retry": "Try again"
-      },
-      "shoeActivities": "Shoe activities",
-      "bikeActivities": "Bike activities",
-      "waterActivities": "Water activities",
-      "racquetActivities": "Racquet activities",
-      "snowActivities": "Snow activities",
-      "run": "Run",
-      "trailRun": "Trail run",
-      "virtualRun": "Virtual run",
-      "walk": "Walk",
-      "hike": "Hike",
-      "ride": "Ride",
-      "mtbRide": "Mountain bike ride",
-      "gravelRide": "Gravel ride",
-      "virtualRide": "Virtual ride",
-      "ows": "Open water swim",
-      "windsurf": "Windsurf",
-      "tennis": "Tennis",
-      "alpineSki": "Alpine ski",
-      "nordicSki": "Nordic ski",
-      "snowboard": "Snowboard"
     },
     "dataTransfer": {
       "title": "Your data",

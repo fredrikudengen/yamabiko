@@ -10,7 +10,6 @@ def _build_app(mock_db):
     import auth.dependencies as auth_deps
     import core.database as core_db
     import core.dependencies as core_dep
-    import gears.gear.dependencies as gear_dep
     import users.users.dependencies as users_dep
 
     app = FastAPI()
@@ -35,7 +34,6 @@ def _build_app(mock_db):
         act_dep.validate_sort_order,
         act_dep.validate_visibility,
         act_dep.validate_activity_id,
-        gear_dep.validate_gear_id,
     ]:
         app.dependency_overrides[dep] = _mock
     app.dependency_overrides[auth_deps.get_sub_from_access_token] = _uid
@@ -236,42 +234,6 @@ class TestTypes:
             assert resp.status_code == 200
 
 
-class TestGear:
-    def test_list(self, mock_db):
-        with (
-            patch("activities.activity.router.activities_crud.get_gear_activities_count_by_user_id") as c,
-            patch(
-                "activities.activity.router.activities_crud.get_user_activities_by_gear_id_and_user_id_with_pagination"
-            ) as mock_list,
-        ):
-            c.return_value = 1
-            mock_list.return_value = [_valid_activity()]
-            resp = TestClient(_build_app(mock_db)).get("/activities/gear/1/list", headers={"Authorization": "Bearer x"})
-            assert resp.status_code == 200
-
-    def test_activities(self, mock_db):
-        with patch("activities.activity.router.activities_crud.get_user_activities_by_gear_id_and_user_id") as m:
-            m.return_value = [_valid_activity()]
-            resp = TestClient(_build_app(mock_db)).get("/activities/gear/1", headers={"Authorization": "Bearer x"})
-            assert resp.status_code == 200
-
-    def test_number(self, mock_db):
-        with patch("activities.activity.router.activities_crud.get_user_activities_by_gear_id_and_user_id") as m:
-            m.return_value = [_valid_activity()]
-            resp = TestClient(_build_app(mock_db)).get(
-                "/activities/gear/1/number", headers={"Authorization": "Bearer x"}
-            )
-            assert resp.status_code == 200 and resp.json() == 1
-
-    def test_number_empty(self, mock_db):
-        with patch("activities.activity.router.activities_crud.get_user_activities_by_gear_id_and_user_id") as m:
-            m.return_value = None
-            resp = TestClient(_build_app(mock_db)).get(
-                "/activities/gear/1/number", headers={"Authorization": "Bearer x"}
-            )
-            assert resp.status_code == 200 and resp.json() == 0
-
-
 class TestFollowing:
     def test_other_user_forbidden(self, mock_db):
         resp = TestClient(_build_app(mock_db)).get(
@@ -286,16 +248,6 @@ class TestPagination:
             m.return_value = [_valid_activity()]
             resp = TestClient(_build_app(mock_db)).get(
                 "/activities/user/1/page_number/1/num_records/10", headers={"Authorization": "Bearer x"}
-            )
-            assert resp.status_code == 200
-
-    def test_gear(self, mock_db):
-        with patch(
-            "activities.activity.router.activities_crud.get_user_activities_by_gear_id_and_user_id_with_pagination"
-        ) as m:
-            m.return_value = [_valid_activity()]
-            resp = TestClient(_build_app(mock_db)).get(
-                "/activities/gear/1/page_number/1/num_records/10", headers={"Authorization": "Bearer x"}
             )
             assert resp.status_code == 200
 

@@ -217,11 +217,6 @@ class TestUtilsTcx:
                 "activities.activity_file_import.utils_tcx._extract_waypoints",
                 return_value=fake_waypoints,
             ),
-            patch(
-                "activities.activity_file_import.utils_tcx"
-                ".user_default_gear_utils.get_user_default_gear_by_activity_type",
-                return_value=None,
-            ),
         ):
             mock_reader_class.return_value.read.return_value = mock_tcx
 
@@ -282,11 +277,6 @@ class TestUtilsTcx:
             patch(
                 "activities.activity_file_import.utils_tcx._extract_waypoints",
                 return_value=fake_waypoints,
-            ),
-            patch(
-                "activities.activity_file_import.utils_tcx"
-                ".user_default_gear_utils.get_user_default_gear_by_activity_type",
-                return_value=None,
             ),
             patch(
                 "activities.activity_file_import.utils_tcx.activity_file_import_utils.resolve_location",
@@ -353,11 +343,6 @@ class TestUtilsTcx:
             patch(
                 "activities.activity_file_import.utils_tcx._extract_waypoints",
                 return_value=fake_waypoints,
-            ),
-            patch(
-                "activities.activity_file_import.utils_tcx"
-                ".user_default_gear_utils.get_user_default_gear_by_activity_type",
-                return_value=None,
             ),
             patch(
                 "activities.activity_file_import.utils_tcx.activity_file_import_utils.resolve_location",

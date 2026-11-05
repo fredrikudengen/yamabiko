@@ -524,7 +524,6 @@ async def parse_and_store_activity_from_file(
     is_bulk_import: bool = False,
     strava_activities: dict | None = None,
     import_initiated_time: str | None = None,
-    users_existing_gear_nickname_to_id: dict | None = None,
     activity_name: str | None = None,
     parsed_info_hook: Callable[[dict], dict] | None = None,
 ):
@@ -545,8 +544,6 @@ async def parse_and_store_activity_from_file(
             then by activities.csv column header.
         import_initiated_time: ISO timestamp of when the bulk import was
             initiated.
-        users_existing_gear_nickname_to_id: Mapping of gear nickname to
-            internal gear ID, used during Strava bulk imports.
         activity_name: Optional override for the activity name.
         parsed_info_hook: Optional callable that receives the parsed payload
             and returns the (corrected) payload to store. Used by importers
@@ -641,7 +638,6 @@ async def parse_and_store_activity_from_file(
                     file_base_name,
                     strava_activities,
                     import_initiated_time,
-                    users_existing_gear_nickname_to_id,
                 )
             elif import_initiated_time and is_bulk_import:
                 # Not doing a Strava bulk import, so build an import info dict

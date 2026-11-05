@@ -162,56 +162,6 @@ export const queryKeys = {
   },
 
   /**
-   * Gears domain. Same shape as {@link queryKeys.notifications}: `all()` is the
-   * broad prefix for "invalidate every gears query", which the create/update/
-   * delete mutations invalidate on settle so lists, the nickname search, and
-   * detail views all refetch the server-authoritative state.
-   */
-  gears: {
-    /** Broad prefix; invalidating this cascades to every gears query. */
-    all: () => ['gears'] as const,
-    lists: () => ['gears', 'list'] as const,
-    /**
-     * @param filters - Serializable list filters (page size, show-inactive).
-     * @returns A list query key scoped to the given filters.
-     */
-    list: (filters: Record<string, unknown> = {}) => ['gears', 'list', filters] as const,
-    /**
-     * @param nickname - The nickname search term.
-     * @returns A query key for a nickname "contains" search.
-     */
-    search: (nickname: string) => ['gears', 'search', nickname] as const,
-    details: () => ['gears', 'detail'] as const,
-    /**
-     * @param id - Gear identifier.
-     * @returns A detail query key for a single gear.
-     */
-    detail: (id: number) => ['gears', 'detail', id] as const,
-    /** Broad prefix for every gear-components query (all gears). */
-    componentsLists: () => ['gears', 'components'] as const,
-    /**
-     * @param gearId - Parent gear identifier.
-     * @returns A query key for one gear's component list.
-     */
-    components: (gearId: number) => ['gears', 'components', gearId] as const,
-    /** The static component-type catalogues (cached for the session). */
-    componentTypes: () => ['gears', 'component-types'] as const,
-    /** Gears grouped by type for the default-gear selectors (under the gears prefix so gear writes refresh it). */
-    typeOptions: () => ['gears', 'type-options'] as const,
-    /** Gears of a single type, for the per-activity gear picker. */
-    byType: (gearType: number) => ['gears', 'by-type', gearType] as const,
-    /** Broad prefix for every gear-activities query (all gears). */
-    activitiesLists: () => ['gears', 'activities'] as const,
-    /**
-     * @param gearId - Parent gear identifier.
-     * @param filters - Serializable list filters (paging).
-     * @returns A query key for one gear's paginated activities list.
-     */
-    activities: (gearId: number, filters: Record<string, unknown> = {}) =>
-      ['gears', 'activities', gearId, filters] as const,
-  },
-
-  /**
    * Users administration domain (admin settings zone). Same shape as
    * {@link queryKeys.notifications}: `all()` is the broad prefix the create/
    * update/delete mutations invalidate on settle so every list, the username

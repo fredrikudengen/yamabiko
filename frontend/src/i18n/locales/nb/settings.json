@@ -599,7 +599,7 @@
   },
   "integrations": {
     "title": "Integrasjoner",
-    "subtitle": "Koble til Strava og Garmin Connect for å importere aktivitetene og utstyret ditt",
+    "subtitle": "Koble til Google Health for å importere aktivitetene dine",
     "cancel": "Avbryt",
     "close": "Lukk",
     "connect": "Koble til",
@@ -629,7 +629,7 @@
   },
   "import": {
     "title": "Importer",
-    "subtitle": "Importer aktiviteter og utstyr fra filer eller en Strava-masseeksport",
+    "subtitle": "Importer aktiviteter fra filer eller en Strava-masseeksport",
     "beta": "Beta",
     "bulk": {
       "title": "Masseimport",
@@ -641,16 +641,9 @@
     "strava": {
       "title": "Strava-import",
       "subtitle": "Importer fra en Strava-masseeksport som er plassert i serverens strava-import-mappe",
-      "import": "Importer",
       "activities": "Importer aktiviteter",
-      "bikes": "Importer sykler",
-      "shoes": "Importer sko",
       "activitiesQueued": "Strava-aktiviteter satt i kø for import; se loggene for status…",
-      "activitiesError": "Kunne ikke sette Strava-aktivitetsimporten i kø. Vennligst prøv igjen.",
-      "bikesSuccess": "Strava-sykler importert",
-      "bikesError": "Kunne ikke importere Strava-sykler. Vennligst prøv igjen.",
-      "shoesSuccess": "Strava-sko importert",
-      "shoesError": "Kunne ikke importere Strava-sko. Vennligst prøv igjen."
+      "activitiesError": "Kunne ikke sette Strava-aktivitetsimporten i kø. Vennligst prøv igjen."
     }
   },
   "profile": {
@@ -717,41 +710,6 @@
       "saving": "Lagrer…",
       "saveSuccess": "Personverninnstillinger oppdatert",
       "saveError": "Kunne ikke oppdatere personverninnstillinger. Vennligst prøv igjen."
-    },
-    "defaultGear": {
-      "title": "Standardutstyr",
-      "subtitle": "Utstyr som tildeles automatisk til nye aktiviteter, etter type",
-      "notDefined": "Ikke definert",
-      "unavailable": "Standardutstyr er ikke tilgjengelig for kontoen din ennå.",
-      "save": "Lagre standardutstyr",
-      "saving": "Lagrer…",
-      "saveSuccess": "Standardutstyr oppdatert",
-      "saveError": "Kunne ikke oppdatere standardutstyr. Vennligst prøv igjen.",
-      "error": {
-        "title": "Kunne ikke laste standardutstyr",
-        "description": "Noe gikk galt under lasting av utstyret ditt. Du kan prøve igjen.",
-        "retry": "Prøv igjen"
-      },
-      "shoeActivities": "Skoaktiviteter",
-      "bikeActivities": "Sykkelaktiviteter",
-      "waterActivities": "Vannaktiviteter",
-      "racquetActivities": "Racketaktiviteter",
-      "snowActivities": "Snøaktiviteter",
-      "run": "Løp",
-      "trailRun": "Terrengløp",
-      "virtualRun": "Virtuelt løp",
-      "walk": "Tur",
-      "hike": "Fottur",
-      "ride": "Sykkeltur",
-      "mtbRide": "Terrengsykkeltur",
-      "gravelRide": "Grustur",
-      "virtualRide": "Virtuell sykkeltur",
-      "ows": "Svømming i åpent vann",
-      "windsurf": "Brettseiling",
-      "tennis": "Tennis",
-      "alpineSki": "Alpint",
-      "nordicSki": "Langrenn",
-      "snowboard": "Snowboard"
     },
     "dataTransfer": {
       "title": "Dataene dine",

@@ -1,6 +1,6 @@
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { Activity, Bike, Calendar, List, Map, Mountain, type LucideIcon } from '@lucide/vue'
+import { Activity, Calendar, List, Map, Mountain, type LucideIcon } from '@lucide/vue'
 
 import { useAuthStore } from '@/features/auth/stores/auth'
 
@@ -45,7 +45,6 @@ export function useNavigation() {
               { name: 'coverage', label: t('nav.coverage'), icon: Map },
             ],
           },
-          { name: 'gears', label: t('nav.gear'), icon: Bike },
         ]
       : [],
   )

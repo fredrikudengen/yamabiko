@@ -113,12 +113,6 @@ export interface ProfileEditInput {
   firstDayOfWeek: Schemas['WeekDay']
 }
 
-/** Raw default-gear payload (snake_case wire shape). */
-export type DefaultGearDto = Schemas['UsersDefaultGearRead']
-
-/** Update body for the user's default gear (round-trips id + user_id). */
-export type DefaultGearUpdateDto = Schemas['UsersDefaultGearUpdate']
-
 /**
  * The user's default gear per activity type. Each field is the gear id assigned
  * as the default for that activity (or `null` for none). Mapped from

@@ -22,8 +22,6 @@ import core.config as core_config
 import core.router as core_router
 import coverage_map.router as coverage_map_router
 import followers.router as followers_router
-import gears.gear.router as gears_router
-import gears.gear_components.router as gear_components_router
 import google_health.router as google_health_router
 import notifications.router as notifications_router
 import segments.router as segments_router
@@ -32,7 +30,6 @@ import server_settings.router as server_settings_router
 import strava.router as strava_router
 import users.users.public_router as users_public_router
 import users.users.router as users_router
-import users.users_default_gear.router as user_default_gear_router
 import users.users_profile.browser_redirect_router as profile_browser_redirect_router
 import users.users_profile.router as profile_router
 import websocket.router as websocket_router
@@ -118,18 +115,6 @@ router.include_router(
     dependencies=[Depends(auth_dependencies.validate_access_token)],
 )
 router.include_router(
-    gear_components_router.router,
-    prefix=core_config.ROOT_PATH + "/gear_components",
-    tags=["gear_components"],
-    dependencies=[Depends(auth_dependencies.validate_access_token)],
-)
-router.include_router(
-    gears_router.router,
-    prefix=core_config.ROOT_PATH + "/gears",
-    tags=["gears"],
-    dependencies=[Depends(auth_dependencies.validate_access_token)],
-)
-router.include_router(
     identity_providers_router.router,
     prefix=core_config.ROOT_PATH + "/idp",
     tags=["identity_providers"],
@@ -200,15 +185,6 @@ router.include_router(
     strava_router.router,
     prefix=core_config.ROOT_PATH + "/strava",
     tags=["strava"],
-)
-router.include_router(
-    user_default_gear_router.router,
-    prefix=core_config.ROOT_PATH + "/profile/default_gear",
-    tags=["profile"],
-    dependencies=[
-        Depends(auth_dependencies.validate_access_token),
-        Security(auth_dependencies.check_scopes, scopes=["profile"]),
-    ],
 )
 router.include_router(
     auth_api_keys_router.router,
