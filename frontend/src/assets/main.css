@@ -54,6 +54,11 @@
  * sticky header (top) and the mobile bottom navigation (bottom) so content
  * never sits under the OS chrome.
  */
+/* Page backdrop behind the app shell (see --page). */
+@utility bg-page {
+  background: var(--page);
+}
+
 @utility pt-safe {
   padding-top: env(safe-area-inset-top);
 }
@@ -137,6 +142,8 @@
   --radius: 0.5rem;
 
   --background: #f1efe8;
+  /* Behind the app shell; dark mode paints an evening sky here. */
+  --page: var(--background);
   --foreground: #2c2c2a;
   --card: #ffffff;
   --card-foreground: #2c2c2a;
@@ -159,26 +166,31 @@
 }
 
 .dark {
-  --background: #18181b;
-  --foreground: #f4f4f5;
-  --card: #27272a;
-  --card-foreground: #f4f4f5;
-  --popover: #27272a;
-  --popover-foreground: #f4f4f5;
+  /* Night indigo: blue-tinted greys rather than neutral zinc. */
+  --background: #121b2b;
+  --foreground: #eef2f7;
+  --card: #172131;
+  --card-foreground: #eef2f7;
+  --popover: #172131;
+  --popover-foreground: #eef2f7;
   --primary: #8fb3dc;
   --primary-foreground: #0f2236;
-  --secondary: #0f2236;
+  --secondary: #22385a;
   --secondary-foreground: #8fb3dc;
-  --muted: #27272a;
-  --muted-foreground: #a1a1aa;
-  --accent: #0f2236;
+  --muted: #1e2a3c;
+  --muted-foreground: #9aa8bc;
+  --accent: #22385a;
   --accent-foreground: #8fb3dc;
   --destructive: #e24b4a;
   --destructive-foreground: #ffffff;
   --warning: #fbbf24;
-  --border: rgba(255, 255, 255, 0.08);
-  --input: rgba(255, 255, 255, 0.15);
+  --border: rgba(143, 179, 220, 0.12);
+  --input: rgba(143, 179, 220, 0.2);
   --ring: #8fb3dc;
+  /* Evening sky: light indigo at the top of the first screen, fading into the background. */
+  --page:
+    linear-gradient(180deg, #2a3c5e 0%, #1a2740 45%, #121b2b 100%) top / 100% 100svh no-repeat,
+    #121b2b;
 }
 
 @theme inline {
