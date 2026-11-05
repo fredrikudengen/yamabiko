@@ -26,7 +26,7 @@ describe('buildChartConfiguration', () => {
     expect(dataset?.data).toEqual([1, 2])
     expect(dataset?.fill).toBe(true)
     // Flat translucent fill (not a gradient), per the design system.
-    expect(dataset?.backgroundColor).toBe('rgba(29, 158, 117, 0.15)')
+    expect(dataset?.backgroundColor).toBe('rgba(47, 93, 140, 0.15)')
     expect(dataset?.tension).toBe(0.3)
   })
 
