@@ -249,8 +249,8 @@ def create_app() -> FastAPI:
         lifespan=lifespan,
         docs_url=docs_url,
         redoc_url=redoc_url,
-        title="Endurain",
-        summary="Endurain API for the Endurain app",
+        title="Yamabiko",
+        summary="Yamabiko API for the Yamabiko app",
         version=core_config.API_VERSION,
         license_info={
             "name": core_config.LICENSE_NAME,

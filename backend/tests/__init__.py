@@ -1,3 +1,3 @@
 """
-Tests for Endurain backend application.
+Tests for the Yamabiko backend application.
 """

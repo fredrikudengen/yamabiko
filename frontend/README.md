@@ -1,7 +1,6 @@
-# Endurain frontend (v2)
+# Yamabiko frontend
 
-The next-generation Endurain web client — a ground-up rewrite of `frontend`
-following the strangler-fig plan in `devdocs/UX_INCREMENTAL_MIGRATION_PLAN.md`.
+The Yamabiko web client, inherited from Endurain's v2 frontend.
 
 ## Stack
 
@@ -22,18 +21,18 @@ npm run dev        # dev server with hot reload
 
 ## Commands
 
-| Command | Purpose |
-| --- | --- |
-| `npm run dev` | Start the dev server |
-| `npm run build` | Type-check + production build |
-| `npm run test` | Run unit tests once |
-| `npm run test:unit` | Run unit tests in watch mode |
-| `npm run test:coverage` | Run tests with the coverage gate |
-| `npm run type-check` | `vue-tsc` type check |
-| `npm run lint` / `npm run lint:check` | oxlint + ESLint (fix / check) |
-| `npm run format` / `npm run format:check` | Prettier (write / check) |
-| `npm run check` | type-check + lint + format + test (run before pushing) |
-| `npm run gen:api` | Regenerate the typed API client (see below) |
+| Command                                   | Purpose                                                |
+| ----------------------------------------- | ------------------------------------------------------ |
+| `npm run dev`                             | Start the dev server                                   |
+| `npm run build`                           | Type-check + production build                          |
+| `npm run test`                            | Run unit tests once                                    |
+| `npm run test:unit`                       | Run unit tests in watch mode                           |
+| `npm run test:coverage`                   | Run tests with the coverage gate                       |
+| `npm run type-check`                      | `vue-tsc` type check                                   |
+| `npm run lint` / `npm run lint:check`     | oxlint + ESLint (fix / check)                          |
+| `npm run format` / `npm run format:check` | Prettier (write / check)                               |
+| `npm run check`                           | type-check + lint + format + test (run before pushing) |
+| `npm run gen:api`                         | Regenerate the typed API client (see below)            |
 
 CI (`.github/workflows/lint-frontend.yml`) runs format, lint, type-check, and
 the coverage-gated tests on every PR touching `frontend`.

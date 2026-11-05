@@ -59,7 +59,7 @@ describe('security mappers', () => {
 
   it('maps MFA setup (drops the app name)', () => {
     expect(
-      mapMfaSetup({ secret: 'SEC', qr_code: 'data:image/png;base64,AAA', app_name: 'Endurain' }),
+      mapMfaSetup({ secret: 'SEC', qr_code: 'data:image/png;base64,AAA', app_name: 'Yamabiko' }),
     ).toEqual({ secret: 'SEC', qrCode: 'data:image/png;base64,AAA' })
   })
 
@@ -122,7 +122,7 @@ describe('security service requests', () => {
     vi.mocked(apiFetch).mockResolvedValue({
       secret: 'SEC',
       qr_code: 'data:image/png;base64,AAA',
-      app_name: 'Endurain',
+      app_name: 'Yamabiko',
     })
 
     expect(await setupMfa()).toEqual({ secret: 'SEC', qrCode: 'data:image/png;base64,AAA' })

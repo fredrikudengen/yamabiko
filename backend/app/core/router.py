@@ -52,13 +52,13 @@ class AboutResponse(BaseModel):
 )
 async def about() -> AboutResponse:
     """
-    Returns metadata information about the Endurain API.
+    Returns metadata information about the Yamabiko API.
 
     Returns:
         API name, version, and license details.
     """
     return AboutResponse(
-        name="Endurain API",
+        name="Yamabiko API",
         version=core_config.API_VERSION,
         license=LicenseInfo(
             name=core_config.LICENSE_NAME,

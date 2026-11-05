@@ -1,5 +1,5 @@
 /**
- * Resolves an Endurain design-token colour (declared in the `@theme` block of
+ * Resolves a Yamabiko design-token colour (declared in the `@theme` block of
  * `src/assets/main.css`) to a concrete colour string for canvas/JS contexts —
  * Chart.js and similar render to a `<canvas>` and cannot consume `var(--…)`.
  *

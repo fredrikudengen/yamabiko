@@ -45,8 +45,8 @@ def build_openapi() -> dict:
         contribute to the schema).
     """
     app = FastAPI(
-        title="Endurain",
-        summary="Endurain API for the Endurain app",
+        title="Yamabiko",
+        summary="Yamabiko API for the Yamabiko app",
         version=core_config.API_VERSION,
         license_info={
             "name": core_config.LICENSE_NAME,
