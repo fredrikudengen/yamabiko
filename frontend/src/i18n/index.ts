@@ -37,35 +37,7 @@ export type MessageSchema = typeof en
 /** Locales the app can switch to, in display order. */
 export const SUPPORTED_LOCALES = [
   { code: 'en', label: 'English', dir: 'ltr' },
-  { code: 'ca', label: 'Català', dir: 'ltr' },
-  { code: 'de', label: 'Deutsch', dir: 'ltr' },
-  { code: 'es', label: 'Español', dir: 'ltr' },
-  { code: 'fr', label: 'Français', dir: 'ltr' },
-  { code: 'gl', label: 'Galego', dir: 'ltr' },
-  { code: 'it', label: 'Italiano', dir: 'ltr' },
-  { code: 'nl', label: 'Nederlands', dir: 'ltr' },
-  { code: 'pt-PT', label: 'Português', dir: 'ltr' },
-  { code: 'sl', label: 'Slovenščina', dir: 'ltr' },
-  { code: 'sv', label: 'Svenska', dir: 'ltr' },
-  { code: 'zh-Hans', label: '简体中文', dir: 'ltr' },
-  { code: 'zh-Hant', label: '繁體中文', dir: 'ltr' },
-  { code: 'pl', label: 'Polski', dir: 'ltr' },
-  { code: 'tr', label: 'Türkçe', dir: 'ltr' },
-  { code: 'uk', label: 'Українська', dir: 'ltr' },
-  { code: 'ro', label: 'Română', dir: 'ltr' },
   { code: 'nb', label: 'Norsk bokmål', dir: 'ltr' },
-  { code: 'da', label: 'Dansk', dir: 'ltr' },
-  { code: 'fi', label: 'Suomi', dir: 'ltr' },
-  { code: 'cs', label: 'Čeština', dir: 'ltr' },
-  { code: 'el', label: 'Ελληνικά', dir: 'ltr' },
-  { code: 'hu', label: 'Magyar', dir: 'ltr' },
-  { code: 'bg', label: 'Български', dir: 'ltr' },
-  { code: 'hr', label: 'Hrvatski', dir: 'ltr' },
-  { code: 'sr', label: 'Srpski', dir: 'ltr' },
-  { code: 'sk', label: 'Slovenčina', dir: 'ltr' },
-  { code: 'lt', label: 'Lietuvių', dir: 'ltr' },
-  { code: 'lv', label: 'Latviešu', dir: 'ltr' },
-  { code: 'et', label: 'Eesti', dir: 'ltr' },
 ] as const satisfies ReadonlyArray<{ code: string; label: string; dir: 'ltr' | 'rtl' }>
 
 export type LocaleCode = (typeof SUPPORTED_LOCALES)[number]['code']
@@ -83,15 +55,7 @@ declare module 'vue-i18n' {
 const i18n = createI18n<false>({
   legacy: false,
   locale: DEFAULT_LOCALE,
-  // Region/script-aware fallback chain so regional and script variants degrade
-  // gracefully (e.g. `pt-BR` → `pt` → `en`, Traditional → Simplified → `en`)
-  // instead of jumping straight to English.
-  fallbackLocale: {
-    'pt-PT': ['pt', DEFAULT_LOCALE],
-    'zh-Hant': ['zh-Hans', DEFAULT_LOCALE],
-    'zh-Hans': [DEFAULT_LOCALE],
-    default: [DEFAULT_LOCALE],
-  },
+  fallbackLocale: DEFAULT_LOCALE,
   messages: { en },
 })
 
@@ -123,7 +87,7 @@ export function isSupportedLocale(value: string): value is LocaleCode {
  * stores canonical BCP 47 tags identical to {@link SUPPORTED_LOCALES}, so each
  * supported code maps to itself and anything else is treated as unknown.
  *
- * @param value - Backend preferred language, e.g. `en` or `pt-PT`.
+ * @param value - Backend preferred language, e.g. `en` or `nb`.
  * @returns A supported locale, or `null` when no mapping exists.
  */
 export function getLocaleForBackendLanguage(value: string | null | undefined): LocaleCode | null {

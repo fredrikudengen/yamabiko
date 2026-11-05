@@ -68,35 +68,7 @@ def __getattr__(name: str) -> frozenset[str]:
 # across emails. Keep this table in sync when ``Language`` gains entries.
 HTML_LANG_BY_LOCALE: Final[dict[str, str]] = {
     "en": "en-US",
-    "pt-PT": "pt-PT",
-    "zh-Hans": "zh-Hans",
-    "zh-Hant": "zh-Hant",
-    "ca": "ca-ES",
-    "de": "de-DE",
-    "fr": "fr-FR",
-    "gl": "gl-ES",
-    "it": "it-IT",
-    "nl": "nl-NL",
-    "sl": "sl-SI",
-    "sv": "sv-SE",
-    "es": "es-ES",
-    "pl": "pl-PL",
-    "tr": "tr-TR",
-    "uk": "uk-UA",
-    "ro": "ro-RO",
     "nb": "nb-NO",
-    "da": "da-DK",
-    "fi": "fi-FI",
-    "cs": "cs-CZ",
-    "el": "el-GR",
-    "hu": "hu-HU",
-    "bg": "bg-BG",
-    "hr": "hr-HR",
-    "sr": "sr-RS",
-    "sk": "sk-SK",
-    "lt": "lt-LT",
-    "lv": "lv-LV",
-    "et": "et-EE",
 }
 
 _LOCALES_DIR = pathlib.Path(__file__).parent / "locales"
@@ -129,10 +101,7 @@ def normalize_locale(locale: str | None) -> str:
     candidate = locale.strip()
     if not candidate:
         return DEFAULT_LOCALE
-    # Case-insensitive match that preserves the canonical BCP 47 casing
-    # (e.g. "ZH-HANS" -> "zh-Hans"). Script and region subtags in the
-    # supported set are title/upper-cased, so a naive ``.lower()`` compare
-    # would never match them.
+    # Case-insensitive match that returns the canonical code ("NB" -> "nb").
     lowered = candidate.lower()
     return next(
         (code for code in _supported() if code.lower() == lowered),

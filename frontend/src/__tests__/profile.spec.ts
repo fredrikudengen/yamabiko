@@ -130,7 +130,7 @@ describe('profile service requests', () => {
       currency: 'dollar',
       height: 172,
       maxHeartRate: 188,
-      preferredLanguage: 'pt-PT',
+      preferredLanguage: 'nb',
       firstDayOfWeek: 'sunday',
     }
 
@@ -148,7 +148,7 @@ describe('profile service requests', () => {
       currency: 'dollar',
       height: 172,
       max_heart_rate: 188,
-      preferred_language: 'pt-PT',
+      preferred_language: 'nb',
       first_day_of_week: 'sunday',
     })
   })

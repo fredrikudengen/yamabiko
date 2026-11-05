@@ -47,16 +47,15 @@ class TestNormalizeLocale:
 
     def test_supported_locale_returned_unchanged(self):
         """A supported locale code is returned as-is."""
-        assert core_i18n.normalize_locale("pt-PT") == "pt-PT"
+        assert core_i18n.normalize_locale("nb") == "nb"
 
     def test_matches_case_insensitively(self):
-        """Codes match case-insensitively but keep canonical BCP 47 casing."""
-        assert core_i18n.normalize_locale("ZH-HANS") == "zh-Hans"
-        assert core_i18n.normalize_locale("ES") == "es"
+        """Codes match case-insensitively."""
+        assert core_i18n.normalize_locale("NB") == "nb"
 
     def test_normalizes_with_leading_trailing_spaces(self):
         """Whitespace around a valid locale is stripped."""
-        assert core_i18n.normalize_locale("  es  ") == "es"
+        assert core_i18n.normalize_locale("  nb  ") == "nb"
 
     def test_all_supported_locales_are_accepted(self):
         """Every locale in SUPPORTED_LOCALES passes through."""
@@ -85,25 +84,9 @@ class TestHtmlLang:
         """'en' maps to 'en-US'."""
         assert core_i18n.html_lang("en") == "en-US"
 
-    def test_pt_pt_returns_pt_pt(self):
-        """'pt-PT' maps to 'pt-PT'."""
-        assert core_i18n.html_lang("pt-PT") == "pt-PT"
-
-    def test_zh_hans_returns_zh_hans(self):
-        """'zh-Hans' maps to 'zh-Hans'."""
-        assert core_i18n.html_lang("zh-Hans") == "zh-Hans"
-
-    def test_zh_hant_returns_zh_hant(self):
-        """'zh-Hant' maps to 'zh-Hant'."""
-        assert core_i18n.html_lang("zh-Hant") == "zh-Hant"
-
-    def test_de_returns_de_de(self):
-        """'de' maps to the region-tagged 'de-DE'."""
-        assert core_i18n.html_lang("de") == "de-DE"
-
-    def test_es_returns_es_es(self):
-        """'es' maps to the region-tagged 'es-ES'."""
-        assert core_i18n.html_lang("es") == "es-ES"
+    def test_nb_returns_nb_no(self):
+        """'nb' maps to the region-tagged 'nb-NO'."""
+        assert core_i18n.html_lang("nb") == "nb-NO"
 
     def test_unsupported_falls_back_to_en_us(self):
         """Unsupported locale normalizes to 'us' → 'en-US'."""
@@ -139,18 +122,18 @@ class TestTranslate:
         result = core_i18n.t("password_reset.greeting", "en", name="Alice")
         assert "Alice" in result
 
-    def test_pt_subject_differs_from_en(self, isolated_catalogs):
+    def test_nb_subject_differs_from_en(self, isolated_catalogs):
         """Translated catalog returns a locale-specific subject."""
         _write_catalog(isolated_catalogs, "en", {"k.subject": "English subject"})
-        _write_catalog(isolated_catalogs, "pt-PT", {"k.subject": "Portuguese subject"})
-        assert core_i18n.t("k.subject", "pt-PT") == "Portuguese subject"
+        _write_catalog(isolated_catalogs, "nb", {"k.subject": "Norwegian subject"})
+        assert core_i18n.t("k.subject", "nb") == "Norwegian subject"
         assert core_i18n.t("k.subject", "en") == "English subject"
 
     def test_missing_key_in_locale_falls_back_to_en(self, isolated_catalogs):
         """A key missing from the locale catalog reads from en catalog."""
         _write_catalog(isolated_catalogs, "en", {"only.in.en": "default"})
-        _write_catalog(isolated_catalogs, "pt-PT", {"other.key": "x"})
-        assert core_i18n.t("only.in.en", "pt-PT") == "default"
+        _write_catalog(isolated_catalogs, "nb", {"other.key": "x"})
+        assert core_i18n.t("only.in.en", "nb") == "default"
 
     def test_none_locale_returns_english(self):
         """None locale produces the same result as 'en'."""

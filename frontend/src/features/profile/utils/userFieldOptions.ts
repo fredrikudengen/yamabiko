@@ -15,38 +15,7 @@ import type { Validator } from '@/utils/validators'
 export const TEXT_MAX = 250
 
 /** Backend language codes offered in the preferred-language selector. */
-export const LANGUAGE_CODES: ReadonlyArray<Schemas['Language']> = [
-  'en',
-  'pt-PT',
-  'es',
-  'ca',
-  'de',
-  'fr',
-  'gl',
-  'it',
-  'nl',
-  'sl',
-  'sv',
-  'zh-Hans',
-  'zh-Hant',
-  'pl',
-  'tr',
-  'uk',
-  'ro',
-  'nb',
-  'da',
-  'fi',
-  'cs',
-  'el',
-  'hu',
-  'bg',
-  'hr',
-  'sr',
-  'sk',
-  'lt',
-  'lv',
-  'et',
-]
+export const LANGUAGE_CODES: ReadonlyArray<Schemas['Language']> = ['en', 'nb']
 
 /**
  * Sorts the language codes alphabetically by their localized display label.
