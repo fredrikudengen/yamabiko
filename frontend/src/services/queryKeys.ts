@@ -183,18 +183,6 @@ export const queryKeys = {
   },
 
   /**
-   * Core application metadata fetched from the backend and external sources.
-   */
-  core: {
-    /** The running backend's version (`/about`). */
-    aboutVersion: () => ['core', 'about-version'] as const,
-    /** The latest published stable release tag from the upstream repository. */
-    latestRelease: () => ['core', 'latest-release'] as const,
-    /** The latest published pre-release tag from the upstream repository. */
-    latestPreRelease: () => ['core', 'latest-pre-release'] as const,
-  },
-
-  /**
    * Segments (a start and an end node) and the efforts of activities on them.
    * `all()` is the broad prefix: a segment write also changes effort counts and
    * the efforts shown on activities, so it invalidates everything here.

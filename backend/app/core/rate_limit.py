@@ -1,5 +1,5 @@
 """
-Centralized rate limiting for the Endurain API.
+Centralized rate limiting for the Yamabiko API.
 
 Provides a single :data:`limiter` instance used by every
 router, named tier constants for different endpoint

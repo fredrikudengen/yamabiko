@@ -14,12 +14,10 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { Badge } from '@/components/ui/badge'
 import { useAppConfig } from '@/features/config/composables/useAppConfig'
 import { useCurrentUser } from '@/features/auth/composables/useCurrentUser'
 import { useNavigation, type NavLink } from '@/composables/useNavigation'
 import { useAuthStore } from '@/features/auth/stores/auth'
-import { useUpdateCheck } from '@/features/core/composables/useUpdateCheck'
 import { cn } from '@/lib/utils'
 
 const { t } = useI18n()
@@ -29,7 +27,6 @@ const auth = useAuthStore()
 const { data: currentUser } = useCurrentUser()
 const router = useRouter()
 const route = useRoute()
-const { updateAvailable, latestVersion } = useUpdateCheck()
 
 /**
  * Whether a nav entry maps to the active route, so its trigger/link can show
@@ -141,18 +138,6 @@ async function signOut(): Promise<void> {
               <RouterLink :to="{ name: 'settings' }">
                 <Settings class="size-4" />
                 <span>{{ t('nav.settings') }}</span>
-                <Badge
-                  v-if="updateAvailable"
-                  variant="secondary"
-                  class="ms-auto border-warning/30 bg-warning/10 text-warning"
-                  :title="
-                    latestVersion
-                      ? t('nav.updateAvailableTitle', { version: latestVersion })
-                      : t('nav.updateAvailable')
-                  "
-                >
-                  {{ t('nav.updateAvailable') }}
-                </Badge>
               </RouterLink>
             </DropdownMenuItem>
             <DropdownMenuSeparator />

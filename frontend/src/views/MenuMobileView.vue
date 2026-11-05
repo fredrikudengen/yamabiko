@@ -6,16 +6,13 @@ import { Activity, Calendar, LogOut, Settings, User } from '@lucide/vue'
 import LocaleSwitcher from '@/components/LocaleSwitcher.vue'
 import ThemeToggle from '@/components/ThemeToggle.vue'
 import AppFooter from '@/components/layout/AppFooter.vue'
-import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { useAuthStore } from '@/features/auth/stores/auth'
-import { useUpdateCheck } from '@/features/core/composables/useUpdateCheck'
 
 const { t } = useI18n()
 const auth = useAuthStore()
 const router = useRouter()
-const { updateAvailable, latestVersion } = useUpdateCheck()
 
 /** The profile entry opens profile settings: there are no public profile pages. */
 const profileRoute: RouteLocationRaw = { name: 'settings-profile' }
@@ -67,18 +64,6 @@ async function signOut(): Promise<void> {
         >
           <Settings class="size-4" />
           <span>{{ t('nav.settings') }}</span>
-          <Badge
-            v-if="updateAvailable"
-            variant="secondary"
-            class="ms-auto border-warning/30 bg-warning/10 text-warning"
-            :title="
-              latestVersion
-                ? t('nav.updateAvailableTitle', { version: latestVersion })
-                : t('nav.updateAvailable')
-            "
-          >
-            {{ t('nav.updateAvailable') }}
-          </Badge>
         </RouterLink>
         <hr class="border-border" />
         <RouterLink

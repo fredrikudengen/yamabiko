@@ -71,7 +71,7 @@ export interface paths {
         };
         /**
          * About
-         * @description Returns metadata information about the Endurain API.
+         * @description Returns metadata information about the Yamabiko API.
          *
          *     Returns:
          *         API name, version, and license details.
@@ -4283,7 +4283,7 @@ export interface components {
             /**
              * App Name
              * @description Application name for MFA
-             * @default Endurain
+             * @default Yamabiko
              */
             app_name: string;
             /**

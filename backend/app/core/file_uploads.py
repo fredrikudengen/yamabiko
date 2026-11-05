@@ -81,7 +81,7 @@ def _build_security_config() -> FileSecurityConfig:
     """Build the application-wide :class:`FileSecurityConfig`.
 
     Returns:
-        Configured instance with Endurain-specific limits applied.
+        Configured instance with Yamabiko-specific limits applied.
     """
     limits = SecurityLimits(
         max_image_size=_MAX_IMAGE_BYTES,

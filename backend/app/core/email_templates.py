@@ -1,10 +1,10 @@
-"""Shared HTML email template helpers for all Endurain email builders."""
+"""Shared HTML email template helpers for all Yamabiko email builders."""
 
 import html
 
 import core.i18n as core_i18n
 
-# Endurain brand palette (light surface), mirrored from the frontend design
+# Yamabiko brand palette (light surface), mirrored from the frontend design
 # tokens in frontend/src/assets/main.css so transactional emails match the UI.
 BRAND_PRIMARY = "#1d9e75"  # --primary           (brand green)
 BRAND_PRIMARY_DARK = "#0f6e56"  # --secondary-foreground (brand mid)
@@ -13,7 +13,7 @@ BRAND_BACKGROUND = "#f1efe8"  # --background        (page backdrop)
 BRAND_MUTED_FOREGROUND = "#888780"  # --muted-foreground  (footer text)
 BRAND_BORDER = "#e2e0d8"  # subtle hairline border
 
-# The new Endurain brand is green throughout, so every transactional email
+# The brand is green throughout, so every transactional email
 # shares one accent colour (previously Bootstrap blue/green per flow).
 LINK_COLOR_PRIMARY = BRAND_PRIMARY  # password reset
 LINK_COLOR_SUCCESS = BRAND_PRIMARY  # sign-up flows
@@ -26,12 +26,12 @@ INFO_BG = "#e1f5ee"  # brand secondary tint for informational details
 INFO_BORDER = "#bfe6d8"
 INFO_TEXT = BRAND_PRIMARY_DARK
 
-_LOGO_URL = "https://raw.githubusercontent.com/endurain-project/endurain/master/frontend/public/logo_light.png"
+_LOGO_URL = "https://raw.githubusercontent.com/fredrikudengen/yamabiko/master/frontend/public/logo_light.png"
 
 
 def html_header(title: str, heading: str, lang: str = "en") -> str:
     """
-    Return the opening HTML block shared by all Endurain emails.
+    Return the opening HTML block shared by all Yamabiko emails.
 
     Includes the doctype, ``<head>``, ``<body>`` wrapper, branded logo
     header with ``heading``, and the opening tag of the content
@@ -78,8 +78,8 @@ def html_header(title: str, heading: str, lang: str = "en") -> str:
                 color: {BRAND_PRIMARY_DARK};"
             >
                 <img src="{_LOGO_URL}"
-                    alt="Endurain logo" style="height: 32px; width: auto;">
-                <span>Endurain</span>
+                    alt="Yamabiko logo" style="height: 32px; width: auto;">
+                <span>Yamabiko</span>
             </div>
             <h3 style="margin: 0; font-weight: 600;
                 color: {BRAND_FOREGROUND};">{heading}</h3>
@@ -92,12 +92,12 @@ def html_footer(
     frontend_host: str,
     link_color: str,
     best_regards: str = "Best regards,",
-    sign_off: str = "The Endurain team",
-    visit_label: str = "Visit Endurain at:",
+    sign_off: str = "The Yamabiko team",
+    visit_label: str = "Visit Yamabiko at:",
     source_code_label: str = "Source code at:",
 ) -> str:
     """
-    Return the closing HTML block shared by all Endurain emails.
+    Return the closing HTML block shared by all Yamabiko emails.
 
     Closes the content ``<div>`` opened by :func:`html_header`,
     renders the footer with a sign-off greeting and links to the
@@ -105,7 +105,7 @@ def html_footer(
     wrapper, ``<body>``, and ``<html>``.
 
     Args:
-        frontend_host: Base URL of the Endurain frontend, shown in
+        frontend_host: Base URL of the Yamabiko frontend, shown in
             the footer link.
         link_color: CSS colour string applied to all footer anchor
             tags. Use module-level constants
@@ -114,9 +114,9 @@ def html_footer(
         best_regards: Localized salutation line.
             Defaults to ``"Best regards,"``.
         sign_off: Localized team or system name for the sign-off.
-            Defaults to ``"The Endurain team"``.
+            Defaults to ``"The Yamabiko team"``.
         visit_label: Localized label before the frontend URL.
-            Defaults to ``"Visit Endurain at:"``.
+            Defaults to ``"Visit Yamabiko at:"``.
         source_code_label: Localized label before the repo link.
             Defaults to ``"Source code at:"``.
 
@@ -140,7 +140,7 @@ def html_footer(
                 </a> - {source_code_label}
                 <a
                     style="color: {link_color};"
-                    href="https://github.com/endurain-project/endurain"
+                    href="https://github.com/fredrikudengen/yamabiko"
                 >
                     GitHub
                 </a>
@@ -179,7 +179,7 @@ def wrap_email(
         body_inner: HTML fragment for the email body. The caller is
             responsible for escaping any user-controlled values inside
             this fragment.
-        frontend_host: Base URL of the Endurain frontend. Will be
+        frontend_host: Base URL of the Yamabiko frontend. Will be
             HTML-escaped before use in attribute and text contexts.
         link_color: CSS colour for footer anchors (use
             :data:`LINK_COLOR_PRIMARY` or :data:`LINK_COLOR_SUCCESS`).

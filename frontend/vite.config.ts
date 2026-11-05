@@ -50,7 +50,7 @@ const CONTENT_SECURITY_POLICY = [
  */
 function cspPlugin(): Plugin {
   return {
-    name: 'endurain-csp',
+    name: 'yamabiko-csp',
     apply: 'build',
     transformIndexHtml(html) {
       return {

@@ -26,14 +26,14 @@ class TestGetPasswordResetEmail:
         assert len(result) == 3
 
     def test_subject_contains_endurain(self):
-        """Subject line contains 'Endurain'."""
+        """Subject line contains 'Yamabiko'."""
         subject, _, _ = email_messages.get_password_reset_email(
             "Alice",
             "https://example.com/reset?token=abc",
             _make_service(),
             locale="en",
         )
-        assert "Endurain" in subject
+        assert "Yamabiko" in subject
 
     def test_html_contains_reset_link(self):
         """HTML body contains the reset link."""

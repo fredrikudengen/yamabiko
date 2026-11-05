@@ -99,7 +99,7 @@ class Settings(BaseSettings):
     # neutering of the SSRF guard.
     SSRF_ALLOWED_HOSTS: Annotated[list[str], NoDecode] = []
     # Extra origins appended to the Content-Security-Policy
-    # ``connect-src`` directive. Needed when Endurain runs
+    # ``connect-src`` directive. Needed when Yamabiko runs
     # behind a forward-auth reverse proxy (e.g. Pangolin)
     # that redirects API calls to its own domain for session
     # validation; without its origin here the browser blocks
@@ -771,7 +771,7 @@ def check_deprecated_env_vars() -> None:
         return
 
     core_logger.print_to_log_and_console(
-        "Deprecated environment variable(s) detected. Endurain will not start "
+        "Deprecated environment variable(s) detected. Yamabiko will not start "
         "until they are removed from your configuration:",
         "error",
     )

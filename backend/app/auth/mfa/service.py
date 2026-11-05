@@ -67,7 +67,7 @@ def verify_totp(secret: str, token: str) -> bool:
     return totp.verify(token, valid_window=1)  # Allow 1 window tolerance
 
 
-def generate_qr_code(secret: str, username: str, app_name: str = "Endurain") -> str:
+def generate_qr_code(secret: str, username: str, app_name: str = "Yamabiko") -> str:
     """
     Generate QR code for MFA setup.
 
@@ -131,7 +131,7 @@ def setup_user_mfa(user_id: int, db: Session) -> mfa_schema.MFASetupResponse:
     secret = generate_totp_secret()
     qr_code = generate_qr_code(secret, user.username)
 
-    return mfa_schema.MFASetupResponse(secret=secret, qr_code=qr_code, app_name="Endurain")
+    return mfa_schema.MFASetupResponse(secret=secret, qr_code=qr_code, app_name="Yamabiko")
 
 
 def enable_user_mfa(

@@ -11,7 +11,7 @@ export const DEFAULT_APP_CONFIG: AppConfig = {
     federation: false,
   },
   branding: {
-    appName: 'Endurain',
+    appName: 'Yamabiko',
   },
   map: {
     tileUrl: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',

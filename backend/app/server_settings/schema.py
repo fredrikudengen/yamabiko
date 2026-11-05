@@ -65,7 +65,7 @@ class ServerSettingsBase(BaseModel):
     """
     Pydantic model for server settings configuration.
 
-    This model defines all configurable server settings for the Endurain application,
+    This model defines all configurable server settings for the Yamabiko application,
     including units, currency, authentication methods, map configuration, and password policies.
 
     Attributes:

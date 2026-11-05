@@ -136,7 +136,7 @@ class TestMFASetupResponse:
         )
         assert data.secret == "JBSWY3DPEHPK3PXP"
         assert data.qr_code == "data:image/png;base64,iVBORw0KGgo="
-        assert data.app_name == "Endurain"
+        assert data.app_name == "Yamabiko"
 
     def test_custom_app_name(self):
         data = mfa_schema.MFASetupResponse(
