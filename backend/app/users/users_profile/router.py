@@ -138,8 +138,6 @@ async def read_users_me(
     # Update with integration and privacy settings
     return user_me.model_copy(
         update={
-            "is_strava_linked": (1 if user_integrations.strava_token else 0),
-            "is_garminconnect_linked": (1 if user_integrations.garminconnect_token else 0),
             "default_activity_visibility": (user_privacy_settings.default_activity_visibility),
             "hide_activity_start_time": (user_privacy_settings.hide_activity_start_time),
             "hide_activity_location": (user_privacy_settings.hide_activity_location),

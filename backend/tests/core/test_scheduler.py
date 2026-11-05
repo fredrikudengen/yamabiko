@@ -47,7 +47,9 @@ class TestStartScheduler:
             from core.scheduler import start_scheduler
 
             start_scheduler()
-            assert mock_add_job.call_count == 14
+            # 14 before the Strava API and Garmin Connect jobs (Strava tokens,
+            # Strava activities, Garmin activities, Garmin health) were removed.
+            assert mock_add_job.call_count == 10
 
     def test_google_health_sync_job_registered(self):
         import google_health.activity_utils as google_health_activity_utils
@@ -63,6 +65,19 @@ class TestStartScheduler:
 
         funcs = [call.args[0] for call in mock_add_job.call_args_list]
         assert google_health_activity_utils.sync_all_users in funcs
+
+    def test_no_strava_api_or_garmin_job_is_registered(self):
+        with (
+            patch("core.scheduler.scheduler") as mock_scheduler,
+            patch("core.scheduler.add_scheduler_job") as mock_add_job,
+        ):
+            mock_scheduler.running = False
+            from core.scheduler import start_scheduler
+
+            start_scheduler()
+
+        modules = {call.args[0].__module__ for call in mock_add_job.call_args_list}
+        assert not {m for m in modules if m.startswith(("garmin", "strava"))}
 
     def test_idp_link_token_cleanup_job_registered(self):
         """IdP link token cleanup must be registered with a 5-minute interval."""

@@ -6,8 +6,6 @@ import activities.activity.public_router as activities_public_router
 
 # Alphabetized router imports
 import activities.activity.router as activities_router
-import activities.activity_laps.public_router as activity_laps_public_router
-import activities.activity_laps.router as activity_laps_router
 import activities.activity_media.router as activity_media_router
 import activities.activity_sets.public_router as activity_sets_public_router
 import activities.activity_sets.router as activity_sets_router
@@ -24,7 +22,6 @@ import core.config as core_config
 import core.router as core_router
 import coverage_map.router as coverage_map_router
 import followers.router as followers_router
-import garmin.router as garmin_router
 import gears.gear.router as gears_router
 import gears.gear_components.router as gear_components_router
 import google_health.router as google_health_router
@@ -89,12 +86,6 @@ router.include_router(
     dependencies=[Depends(auth_dependencies.validate_access_token)],
 )
 router.include_router(
-    activity_laps_router.router,
-    prefix=core_config.ROOT_PATH + "/activities_laps",
-    tags=["activity_laps"],
-    dependencies=[Depends(auth_dependencies.validate_access_token)],
-)
-router.include_router(
     activity_media_router.router,
     prefix=core_config.ROOT_PATH + "/activities_media",
     tags=["activity_media"],
@@ -134,15 +125,6 @@ router.include_router(
     prefix=core_config.ROOT_PATH + "/followers",
     tags=["followers"],
     dependencies=[Depends(auth_dependencies.validate_access_token)],
-)
-router.include_router(
-    garmin_router.router,
-    prefix=core_config.ROOT_PATH + "/garminconnect",
-    tags=["garminconnect"],
-    dependencies=[
-        Depends(auth_dependencies.validate_access_token),
-        Security(auth_dependencies.check_scopes, scopes=["profile"]),
-    ],
 )
 router.include_router(
     gear_components_router.router,
@@ -325,11 +307,6 @@ router.include_router(
     activity_exercise_titles_public_router.router,
     prefix=core_config.ROOT_PATH + "/public/activities_exercise_titles",
     tags=["public_activity_exercise_titles"],
-)
-router.include_router(
-    activity_laps_public_router.router,
-    prefix=core_config.ROOT_PATH + "/public/activities_laps",
-    tags=["public_activities_laps"],
 )
 router.include_router(
     activity_sets_public_router.router,

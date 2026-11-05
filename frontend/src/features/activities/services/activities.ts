@@ -463,19 +463,6 @@ export async function fetchUserThisMonthActivityCount(
 }
 
 /**
- * Triggers a refresh of the viewer's linked-integration activities (Strava /
- * Garmin Connect) and returns the freshly imported ones. Authenticated-only.
- *
- * @param signal - Optional abort signal for cancellation.
- * @returns The newly imported activities, mapped to the clean model.
- * @throws {HttpError} When the request fails.
- */
-export async function refreshActivities(signal?: AbortSignal): Promise<Activity[]> {
-  const dtos = await apiFetch<ActivityDto[] | null>('/activities/refresh', { signal })
-  return (dtos ?? []).map(mapActivity)
-}
-
-/**
  * Fetches all metric streams for an activity (auth or public endpoint).
  *
  * @param id - Activity identifier.

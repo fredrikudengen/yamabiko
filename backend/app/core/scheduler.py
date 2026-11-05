@@ -8,11 +8,7 @@ import activities.activity.utils as activities_utils
 import auth.maintenance as auth_maintenance
 import core.logger as core_logger
 import core.network as core_network
-import garmin.activity_utils as garmin_activity_utils
-import garmin.health_utils as garmin_health_utils
 import google_health.activity_utils as google_health_activity_utils
-import strava.activity_utils as strava_activity_utils
-import strava.utils as strava_utils
 
 scheduler = AsyncIOScheduler()
 
@@ -34,43 +30,11 @@ def start_scheduler() -> None:
         scheduler.start()
 
     add_scheduler_job(
-        strava_utils.refresh_strava_tokens,
-        "interval",
-        60,
-        [True],
-        "refresh Strava user tokens every 60 minutes",
-    )
-
-    add_scheduler_job(
-        strava_activity_utils.retrieve_strava_users_activities_for_days,
-        "interval",
-        60,
-        [1, True],
-        "retrieve last day Strava users activities",
-    )
-
-    add_scheduler_job(
-        garmin_activity_utils.retrieve_garminconnect_users_activities_for_days,
-        "interval",
-        60,
-        [1],
-        "retrieve last day Garmin Connect users activities",
-    )
-
-    add_scheduler_job(
         google_health_activity_utils.sync_all_users,
         "interval",
         60,
         [],
         "import new Google Health exercises every 60 minutes",
-    )
-
-    add_scheduler_job(
-        garmin_health_utils.retrieve_garminconnect_users_health_for_days,
-        "interval",
-        240,
-        [1],
-        "retrieve last day Garmin Connect users health data",
     )
 
     add_scheduler_job(

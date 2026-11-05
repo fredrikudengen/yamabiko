@@ -18,8 +18,6 @@ const baseDto: UserProfileDto = {
   active: true,
   mfa_enabled: true,
   photo_path: 'user_images/7.png',
-  is_strava_linked: 1,
-  is_garminconnect_linked: 0,
   has_local_password: true,
   units: 'metric',
   currency: 'euro',
@@ -40,31 +38,11 @@ describe('mapUserProfile', () => {
       active: true,
       mfaEnabled: true,
       avatarUrl: 'https://cdn.test/user_images/7.png',
-      isStravaLinked: true,
-      isGarminConnectLinked: false,
       hasLocalPassword: true,
       units: 'metric',
       currency: 'euro',
       firstDayOfWeek: 'sunday',
     })
-  })
-
-  it('coerces number-encoded link flags to booleans', () => {
-    const user = mapUserProfile({ ...baseDto, is_strava_linked: 0, is_garminconnect_linked: 1 })
-
-    expect(user.isStravaLinked).toBe(false)
-    expect(user.isGarminConnectLinked).toBe(true)
-  })
-
-  it('treats null/undefined link flags as false', () => {
-    const user = mapUserProfile({
-      ...baseDto,
-      is_strava_linked: null,
-      is_garminconnect_linked: undefined,
-    })
-
-    expect(user.isStravaLinked).toBe(false)
-    expect(user.isGarminConnectLinked).toBe(false)
   })
 
   it('resolves avatarUrl to null when no photo_path is set', () => {

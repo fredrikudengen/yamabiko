@@ -14,8 +14,6 @@ import type { AuthTokenResponse, Schemas } from '@/types'
  * @property active - Whether the account is active.
  * @property mfaEnabled - Whether MFA is enabled.
  * @property avatarUrl - Absolute avatar URL, or `null` when unset.
- * @property isStravaLinked - Whether a Strava integration is linked.
- * @property isGarminConnectLinked - Whether a Garmin Connect integration is linked.
  * @property hasLocalPassword - Whether the account has a local password.
  * @property units - Measurement system used to present distances and heights.
  * @property currency - Preferred currency for monetary values.
@@ -31,8 +29,6 @@ export interface User {
   active: boolean
   mfaEnabled: boolean
   avatarUrl: string | null
-  isStravaLinked: boolean
-  isGarminConnectLinked: boolean
   hasLocalPassword: boolean
   units: Schemas['Units']
   currency: Schemas['Currency']
@@ -57,8 +53,6 @@ export type UserProfileDto = Pick<
   | 'active'
   | 'mfa_enabled'
   | 'photo_path'
-  | 'is_strava_linked'
-  | 'is_garminconnect_linked'
   | 'has_local_password'
   | 'units'
   | 'currency'

@@ -68,8 +68,6 @@ export interface PrivacySettings {
  * @property firstDayOfWeek - First day of the week.
  * @property accessType - Authorization tier (read-only here).
  * @property hasLocalPassword - Whether the account has a local password (false for SSO-only).
- * @property stravaLinked - Whether a Strava account is connected.
- * @property garminLinked - Whether a Garmin Connect account is connected.
  * @property photoPath - Raw backend photo path, or `null`.
  * @property avatarUrl - Servable avatar URL derived from `photoPath`, or `null`.
  * @property privacy - The user's privacy preferences.
@@ -90,8 +88,6 @@ export interface ProfileDetails {
   firstDayOfWeek: Schemas['WeekDay']
   accessType: Schemas['UserAccessType']
   hasLocalPassword: boolean
-  stravaLinked: boolean
-  garminLinked: boolean
   photoPath: string | null
   avatarUrl: string | null
   privacy: PrivacySettings
