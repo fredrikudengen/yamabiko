@@ -30,15 +30,6 @@ const publicSettings: PublicServerSettings = {
 }
 
 describe('mapServerSettingsToAppConfig', () => {
-  it('maps the signUp feature flag from the server signup flag', () => {
-    expect(
-      mapServerSettingsToAppConfig({ ...publicSettings, signup_enabled: false }).features.signUp,
-    ).toBe(false)
-    expect(
-      mapServerSettingsToAppConfig({ ...publicSettings, signup_enabled: true }).features.signUp,
-    ).toBe(true)
-  })
-
   it('keeps self-hosted defaults for fields the public settings do not carry', () => {
     const config = mapServerSettingsToAppConfig(publicSettings)
 
@@ -54,14 +45,11 @@ describe('mapServerSettingsToAppConfig', () => {
 
 describe('fetchAppConfig', () => {
   it('derives the app config from the public server settings', async () => {
-    vi.mocked(fetchPublicServerSettings).mockResolvedValue({
-      ...publicSettings,
-      signup_enabled: false,
-    })
+    vi.mocked(fetchPublicServerSettings).mockResolvedValue(publicSettings)
 
     const config = await fetchAppConfig()
 
     expect(fetchPublicServerSettings).toHaveBeenCalledOnce()
-    expect(config.features.signUp).toBe(false)
+    expect(config.map.tileUrl).toBe(publicSettings.tileserver_url)
   })
 })

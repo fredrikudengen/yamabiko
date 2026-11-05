@@ -8,7 +8,6 @@ import { fetchPublicServerSettings } from './serverSettings'
  */
 export const DEFAULT_APP_CONFIG: AppConfig = {
   features: {
-    signUp: false,
     federation: false,
   },
   branding: {
@@ -36,7 +35,6 @@ export function mapServerSettingsToAppConfig(settings: PublicServerSettings): Ap
   return {
     features: {
       ...DEFAULT_APP_CONFIG.features,
-      signUp: settings.signup_enabled,
     },
     branding: DEFAULT_APP_CONFIG.branding,
     map: {

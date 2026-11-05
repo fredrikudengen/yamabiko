@@ -17,7 +17,7 @@ const route = useRoute()
 // ENDURAIN_HOST); when set, nothing else can work so we block the whole shell.
 const { configError } = useAppConfig()
 
-// Auth screens (login/signup) render bare — no navbar, footer, or bottom nav.
+// Auth screens (login, password reset) render bare — no navbar, footer, or bottom nav.
 const showChrome = computed(() => !route.meta.bare)
 // Wrap content views in the shared card container, mirroring v1. Bare screens
 // (login) and cardless views (menu) supply their own surfaces and opt out.

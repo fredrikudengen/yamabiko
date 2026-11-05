@@ -17,13 +17,10 @@ import auth.identity_providers.router as identity_providers_router
 import auth.password_reset_tokens.router as password_reset_tokens_router
 import auth.router as auth_router
 import auth.sessions.router as auth_sessions_router
-import auth.sign_up_tokens.router as sign_up_tokens_router
 import core.config as core_config
 import core.router as core_router
 import coverage_map.router as coverage_map_router
-import followers.router as followers_router
 import google_health.router as google_health_router
-import notifications.router as notifications_router
 import segments.router as segments_router
 import server_settings.public_router as server_settings_public_router
 import server_settings.router as server_settings_router
@@ -109,25 +106,10 @@ router.include_router(
     tags=["auth"],
 )
 router.include_router(
-    followers_router.router,
-    prefix=core_config.ROOT_PATH + "/followers",
-    tags=["followers"],
-    dependencies=[Depends(auth_dependencies.validate_access_token)],
-)
-router.include_router(
     identity_providers_router.router,
     prefix=core_config.ROOT_PATH + "/idp",
     tags=["identity_providers"],
     dependencies=[Depends(auth_dependencies.validate_access_token)],
-)
-router.include_router(
-    notifications_router.router,
-    prefix=core_config.ROOT_PATH + "/notifications",
-    tags=["notifications"],
-    dependencies=[
-        Depends(auth_dependencies.validate_access_token),
-        Security(auth_dependencies.check_scopes, scopes=["profile"]),
-    ],
 )
 router.include_router(
     password_reset_tokens_router.router,
@@ -160,11 +142,6 @@ router.include_router(
     prefix=core_config.ROOT_PATH + "/sessions",
     tags=["sessions"],
     dependencies=[Depends(auth_dependencies.validate_access_token)],
-)
-router.include_router(
-    sign_up_tokens_router.router,
-    prefix=core_config.ROOT_PATH,
-    tags=["sign_up_tokens"],
 )
 router.include_router(
     google_health_router.router,

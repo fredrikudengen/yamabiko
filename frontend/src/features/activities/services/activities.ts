@@ -208,30 +208,6 @@ export async function fetchUserActivities(
 }
 
 /**
- * Fetches one page of activities from the people a user follows, newest first.
- * Authenticated-only.
- *
- * @param userId - The viewer's user id.
- * @param page - 1-based page number.
- * @param numRecords - Page size.
- * @param signal - Optional abort signal for cancellation.
- * @returns The page's activities, mapped to the clean model.
- * @throws {HttpError} When the request fails.
- */
-export async function fetchFollowersActivities(
-  userId: number,
-  page: number,
-  numRecords: number,
-  signal?: AbortSignal,
-): Promise<Activity[]> {
-  const dtos = await apiFetch<ActivityDto[] | null>(
-    `/activities/user/${userId}/followed/page_number/${page}/num_records/${numRecords}`,
-    { signal },
-  )
-  return (dtos ?? []).map(mapActivity)
-}
-
-/**
  * Fetches a user's activities for a single ISO week, newest first. Week `0` is
  * the current week and each increment steps one week into the past (mirrors
  * v1's public-profile week browser). Authenticated-only; the backend applies

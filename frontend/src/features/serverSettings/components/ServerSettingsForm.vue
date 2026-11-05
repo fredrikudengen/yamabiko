@@ -245,19 +245,8 @@ watch(selectedTemplate, (templateId) => {
       </div>
     </Card>
 
-    <!-- Registration -->
-    <Card class="flex flex-col gap-3">
-      <h2 class="text-card-heading">{{ t('settings.server.signup.title') }}</h2>
-      <Switch v-model="values.signupEnabled" :disabled="isSubmitting">
-        {{ t('settings.server.signup.enabled') }}
-      </Switch>
-      <Switch v-model="values.signupRequireAdminApproval" :disabled="isSubmitting">
-        {{ t('settings.server.signup.adminApproval') }}
-      </Switch>
-      <Switch v-model="values.signupRequireEmailVerification" :disabled="isSubmitting">
-        {{ t('settings.server.signup.emailVerification') }}
-      </Switch>
-    </Card>
+    <!-- Registration settings are not shown: Yamabiko has no self-service
+         sign-up. Their values still round-trip unchanged. -->
 
     <!-- Authentication -->
     <Card class="flex flex-col gap-3">

@@ -48,8 +48,9 @@ class TestStartScheduler:
 
             start_scheduler()
             # 14 before the Strava API and Garmin Connect jobs (Strava tokens,
-            # Strava activities, Garmin activities, Garmin health) were removed.
-            assert mock_add_job.call_count == 10
+            # Strava activities, Garmin activities, Garmin health) and the
+            # sign-up token purge were removed.
+            assert mock_add_job.call_count == 9
 
     def test_google_health_sync_job_registered(self):
         import google_health.activity_utils as google_health_activity_utils

@@ -23,7 +23,7 @@ import {
   sortLanguageCodes,
   TEXT_MAX,
   WEEKDAY_OPTIONS,
-} from '@/features/users/utils/userFieldOptions'
+} from '@/features/profile/utils/userFieldOptions'
 import { useUpdateProfileMutation } from '@/features/profile/composables/useProfile'
 
 const open = defineModel<boolean>('open', { required: true })

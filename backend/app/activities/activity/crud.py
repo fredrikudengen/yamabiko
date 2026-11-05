@@ -30,9 +30,7 @@ import activities.activity.utils as activities_utils
 import core.logger as core_logger
 import core.sanitization as core_sanitization
 import followers.models as followers_models
-import notifications.utils as notifications_utils
 import server_settings.utils as server_settings_utils
-import websocket.manager as websocket_manager
 
 # Mapping from frontend sort keys to model columns
 SORT_MAP = {
@@ -1130,17 +1128,17 @@ def get_activities_if_contains_name(name: str, user_id: int, db: Session) -> lis
 
 async def create_activity(
     activity: activities_schema.Activity,
-    websocket_manager: websocket_manager.WebSocketManager,
     db: Session,
-    create_notification: bool = True,
 ) -> activities_schema.Activity:
-    """Persist a new activity and emit notifications.
+    """Persist a new activity.
+
+    An activity whose start time the user already has is stored hidden, as a
+    likely duplicate. (Upstream told the user through a notification; Yamabiko
+    has no notifications.)
 
     Args:
         activity: Activity schema to persist.
-        websocket_manager: Manager used for notifications.
         db: Database session.
-        create_notification: Whether to push a notification.
 
     Returns:
         The provided activity schema with generated ID and
@@ -1163,15 +1161,6 @@ async def create_activity(
         activity.id = new_activity.id
         activity.created_at = new_activity.created_at
 
-        if create_notification:
-            if activity_start_time_exists:
-                await notifications_utils.create_new_duplicate_start_time_activity_notification(
-                    activity.user_id, new_activity.id, websocket_manager
-                )
-            else:
-                await notifications_utils.create_new_activity_notification(
-                    activity.user_id, new_activity.id, websocket_manager
-                )
         return activity
     except SQLAlchemyError as err:
         db.rollback()

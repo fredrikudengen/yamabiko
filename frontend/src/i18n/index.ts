@@ -5,14 +5,10 @@ import enApp from './locales/en/app.json'
 import enNav from './locales/en/nav.json'
 import enFooter from './locales/en/footer.json'
 import enLogin from './locales/en/login.json'
-import enSignup from './locales/en/signup.json'
 import enResetPassword from './locales/en/resetPassword.json'
-import enVerifyEmail from './locales/en/verifyEmail.json'
-import enNotifications from './locales/en/notifications.json'
 import enActivities from './locales/en/activities.json'
 import enSettings from './locales/en/settings.json'
 import enHome from './locales/en/home.json'
-import enUserProfile from './locales/en/userProfile.json'
 import enSummary from './locales/en/summary.json'
 
 /**
@@ -25,14 +21,10 @@ const en = {
   nav: enNav,
   footer: enFooter,
   login: enLogin,
-  signup: enSignup,
   resetPassword: enResetPassword,
-  verifyEmail: enVerifyEmail,
-  notifications: enNotifications,
   activities: enActivities,
   settings: enSettings,
   home: enHome,
-  userProfile: enUserProfile,
   summary: enSummary,
 }
 

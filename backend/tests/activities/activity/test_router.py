@@ -234,14 +234,6 @@ class TestTypes:
             assert resp.status_code == 200
 
 
-class TestFollowing:
-    def test_other_user_forbidden(self, mock_db):
-        resp = TestClient(_build_app(mock_db)).get(
-            "/activities/user/2/followed/page_number/1/num_records/10", headers={"Authorization": "Bearer x"}
-        )
-        assert resp.status_code == 403
-
-
 class TestPagination:
     def test_user(self, mock_db):
         with patch("activities.activity.router.activities_crud.get_user_activities_with_pagination") as m:

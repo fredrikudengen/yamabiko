@@ -6,9 +6,7 @@
     "error": "Could not upload the activity file"
   },
   "feed": {
-    "scopeLabel": "Feed scope",
     "myActivities": "My activities",
-    "following": "Following",
     "loadMore": "Load more",
     "loading": "Loading…",
     "error": {
@@ -20,10 +18,6 @@
       "mine": {
         "title": "No activities yet",
         "description": "Add an activity or connect an integration to get started."
-      },
-      "following": {
-        "title": "Nothing here yet",
-        "description": "Activities from people you follow will appear here."
       }
     }
   },

@@ -38,7 +38,6 @@
   "forgotPasswordRequestError": "Forespørsel om tilbakestilling av passord mislyktes",
   "closeForgotPassword": "Lukk dialogen for tilbakestilling av passord",
   "cancel": "Avbryt",
-  "signUpLink": "Opprett en konto",
   "ssoSection": "Enkel pålogging",
   "loadingSsoProviders": "Laster påloggingsleverandører",
   "ssoButton": "Fortsett med {provider}",

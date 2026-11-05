@@ -38,36 +38,10 @@ export const queryKeys = {
     identityProviders: () => ['public-identity-providers'] as const,
   },
 
-  /** Reference domain factory — copy this shape for activities, gears, etc. */
-  notifications: {
-    /** Broad prefix; invalidating this cascades to every notifications query. */
-    all: () => ['notifications'] as const,
-    lists: () => ['notifications', 'list'] as const,
-    /**
-     * @param filters - Serializable list filters (paging, type, etc.).
-     * @returns A list query key scoped to the given filters.
-     */
-    list: (filters: Record<string, unknown> = {}) => ['notifications', 'list', filters] as const,
-    /**
-     * Unread badge count. Deliberately outside the `list` prefix so the
-     * optimistic mark-read updater (which rewrites `lists()`) leaves it alone;
-     * the mutation's `onSettled` invalidates `all()`, refetching this for the
-     * server-authoritative count.
-     */
-    unreadCount: () => ['notifications', 'unread-count'] as const,
-    details: () => ['notifications', 'detail'] as const,
-    /**
-     * @param id - Notification identifier.
-     * @returns A detail query key for a single notification.
-     */
-    detail: (id: number) => ['notifications', 'detail', id] as const,
-  },
-
   /**
    * Activities domain. New activities are created via the file-upload reference
    * (`@/features/upload`); its mutation invalidates `all()` on settle so every
-   * activities list refetches. Same shape as {@link queryKeys.notifications} —
-   * extend with `details`/`detail` when the activities feature lands.
+   * activities list refetches.
    */
   activities: {
     /** Broad prefix; invalidating this cascades to every activities query. */
@@ -159,104 +133,6 @@ export const queryKeys = {
      */
     weekActivities: (userId: number, week: number) =>
       ['activities', 'list', { scope: 'user-week', userId, week }] as const,
-  },
-
-  /**
-   * Users administration domain (admin settings zone). Same shape as
-   * {@link queryKeys.notifications}: `all()` is the broad prefix the create/
-   * update/delete mutations invalidate on settle so every list, the username
-   * search, and detail views refetch the server-authoritative state.
-   */
-  users: {
-    /** Broad prefix; invalidating this cascades to every users query. */
-    all: () => ['users'] as const,
-    lists: () => ['users', 'list'] as const,
-    /**
-     * @param filters - Serializable list filters (page, size, show-inactive).
-     * @returns A list query key scoped to the given filters.
-     */
-    list: (filters: Record<string, unknown> = {}) => ['users', 'list', filters] as const,
-    /**
-     * @param username - The username search term.
-     * @returns A query key for a username "contains" search.
-     */
-    search: (username: string) => ['users', 'search', username] as const,
-    /** Detail-view prefix; invalidating this refetches every user detail. */
-    details: () => ['users', 'detail'] as const,
-    /**
-     * @param id - The user id.
-     * @returns A query key for a single user's detail.
-     */
-    detail: (id: number) => ['users', 'detail', id] as const,
-    /**
-     * A user's public-facing profile (name/username/city/avatar), as shown on
-     * the `/user/:id` page and in follower/following lists. Distinct from
-     * {@link detail} (the admin `ManagedUser` shape) so the two never collide in
-     * the cache.
-     *
-     * @param id - The user id.
-     * @returns A query key for a single user's public profile.
-     */
-    publicProfile: (id: number) => ['users', 'public-profile', id] as const,
-    /**
-     * @param userId - The session owner's id.
-     * @returns A query key for a user's active-sessions list.
-     */
-    sessions: (userId: number) => ['users', 'sessions', userId] as const,
-    /**
-     * @param userId - The user whose identity-provider links to key.
-     * @returns A query key for a user's linked identity providers.
-     */
-    identityProviders: (userId: number) => ['users', 'identity-providers', userId] as const,
-  },
-
-  /**
-   * Social graph domain (follow relationships). Same shape as
-   * {@link queryKeys.notifications}: `all()` is the broad prefix the follow,
-   * unfollow, accept, and remove mutations invalidate on settle so every list,
-   * count, and relationship-state query refetches the server-authoritative
-   * state.
-   */
-  followers: {
-    /** Broad prefix; invalidating this cascades to every follow-graph query. */
-    all: () => ['followers'] as const,
-    /**
-     * The people who follow a user (the user's followers list).
-     *
-     * @param userId - The profile owner whose followers to key.
-     * @returns A query key for a user's followers list.
-     */
-    followersList: (userId: number) => ['followers', 'followers', userId] as const,
-    /**
-     * The people a user follows (the user's following list).
-     *
-     * @param userId - The profile owner whose following list to key.
-     * @returns A query key for a user's following list.
-     */
-    followingList: (userId: number) => ['followers', 'following', userId] as const,
-    /**
-     * A user's accepted-followers count (public-profile header).
-     *
-     * @param userId - The profile owner whose follower count to key.
-     * @returns A query key for a user's accepted-followers count.
-     */
-    followersCount: (userId: number) => ['followers', 'followers-count', userId] as const,
-    /**
-     * A user's accepted-following count (public-profile header).
-     *
-     * @param userId - The profile owner whose following count to key.
-     * @returns A query key for a user's accepted-following count.
-     */
-    followingCount: (userId: number) => ['followers', 'following-count', userId] as const,
-    /**
-     * The viewer → target follow relationship state, backing the follow button.
-     *
-     * @param viewerId - The authenticated viewer's id.
-     * @param targetId - The profile owner's id.
-     * @returns A query key for the viewer's relationship to the target.
-     */
-    state: (viewerId: number, targetId: number) =>
-      ['followers', 'state', viewerId, targetId] as const,
   },
 
   /**

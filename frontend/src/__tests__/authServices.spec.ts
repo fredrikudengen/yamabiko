@@ -1,7 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { confirmPasswordReset, requestPasswordReset } from '@/features/auth/services/passwordReset'
-import { confirmSignUp } from '@/features/auth/services/signUp'
 
 vi.mock('@/services/runtime', () => ({
   getApiBaseUrl: () => '',
@@ -59,19 +58,5 @@ describe('passwordReset service', () => {
     expect(call?.[1].method).toBe('POST')
     expect(call?.[1].body).toBe(JSON.stringify({ token: 'tok', new_password: 'supersecret' }))
     expect(result).toEqual({ message: 'reset' })
-  })
-})
-
-describe('signUp service', () => {
-  it('confirms a sign-up with the verification token', async () => {
-    fetchMock.mockResolvedValueOnce(
-      jsonResponse({ message: 'verified', admin_approval_required: true }),
-    )
-    const result = await confirmSignUp({ token: 'verify-tok' })
-    const call = fetchMock.mock.calls[0]
-    expect(call?.[0]).toContain('/sign-up/confirm')
-    expect(call?.[1].method).toBe('POST')
-    expect(call?.[1].body).toBe(JSON.stringify({ token: 'verify-tok' }))
-    expect(result.admin_approval_required).toBe(true)
   })
 })

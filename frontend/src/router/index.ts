@@ -48,21 +48,9 @@ const router = createRouter({
       meta: { requiresAuth: false, guestOnly: true, bare: true },
     },
     {
-      path: '/signup',
-      name: 'signup',
-      component: () => import('@/features/auth/views/SignUpView.vue'),
-      meta: { requiresAuth: false, guestOnly: true, feature: 'signUp', bare: true },
-    },
-    {
       path: '/reset-password',
       name: 'reset-password',
       component: () => import('@/features/auth/views/ResetPasswordView.vue'),
-      meta: { requiresAuth: false, bare: true },
-    },
-    {
-      path: '/verify-email',
-      name: 'verify-email',
-      component: () => import('@/features/auth/views/EmailVerificationView.vue'),
       meta: { requiresAuth: false, bare: true },
     },
     {
@@ -156,18 +144,6 @@ const router = createRouter({
           component: () => import('@/features/import/views/ImportSettingsView.vue'),
         },
         {
-          path: 'users',
-          name: 'settings-users',
-          component: () => import('@/features/users/views/UsersSettingsView.vue'),
-          meta: { requiresAdmin: true },
-        },
-        {
-          path: 'users/:id',
-          name: 'settings-user-detail',
-          component: () => import('@/features/users/views/UserDetailView.vue'),
-          meta: { requiresAdmin: true },
-        },
-        {
           path: 'identity-providers',
           name: 'settings-idp',
           component: () =>
@@ -181,20 +157,6 @@ const router = createRouter({
           meta: { requiresAdmin: true },
         },
       ],
-    },
-    {
-      path: '/user/:id',
-      name: 'user',
-      component: () => import('@/features/users/views/UserProfileView.vue'),
-      // Cardless: the profile view supplies its own sidebar + tabbed surfaces.
-      meta: { requiresAuth: true, cardless: true },
-    },
-    {
-      path: '/notifications',
-      name: 'notifications',
-      component: () => import('@/features/notifications/views/NotificationsView.vue'),
-      // Cardless: the view supplies its own list surface instead of the shared card.
-      meta: { requiresAuth: true, cardless: true },
     },
     {
       path: '/menu',

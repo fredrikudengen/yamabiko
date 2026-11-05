@@ -1101,7 +1101,7 @@ async def store_activity(
     db: Session,
 ) -> activities_schema.Activity:
     # create the activity in the database
-    created_activity = await activities_crud.create_activity(parsed_info["activity"], websocket_manager, db)
+    created_activity = await activities_crud.create_activity(parsed_info["activity"], db)
 
     # Check if created_activity is None
     if created_activity is None or created_activity.id is None:

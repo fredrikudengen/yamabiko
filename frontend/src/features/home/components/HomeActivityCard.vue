@@ -119,11 +119,6 @@ const thumbnailUrl = computed(() => {
 })
 
 const activityRoute = computed(() => ({ name: 'activity', params: { id: props.activity.id } }))
-
-/** Route to the activity owner's profile, when their user id is known. */
-const ownerRoute = computed(() =>
-  props.activity.userId ? { name: 'user', params: { id: props.activity.userId } } : null,
-)
 </script>
 
 <template>
@@ -139,10 +134,7 @@ const ownerRoute = computed(() =>
         />
         <div class="min-w-0">
           <p class="truncate text-item-title">
-            <RouterLink v-if="owner && ownerRoute" :to="ownerRoute" class="hover:underline">
-              {{ owner.name }}
-            </RouterLink>
-            <span v-else>{{ owner ? owner.name : t('activities.athlete') }}</span>
+            {{ owner ? owner.name : t('activities.athlete') }}
           </p>
           <div class="mt-1 flex flex-wrap items-center gap-2">
             <ActivityTypeBadge :type="presentation.badge" :icon="presentation.icon">

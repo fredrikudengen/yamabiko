@@ -3,7 +3,6 @@ import { readonly, ref } from 'vue'
 import { queryClient } from '@/plugins/vueQuery'
 import { getAccessToken } from '@/services/authTokens'
 import { apiFetch } from '@/services/http'
-import { queryKeys } from '@/services/queryKeys'
 import { getWebSocketUrl } from '@/services/runtime'
 
 import { useTelemetry } from './useTelemetry'
@@ -29,19 +28,13 @@ const RECONNECT_JITTER_RATIO = 0.3
 
 /**
  * Query keys to invalidate when a realtime event arrives, so server push keeps
- * TanStack Query caches fresh without manual refetching. Keys come from the
- * central {@link queryKeys} factory so an invalidation can never drift from the
- * key a query registers under. Extend this map as views adopt realtime-backed
- * queries; invalidating a key with no active query is a harmless no-op.
+ * TanStack Query caches fresh without manual refetching. Take keys from the
+ * central `queryKeys` factory so an invalidation can never drift from the key
+ * a query registers under. Extend this map as views adopt realtime-backed
+ * queries; invalidating a key with no active query is a harmless no-op. It is
+ * empty since Yamabiko dropped notifications, the only events it listed.
  */
-const EVENT_QUERY_INVALIDATIONS: Record<string, ReadonlyArray<readonly unknown[]>> = {
-  NEW_ACTIVITY_NOTIFICATION: [queryKeys.notifications.all()],
-  NEW_DUPLICATE_ACTIVITY_START_TIME_NOTIFICATION: [queryKeys.notifications.all()],
-  NEW_FOLLOWER_REQUEST_NOTIFICATION: [queryKeys.notifications.all()],
-  NEW_FOLLOWER_REQUEST_ACCEPTED_NOTIFICATION: [queryKeys.notifications.all()],
-  ADMIN_NEW_SIGN_UP_APPROVAL_REQUEST_NOTIFICATION: [queryKeys.notifications.all()],
-  GARMIN_TOKEN_EXPIRED_NOTIFICATION: [queryKeys.notifications.all()],
-}
+const EVENT_QUERY_INVALIDATIONS: Record<string, ReadonlyArray<readonly unknown[]>> = {}
 
 // Module-level state guarantees a single connection per browser tab regardless
 // of how many components call useRealtime().

@@ -22,20 +22,14 @@ Exports:
 """
 
 from .crud import (
-    approve_user,
     create_signup_user,
-    create_user,
-    delete_user,
     edit_user,
     get_all_users,
     get_user_by_email,
     get_user_by_id,
     get_user_by_username,
     get_users_admin,
-    get_users_number,
-    get_users_with_pagination,
     update_user_photo,
-    verify_user_email,
 )
 from .schema import (
     Gender,
@@ -73,12 +67,9 @@ __all__ = [
     "UsersRead",
     "UsersSignup",
     "WeekDay",
-    "approve_user",
     "check_user_is_active",
     "create_signup_user",
-    "create_user",
     "create_user_default_data",
-    "delete_user",
     "delete_user_photo_filesystem",
     "edit_user",
     "get_admin_users_or_404",
@@ -88,9 +79,6 @@ __all__ = [
     "get_user_by_id_or_404",
     "get_user_by_username",
     "get_users_admin",
-    "get_users_number",
-    "get_users_with_pagination",
     "save_user_image_file",
     "update_user_photo",
-    "verify_user_email",
 ]
