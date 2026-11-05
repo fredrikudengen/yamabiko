@@ -1187,8 +1187,32 @@ async def store_activity(
                 db,
             )
 
+    refresh_derived_data(created_activity, db)
+
     # Return the created activity
     return created_activity
+
+
+def refresh_derived_data(activity: activities_schema.Activity, db: Session) -> None:
+    """Match a new activity against the user's segments and add it to the coverage map.
+
+    Every importer stores through :func:`store_activity` (a manual upload, the
+    bulk import, the Strava and Garmin exports, Google Health), so this is the
+    one place they all get segment times and map cells. Neither call raises: a
+    failure is logged, and both can be rebuilt from the GPS stream.
+
+    Args:
+        activity: The activity just stored.
+        db: Database session.
+    """
+    # Imported here rather than at the top: segments.matching imports this module.
+    import coverage_map.service as coverage_service
+    import segments.service as segments_service
+
+    if activity.user_id is None:
+        return
+    segments_service.refresh_efforts_after_import([activity], activity.user_id, db)
+    coverage_service.refresh_cells_after_import([activity], activity.user_id, db)
 
 
 def parse_activity_streams_from_file(parsed_info: dict, activity_id: int):
