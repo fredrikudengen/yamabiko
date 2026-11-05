@@ -26,7 +26,7 @@ const showCard = computed(() => showChrome.value && !route.meta.cardless)
 
 <template>
   <ConfigErrorOverlay v-if="configError" />
-  <div v-else class="flex min-h-svh flex-col bg-background text-foreground">
+  <div v-else class="flex min-h-svh flex-col bg-page text-foreground">
     <AppNavbar v-if="showChrome" />
     <main class="flex flex-1 flex-col">
       <div
