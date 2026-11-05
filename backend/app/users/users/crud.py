@@ -169,26 +169,6 @@ def _apply_user_photo_update(
     db.refresh(db_users)
 
 
-def _delete_user_row(user_id: int, db: Session) -> None:
-    """
-    Delete a user row from the database.
-
-    Bundles the blocking DB work (lookup, delete, commit) so callers
-    can offload it with ``run_in_threadpool`` and keep the API event
-    loop responsive.
-
-    Args:
-        user_id: ID of the user to delete.
-        db: SQLAlchemy database session.
-
-    Raises:
-        HTTPException: 404 if the user does not exist.
-    """
-    db_users = _get_user_model_by_id_or_404(user_id, db)
-    db.delete(db_users)
-    db.commit()
-
-
 # Public CRUD functions
 
 
@@ -209,92 +189,6 @@ def get_all_users(db: Session) -> list[users_schema.UsersRead]:
     stmt = select(users_models.Users)
     users: list[users_models.Users] = list(db.execute(stmt).scalars().all())
 
-    return _transform_users(users)
-
-
-@core_decorators.handle_db_errors
-def get_users_number(
-    db: Session,
-    show_inactive: bool | None = True,
-    show_email_unverified: bool | None = True,
-    show_pending_approval: bool | None = True,
-) -> int:
-    """
-    Count users matching the optional list filters.
-
-    Args:
-        db: SQLAlchemy database session.
-        show_inactive: If False, excludes inactive users.
-            Defaults to True.
-        show_email_unverified: If False, excludes users with
-            unverified emails. Defaults to True.
-        show_pending_approval: If False, excludes users pending
-            admin approval. Defaults to True.
-
-    Returns:
-        Number of users matching the filters.
-
-    Raises:
-        HTTPException: 500 error if database query fails.
-    """
-    stmt = select(func.count(users_models.Users.id))
-
-    if show_inactive is False:
-        stmt = stmt.where(users_models.Users.active.is_(True))
-    if show_email_unverified is False:
-        stmt = stmt.where(users_models.Users.email_verified.is_(True))
-    if show_pending_approval is False:
-        stmt = stmt.where(users_models.Users.pending_admin_approval.is_(False))
-
-    return db.execute(stmt).scalar_one()
-
-
-@core_decorators.handle_db_errors
-def get_users_with_pagination(
-    db: Session,
-    page_number: int | None = None,
-    num_records: int | None = None,
-    show_inactive: bool | None = True,
-    show_email_unverified: bool | None = True,
-    show_pending_approval: bool | None = True,
-) -> list[users_schema.UsersRead]:
-    """
-    Retrieve a paginated list of users with optional filtering.
-
-    Args:
-        db (Session): Database session for executing queries.
-        page_number (int | None): The page number for pagination (1-indexed).
-            If None, pagination is not applied. Defaults to None.
-        num_records (int | None): The number of records per page.
-            If None, pagination is not applied. Defaults to None.
-        show_inactive (bool | None): If False, excludes inactive users.
-            Defaults to True (includes inactive users).
-        show_email_unverified (bool | None): If False, excludes users with
-            unverified emails. Defaults to True (includes email unverified
-            users).
-        show_pending_approval (bool | None): If False, excludes users pending
-            admin approval. Defaults to True (includes pending approval users).
-
-    Returns:
-        list[users_schema.UsersRead]: A list of User schemas matching the specified
-            criteria, ordered by username. Returns an empty list if no users
-            match the filters.
-    """
-    stmt = select(users_models.Users)
-
-    if show_inactive is False:
-        stmt = stmt.where(users_models.Users.active.is_(True))
-    if show_email_unverified is False:
-        stmt = stmt.where(users_models.Users.email_verified.is_(True))
-    if show_pending_approval is False:
-        stmt = stmt.where(users_models.Users.pending_admin_approval.is_(False))
-
-    stmt = stmt.order_by(users_models.Users.username)
-
-    if page_number is not None and num_records is not None:
-        stmt = stmt.offset((page_number - 1) * num_records).limit(num_records)
-
-    users: list[users_models.Users] = list(db.execute(stmt).scalars().all())
     return _transform_users(users)
 
 
@@ -423,76 +317,6 @@ def get_users_admin(db: Session) -> list[users_schema.UsersRead]:
     stmt = select(users_models.Users).where(users_models.Users.access_type == users_schema.UserAccessType.ADMIN.value)
     users: list[users_models.Users] = list(db.execute(stmt).scalars().all())
     return _transform_users(users)
-
-
-@core_decorators.handle_db_errors
-def create_user(
-    user: users_schema.UsersCreate,
-    identity_service: "auth_identity_service.IdentityService",
-    db: Session,
-) -> users_schema.UsersRead:
-    """
-    Create a new user with hashed password.
-
-    Args:
-        user: User creation data with plain text password.
-        identity_service: Identity service dependency.
-        db: SQLAlchemy database session.
-
-    Returns:
-        Created user schema with hashed password.
-
-    Raises:
-        HTTPException: 409 if email/username already exists.
-        HTTPException: 500 if database error occurs.
-    """
-    try:
-        user.username = user.username.lower()
-        user.email = user.email.lower()
-
-        # Get server settings to determine password policy
-        server_settings = server_settings_utils.get_server_settings_or_404(db)
-
-        # Normalize access_type to string value
-        access_type_value = users_schema.normalize_access_type(user.access_type)
-
-        # Hash the password with configurable policy and length
-        hashed_password = auth_password_policy.validate_and_hash_for_user(
-            identity_service,
-            server_settings,
-            access_type_value,
-            user.password,
-        )
-
-        # Create a new user
-        db_users = users_models.Users(
-            **user.model_dump(exclude={"password", "access_type", "mfa_enabled"}),
-            access_type=access_type_value,
-        )
-
-        # Add the user to the database
-        db.add(db_users)
-        db.commit()
-        db.refresh(db_users)
-
-        # Persist the password hash in the auth-owned credential table.
-        identity_service.set_local_password_hash(db_users.id, hashed_password)
-
-        # Return user
-        return _transform_users(db_users)
-    except HTTPException:
-        # Rollback the transaction
-        db.rollback()
-        raise
-    except IntegrityError as integrity_error:
-        # Rollback the transaction
-        db.rollback()
-
-        # Raise an HTTPException with a 409 Conflict status code
-        raise HTTPException(
-            status_code=status.HTTP_409_CONFLICT,
-            detail=("Duplicate entry error. Check if email and username are unique"),
-        ) from integrity_error
 
 
 @core_decorators.handle_db_errors
@@ -823,74 +647,6 @@ async def edit_profile_user(
 
 
 @core_decorators.handle_db_errors
-def approve_user(user_id: int, db: Session) -> None:
-    """
-    Approve a user by marking them as active.
-
-    Args:
-        user_id: ID of user to approve.
-        db: SQLAlchemy database session.
-
-    Returns:
-        None
-
-    Raises:
-        HTTPException: 404 if user not found.
-        HTTPException: 400 if user email not verified.
-        HTTPException: 500 if database error occurs.
-    """
-    # Get the user from the database
-    db_users = _get_user_model_by_id_or_404(user_id, db)
-
-    if not db_users.email_verified:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="User email is not verified",
-        )
-
-    db_users.pending_admin_approval = False
-    db_users.active = True
-
-    # Commit the transaction
-    db.commit()
-    db.refresh(db_users)
-
-
-@core_decorators.handle_db_errors
-def verify_user_email(
-    user_id: int,
-    server_settings: server_settings_schema.ServerSettingsRead,
-    db: Session,
-) -> None:
-    """
-    Verify user email and conditionally activate account.
-
-    Args:
-        user_id: ID of user to verify.
-        server_settings: Server config determining activation policy.
-        db: SQLAlchemy database session.
-
-    Returns:
-        None
-
-    Raises:
-        HTTPException: 404 if user not found.
-        HTTPException: 500 if database error occurs.
-    """
-    # Get the user from the database
-    db_users = _get_user_model_by_id_or_404(user_id, db)
-
-    db_users.email_verified = True
-    if not server_settings.signup_require_admin_approval:
-        db_users.pending_admin_approval = False
-        db_users.active = True
-
-    # Commit the transaction
-    db.commit()
-    db.refresh(db_users)
-
-
-@core_decorators.handle_db_errors
 async def update_user_photo(user_id: int, db: Session, photo_path: str | None = None) -> str | None:
     """
     Update a user's photo path.
@@ -919,27 +675,3 @@ async def update_user_photo(user_id: int, db: Session, photo_path: str | None = 
     await users_utils.delete_user_photo_filesystem(user_id)
 
     return None
-
-
-@core_decorators.handle_db_errors
-async def delete_user(user_id: int, db: Session) -> None:
-    """
-    Delete a user from the database.
-
-    Args:
-        user_id: ID of user to delete.
-        db: SQLAlchemy database session.
-
-    Returns:
-        None
-
-    Raises:
-        HTTPException: 404 if user not found.
-        HTTPException: 500 if database error occurs.
-    """
-    # Delete the user row off the event loop (blocking sync DB calls),
-    # keeping the API event loop responsive.
-    await run_in_threadpool(_delete_user_row, user_id, db)
-
-    # Delete the user photo in the filesystem
-    await users_utils.delete_user_photo_filesystem(user_id)

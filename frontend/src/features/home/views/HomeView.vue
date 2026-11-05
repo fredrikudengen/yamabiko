@@ -1,8 +1,7 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { Activity as ActivityIcon, Plus, Users as UsersIcon } from '@lucide/vue'
-import type { LucideIcon } from '@lucide/vue'
+import { Activity as ActivityIcon, Plus } from '@lucide/vue'
 
 import HomeProfileCard from '@/features/home/components/HomeProfileCard.vue'
 import UserDistanceStats from '@/features/home/components/UserDistanceStats.vue'
@@ -13,7 +12,6 @@ import { Card } from '@/components/ui/card'
 import { EmptyState } from '@/components/ui/empty-state'
 import { ErrorState } from '@/components/ui/error-state'
 import { Skeleton } from '@/components/ui/skeleton'
-import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { useToasts } from '@/composables/useToasts'
 import { useInfiniteScroll } from '@/composables/useInfiniteScroll'
 import { useCurrentUser } from '@/features/auth/composables/useCurrentUser'
@@ -22,7 +20,6 @@ import { ACTIVITY_FILE_EXTENSIONS } from '@/features/upload/types'
 import { useUploadActivityFileMutation } from '@/features/upload/composables/useUpload'
 import {
   useActivityStatsQuery,
-  useFollowersActivitiesFeed,
   useUserActivitiesFeed,
 } from '@/features/home/composables/useHome'
 
@@ -38,70 +35,23 @@ const weekStats = useActivityStatsQuery(currentUserId, 'week')
 const monthStats = useActivityStatsQuery(currentUserId, 'month')
 
 // --- Feed (center) ---
-type FeedScope = 'mine' | 'following'
-const scope = ref<FeedScope>('mine')
+const feed = useUserActivitiesFeed(currentUserId)
 
-/** The feed-scope tab options, in display order. */
-const SCOPE_OPTIONS: ReadonlyArray<{ value: FeedScope; labelKey: string; icon: LucideIcon }> = [
-  { value: 'mine', labelKey: 'home.feed.myActivities', icon: ActivityIcon },
-  { value: 'following', labelKey: 'home.feed.following', icon: UsersIcon },
-]
-
-/**
- * String proxy for the Tabs primitive, whose model is a plain `string`. Reads
- * and writes flow through the typed `scope` ref so the rest of the view keeps
- * full `FeedScope` narrowing; unknown values are ignored.
- */
-const scopeModel = computed<string>({
-  get: () => scope.value,
-  set: (value) => {
-    const match = SCOPE_OPTIONS.find((option) => option.value === value)
-    if (match) {
-      scope.value = match.value
-    }
-  },
-})
-
-const mine = useUserActivitiesFeed(currentUserId, undefined, () => scope.value === 'mine')
-const following = useFollowersActivitiesFeed(
-  currentUserId,
-  undefined,
-  () => scope.value === 'following',
-)
-
-const activities = computed(
-  () => (scope.value === 'mine' ? mine.data.value : following.data.value)?.pages.flat() ?? [],
-)
-const isPending = computed(() =>
-  scope.value === 'mine' ? mine.isPending.value : following.isPending.value,
-)
-const isError = computed(() =>
-  scope.value === 'mine' ? mine.isError.value : following.isError.value,
-)
-const hasNextPage = computed(() =>
-  scope.value === 'mine' ? mine.hasNextPage.value : following.hasNextPage.value,
-)
-const isFetchingNextPage = computed(() =>
-  scope.value === 'mine' ? mine.isFetchingNextPage.value : following.isFetchingNextPage.value,
-)
+const activities = computed(() => feed.data.value?.pages.flat() ?? [])
+const isPending = computed(() => feed.isPending.value)
+const isError = computed(() => feed.isError.value)
+const hasNextPage = computed(() => feed.hasNextPage.value)
+const isFetchingNextPage = computed(() => feed.isFetchingNextPage.value)
 const isEmpty = computed(() => !isPending.value && !isError.value && activities.value.length === 0)
 
-/** Fetches the next page of whichever feed is active. */
+/** Fetches the next page of the feed. */
 function fetchNextPage(): void {
-  if (scope.value === 'mine') {
-    void mine.fetchNextPage()
-  } else {
-    void following.fetchNextPage()
-  }
+  void feed.fetchNextPage()
 }
 
-/** Refetches the active feed after an error. */
+/** Refetches the feed after an error. */
 function refetchFeed(): void {
-  if (scope.value === 'mine') {
-    void mine.refetch()
-  } else {
-    void following.refetch()
-  }
+  void feed.refetch()
 }
 
 const sentinel = ref<HTMLElement | null>(null)
@@ -115,13 +65,10 @@ const uploadMutation = useUploadActivityFileMutation()
 const acceptedFileTypes = ACTIVITY_FILE_EXTENSIONS.map((ext) => `.${ext}`).join(',')
 
 /**
- * Whether to show a placeholder card at the top of the viewer's own feed while
- * an upload is in flight. Scoped to the "mine" feed because that is where the
- * new activity is pinned to the top once the upload resolves.
+ * Whether to show a placeholder card at the top of the feed while an upload is
+ * in flight; the new activity lands there once the upload resolves.
  */
-const showUploadPlaceholder = computed(
-  () => scope.value === 'mine' && uploadMutation.isPending.value,
-)
+const showUploadPlaceholder = computed(() => uploadMutation.isPending.value)
 
 /** Opens the hidden file picker. */
 function pickFile(): void {
@@ -190,21 +137,6 @@ function onFileChange(event: Event): void {
 
     <!-- Center feed -->
     <section class="flex flex-col gap-3 lg:col-span-9">
-      <!-- Scope toggle -->
-      <Tabs v-model="scopeModel">
-        <TabsList class="grid w-full grid-cols-2" :aria-label="t('home.feed.scopeLabel')">
-          <TabsTrigger
-            v-for="option in SCOPE_OPTIONS"
-            :key="option.value"
-            :value="option.value"
-            class="gap-1.5"
-          >
-            <component :is="option.icon" class="size-4" aria-hidden="true" />
-            {{ t(option.labelKey) }}
-          </TabsTrigger>
-        </TabsList>
-      </Tabs>
-
       <!-- Loading -->
       <div v-if="isPending" class="flex flex-col gap-3" aria-busy="true">
         <HomeActivityCardSkeleton v-for="n in 3" :key="n" />
@@ -225,14 +157,8 @@ function onFileChange(event: Event): void {
       <!-- Empty -->
       <EmptyState
         v-else-if="isEmpty && !showUploadPlaceholder"
-        :title="
-          scope === 'mine' ? t('home.feed.empty.mine.title') : t('home.feed.empty.following.title')
-        "
-        :description="
-          scope === 'mine'
-            ? t('home.feed.empty.mine.description')
-            : t('home.feed.empty.following.description')
-        "
+        :title="t('home.feed.empty.mine.title')"
+        :description="t('home.feed.empty.mine.description')"
       >
         <template #icon>
           <ActivityIcon class="size-8" aria-hidden="true" />

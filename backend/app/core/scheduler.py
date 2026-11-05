@@ -46,14 +46,6 @@ def start_scheduler() -> None:
     )
 
     add_scheduler_job(
-        auth_maintenance.delete_invalid_sign_up_tokens_from_db,
-        "interval",
-        60,
-        [],
-        "delete invalid sign-up tokens from the database",
-    )
-
-    add_scheduler_job(
         auth_maintenance.delete_expired_oauth_states_from_db,
         "interval",
         5,

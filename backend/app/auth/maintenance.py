@@ -19,9 +19,6 @@ from auth.password_reset_tokens.utils import (
 )
 from auth.sessions.rotated_refresh_tokens.utils import cleanup_expired_rotated_tokens
 from auth.sessions.utils import cleanup_idle_sessions
-from auth.sign_up_tokens.utils import (
-    delete_invalid_tokens_from_db as delete_invalid_sign_up_tokens_from_db,
-)
 
 __all__ = [
     "cleanup_expired_pending_mfa_logins",
@@ -30,7 +27,6 @@ __all__ = [
     "delete_expired_oauth_states_from_db",
     "delete_idp_link_expired_tokens_from_db",
     "delete_invalid_password_reset_tokens_from_db",
-    "delete_invalid_sign_up_tokens_from_db",
 ]
 
 

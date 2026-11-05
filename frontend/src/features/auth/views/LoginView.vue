@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
-import { RouterLink } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { LoaderCircle } from '@lucide/vue'
 
@@ -48,7 +47,6 @@ const isMfaStep = computed(() => pendingUsername.value.length > 0)
 const showLocalLogin = computed(
   () => serverSettings.value.local_login_enabled || isMfaStep.value || forceLocalLogin.value,
 )
-const showSignUpLink = computed(() => !isMfaStep.value && serverSettings.value.signup_enabled)
 const showSsoProviders = computed(
   () =>
     !isSsoLoading.value &&
@@ -297,14 +295,6 @@ onMounted(async () => {
         >
           {{ t('login.forgotPassword') }}
         </button>
-
-        <RouterLink
-          v-if="showSignUpLink"
-          :to="{ name: 'signup' }"
-          class="self-center text-meta text-muted-foreground hover:text-foreground"
-        >
-          {{ t('login.signUpLink') }}
-        </RouterLink>
       </div>
 
       <div

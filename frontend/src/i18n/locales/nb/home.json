@@ -6,9 +6,7 @@
     "error": "Kunne ikke laste opp aktivitetsfilen"
   },
   "feed": {
-    "scopeLabel": "Strømomfang",
     "myActivities": "Mine aktiviteter",
-    "following": "Følger",
     "loadMore": "Last inn mer",
     "loading": "Laster…",
     "error": {
@@ -20,10 +18,6 @@
       "mine": {
         "title": "Ingen aktiviteter ennå",
         "description": "Legg til en aktivitet eller koble til en integrasjon for å komme i gang."
-      },
-      "following": {
-        "title": "Ingenting her ennå",
-        "description": "Aktiviteter fra personer du følger vises her."
       }
     }
   },

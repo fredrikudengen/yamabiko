@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { computed } from 'vue'
 import { RouterLink, useRouter, type RouteLocationRaw } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { Activity, Calendar, LogOut, Settings, User } from '@lucide/vue'
@@ -10,25 +9,16 @@ import AppFooter from '@/components/layout/AppFooter.vue'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
-import { useCurrentUser } from '@/features/auth/composables/useCurrentUser'
 import { useAuthStore } from '@/features/auth/stores/auth'
 import { useUpdateCheck } from '@/features/core/composables/useUpdateCheck'
 
 const { t } = useI18n()
 const auth = useAuthStore()
 const router = useRouter()
-const { data: currentUser } = useCurrentUser()
 const { updateAvailable, latestVersion } = useUpdateCheck()
 
-/**
- * The current user's public profile page. Falls back to profile settings while
- * the user record is still loading so the link target is always valid.
- */
-const profileRoute = computed<RouteLocationRaw>(() =>
-  currentUser.value
-    ? { name: 'user', params: { id: currentUser.value.id } }
-    : { name: 'settings-profile' },
-)
+/** The profile entry opens profile settings: there are no public profile pages. */
+const profileRoute: RouteLocationRaw = { name: 'settings-profile' }
 
 /** Logs out and returns to the home screen. */
 async function signOut(): Promise<void> {

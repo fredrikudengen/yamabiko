@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { computed } from 'vue'
 import { RouterLink, useRoute, useRouter, type RouteLocationRaw } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { ChevronDown, LogOut, Settings } from '@lucide/vue'
@@ -8,7 +7,6 @@ import LocaleSwitcher from '@/components/LocaleSwitcher.vue'
 import ThemeToggle from '@/components/ThemeToggle.vue'
 import AppLogo from '@/components/AppLogo.vue'
 import UserAvatar from '@/components/UserAvatar.vue'
-import NotificationsMenu from '@/features/notifications/components/NotificationsMenu.vue'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -45,15 +43,8 @@ function isLinkActive(link: NavLink): boolean {
   return link.name === route.name
 }
 
-/**
- * The current user's public profile page. Falls back to profile settings while
- * the user record is still loading so the link target is always valid.
- */
-const profileRoute = computed<RouteLocationRaw>(() =>
-  currentUser.value
-    ? { name: 'user', params: { id: currentUser.value.id } }
-    : { name: 'settings-profile' },
-)
+/** The profile entry opens profile settings: there are no public profile pages. */
+const profileRoute: RouteLocationRaw = { name: 'settings-profile' }
 
 async function signOut(): Promise<void> {
   await auth.logout()
@@ -123,16 +114,6 @@ async function signOut(): Promise<void> {
         <div class="hidden items-center gap-2 lg:flex">
           <LocaleSwitcher />
           <ThemeToggle />
-        </div>
-
-        <!-- Notifications: the desktop dropdown preview. On mobile the bottom
-             nav's Alerts tab is the notifications entry point, so the navbar
-             intentionally renders no bell there.
-             NotificationsMenu's root is reka-ui's renderless PopoverRoot, so a
-             class bound on the component has no element to land on; wrap it so
-             the responsive `hidden lg:block` actually hides it on mobile. -->
-        <div v-if="auth.isAuthenticated" class="hidden lg:block">
-          <NotificationsMenu />
         </div>
 
         <!-- User menu (the navbar only renders for authenticated users) -->

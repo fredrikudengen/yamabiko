@@ -9,7 +9,6 @@ import { useAuthStore } from '@/features/auth/stores/auth'
 import {
   type ActivityStatsTimeframe,
   fetchActivityStats,
-  fetchFollowersActivities,
   fetchUserActivities,
   fetchUserThisMonthActivityCount,
   fetchUserWeekActivities,
@@ -80,35 +79,6 @@ export function useUserWeekActivitiesQuery(
     queryFn: ({ signal }) => fetchUserWeekActivities(id.value, weekValue.value, signal),
     enabled: computed(() => toValue(enabled) && isAuthenticated.value && id.value > 0),
     staleTime: 5 * 60_000,
-  })
-}
-
-/**
- * The home dashboard's infinite feed of activities from the people the viewer
- * follows. Same shape as {@link useUserActivitiesFeed}.
- *
- * @param userId - Reactive id of the viewer.
- * @param pageSize - Records per page.
- * @param enabled - Reactive gate (e.g. "this feed tab is active") ANDed with the
- *   auth/id gate so an unselected feed never fetches.
- * @returns The TanStack infinite-query result for the followed-users feed.
- */
-export function useFollowersActivitiesFeed(
-  userId: MaybeRefOrGetter<number | null>,
-  pageSize: number = DEFAULT_FEED_PAGE_SIZE,
-  enabled: MaybeRefOrGetter<boolean> = true,
-) {
-  const { isAuthenticated } = storeToRefs(useAuthStore())
-  const id = computed(() => resolveUserId(userId))
-
-  return useInfiniteQuery({
-    queryKey: computed(() => queryKeys.activities.followersFeed(id.value, pageSize)),
-    queryFn: ({ pageParam, signal }) =>
-      fetchFollowersActivities(id.value, pageParam, pageSize, signal),
-    initialPageParam: 1,
-    getNextPageParam: (lastPage: Activity[], _allPages, lastPageParam: number) =>
-      lastPage.length < pageSize ? undefined : lastPageParam + 1,
-    enabled: computed(() => toValue(enabled) && isAuthenticated.value && id.value > 0),
   })
 }
 

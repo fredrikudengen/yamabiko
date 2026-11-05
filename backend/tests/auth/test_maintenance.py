@@ -57,13 +57,10 @@ class TestMaintenanceContract:
         )
         from auth.sessions.rotated_refresh_tokens.utils import cleanup_expired_rotated_tokens
         from auth.sessions.utils import cleanup_idle_sessions
-        from auth.sign_up_tokens.utils import (
-            delete_invalid_tokens_from_db as src_delete_sign_up,
-        )
 
         assert auth_maintenance.cleanup_expired_rotated_tokens is cleanup_expired_rotated_tokens
         assert auth_maintenance.cleanup_idle_sessions is cleanup_idle_sessions
         assert auth_maintenance.delete_expired_oauth_states_from_db is delete_expired_oauth_states_from_db
         assert auth_maintenance.delete_idp_link_expired_tokens_from_db is delete_idp_link_expired_tokens_from_db
         assert auth_maintenance.delete_invalid_password_reset_tokens_from_db is src_delete_password_reset
-        assert auth_maintenance.delete_invalid_sign_up_tokens_from_db is src_delete_sign_up
+        assert not hasattr(auth_maintenance, "delete_invalid_sign_up_tokens_from_db")

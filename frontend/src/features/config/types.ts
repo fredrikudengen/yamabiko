@@ -5,11 +5,9 @@ import type { Schemas } from '@/types'
  * Instance-level feature flags. Drive conditional UI from these instead of
  * hard-coded `import.meta.env` checks so one bundle serves every deployment.
  *
- * @property signUp - Whether self-service sign-up is enabled.
  * @property federation - Whether federated (multi-instance) features are on.
  */
 export interface FeatureFlags {
-  signUp: boolean
   federation: boolean
 }
 

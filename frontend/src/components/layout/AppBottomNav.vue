@@ -2,9 +2,8 @@
 import { computed } from 'vue'
 import { RouterLink } from 'vue-router'
 import { useI18n } from 'vue-i18n'
-import { Bell, House, Map as MapIcon, Menu, type LucideIcon } from '@lucide/vue'
+import { House, Map as MapIcon, Menu, Mountain, type LucideIcon } from '@lucide/vue'
 
-import { useUnreadNotificationsCount } from '@/features/notifications/composables/useNotifications'
 import { useAuthStore } from '@/features/auth/stores/auth'
 
 interface BottomNavLink {
@@ -15,23 +14,14 @@ interface BottomNavLink {
 
 const { t } = useI18n()
 const auth = useAuthStore()
-const { data: unreadCount } = useUnreadNotificationsCount()
-
-/** Whether the alerts tab shows its unread indicator dot. */
-const hasUnread = computed(() => (unreadCount.value ?? 0) > 0)
-
-/** Accessible alerts label, folding in the unread count when present. */
-const alertsLabel = computed(() =>
-  hasUnread.value ? t('notifications.badge', { count: unreadCount.value ?? 0 }) : t('nav.alerts'),
-)
 
 /**
- * Leading destinations of the mobile bottom bar, mirroring v1's
- * NavbarBottomMobileComponent. Alerts and Menu render separately because they
- * carry an unread indicator / fixed destination.
+ * Leading destinations of the mobile bottom bar. Menu renders separately
+ * because it has a fixed destination.
  */
 const links = computed<BottomNavLink[]>(() => [
   { name: 'home', label: t('nav.home'), icon: House },
+  { name: 'segments', label: t('nav.segments'), icon: Mountain },
   { name: 'coverage', label: t('nav.coverage'), icon: MapIcon },
 ])
 </script>
@@ -39,7 +29,7 @@ const links = computed<BottomNavLink[]>(() => [
 <template>
   <!--
     Mobile primary navigation. Mirrors the v1 bottom navbar: a sticky bar
-    pinned to the bottom on small screens (Home, Map, Alerts, Menu),
+    pinned to the bottom on small screens (Home, Segments, Map, Menu),
     hidden from `lg` up where the top navbar takes over. Authenticated only.
   -->
   <nav
@@ -56,23 +46,6 @@ const links = computed<BottomNavLink[]>(() => [
     >
       <component :is="link.icon" class="size-5" />
       <span class="truncate">{{ link.label }}</span>
-    </RouterLink>
-
-    <RouterLink
-      :to="{ name: 'notifications' }"
-      class="flex flex-1 flex-col items-center gap-1 px-1 py-2 text-micro text-muted-foreground hover:text-foreground"
-      active-class="text-foreground"
-      :aria-label="alertsLabel"
-    >
-      <span class="relative">
-        <Bell class="size-5" />
-        <span
-          v-if="hasUnread"
-          class="absolute -end-0.5 -top-0.5 size-2 rounded-full bg-brand"
-          aria-hidden="true"
-        />
-      </span>
-      <span class="truncate">{{ t('nav.alerts') }}</span>
     </RouterLink>
 
     <RouterLink

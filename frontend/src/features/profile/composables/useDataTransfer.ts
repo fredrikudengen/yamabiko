@@ -32,7 +32,6 @@ export function useImportProfileMutation() {
     onSettled: () => {
       void client.invalidateQueries({ queryKey: queryKeys.profile.all() })
       void client.invalidateQueries({ queryKey: queryKeys.activities.all() })
-      void client.invalidateQueries({ queryKey: queryKeys.notifications.all() })
       void client.invalidateQueries({ queryKey: queryKeys.currentUser() })
     },
   })

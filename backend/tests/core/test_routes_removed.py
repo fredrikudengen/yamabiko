@@ -67,3 +67,20 @@ def test_goals_are_gone():
 
 def test_the_activity_name_search_is_gone():
     assert not [path for path in PATHS if path.startswith(f"{ROOT}/activities/name/contains")]
+
+
+def test_followers_notifications_and_sign_up_are_gone():
+    for prefix in ("/followers", "/notifications", "/sign-up"):
+        assert not [path for path in PATHS if path.startswith(f"{ROOT}{prefix}")]
+
+
+def test_only_the_owner_lookup_is_left_of_the_users_api():
+    assert sorted(path for path in PATHS if path.startswith(f"{ROOT}/users")) == [f"{ROOT}/users/id/{{user_id}}"]
+
+
+def test_public_sharing_stays():
+    assert f"{ROOT}/public/users/id/{{user_id}}" in PATHS
+
+
+def test_the_followed_activities_feed_is_gone():
+    assert not [path for path in PATHS if "/followed" in path]

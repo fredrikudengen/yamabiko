@@ -84,16 +84,3 @@ export type MfaLoginRequest = Schemas['MFALoginRequest']
  * silent runtime mismatch.
  */
 export type LogoutResponse = Schemas['LogoutResponse']
-
-/**
- * Sign-up request payload sent to `POST /sign-up/request`. Derived from the
- * backend's generated `UsersSignup` schema so a contract change surfaces as a
- * TypeScript error here instead of a silent runtime mismatch.
- */
-export type SignUpRequest = Schemas['UsersSignup']
-
-/**
- * Sign-up response returned by `POST /sign-up/request`, indicating whether the
- * account still needs email verification and/or admin approval before login.
- */
-export type SignUpResponse = Schemas['SignUpResponse']

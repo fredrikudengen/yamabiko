@@ -5,7 +5,6 @@ import {
   ServerCog,
   ShieldCheck,
   User,
-  Users,
   type LucideIcon,
 } from '@lucide/vue'
 
@@ -32,7 +31,6 @@ export interface SettingsZone {
  * up automatically.
  */
 export const SETTINGS_ZONES: readonly SettingsZone[] = [
-  { name: 'settings-users', labelKey: 'settings.nav.users', icon: Users, adminOnly: true },
   { name: 'settings-idp', labelKey: 'settings.nav.idp', icon: KeyRound, adminOnly: true },
   { name: 'settings-server', labelKey: 'settings.nav.server', icon: ServerCog, adminOnly: true },
   { name: 'settings-profile', labelKey: 'settings.nav.profile', icon: User, adminOnly: false },
