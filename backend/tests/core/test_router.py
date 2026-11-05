@@ -22,7 +22,7 @@ class TestAbout:
         response = client.get("/api/v1/about")
         assert response.status_code == 200
         data = response.json()
-        assert data["name"] == "Endurain API"
+        assert data["name"] == "Yamabiko API"
         assert data["version"] == API_VERSION
         assert data["license"]["name"] == LICENSE_NAME
         assert data["license"]["identifier"] == LICENSE_IDENTIFIER

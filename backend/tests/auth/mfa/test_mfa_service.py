@@ -72,7 +72,7 @@ class TestGenerateQRCode:
                 result = mfa_service.generate_qr_code("SECRET", "testuser")
 
         assert result == "data:image/png;base64,cG5nX2RhdGE="
-        mock_totp.provisioning_uri.assert_called_once_with(name="testuser", issuer_name="Endurain")
+        mock_totp.provisioning_uri.assert_called_once_with(name="testuser", issuer_name="Yamabiko")
         mock_qr.add_data.assert_called_once_with("otpauth://totp/Endurain:testuser?secret=SECRET")
         mock_qr.make.assert_called_once_with(fit=True)
 
@@ -120,7 +120,7 @@ class TestSetupUserMFA:
 
         assert result.secret == "NEWSECRET"
         assert result.qr_code == "data:image/png;base64,QRCODE"
-        assert result.app_name == "Endurain"
+        assert result.app_name == "Yamabiko"
         mock_gen_qr.assert_called_once_with("NEWSECRET", "testuser")
 
     @patch("auth.mfa.service.users_utils.get_user_by_id_or_404")

@@ -5,7 +5,7 @@
 @custom-variant dark (&:is(.dark *));
 
 /*
- * Endurain design tokens — single source of truth for visual design.
+ * Yamabiko design tokens — single source of truth for visual design.
  * See devdocs/UX_INCREMENTAL_MIGRATION_PLAN.md § 12.4.
  */
 @theme {
@@ -130,7 +130,7 @@
 }
 
 /*
- * shadcn-vue semantic layer, wired to the Endurain palette so primitives
+ * shadcn-vue semantic layer, wired to the Yamabiko palette so primitives
  * added under src/components/ui/ render with the brand colors out of the box.
  */
 :root {

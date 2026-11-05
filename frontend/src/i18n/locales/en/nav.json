@@ -12,9 +12,6 @@
   "primary": "Primary navigation",
   "account": "Account",
   "preferences": "Preferences",
-  "updateAvailable": "Update available",
-  "updateAvailableTitle": "Version {version} is available",
-  "updateViewRelease": "View release notes",
   "segments": "Segments",
   "coverage": "Map"
 }

@@ -39,7 +39,7 @@ async function copyAll(): Promise<void> {
 function download(): void {
   downloadBlob(
     new Blob([props.codes.join('\n')], { type: 'text/plain' }),
-    'endurain-backup-codes.txt',
+    'yamabiko-backup-codes.txt',
   )
 }
 </script>

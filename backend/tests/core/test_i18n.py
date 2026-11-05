@@ -104,7 +104,7 @@ class TestTranslate:
     def test_known_key_en_locale(self):
         """A known key returns a non-empty English string."""
         result = core_i18n.t("password_reset.subject", "en")
-        assert "Endurain" in result
+        assert "Yamabiko" in result
 
     def test_fallback_to_en_for_unknown_locale(self):
         """Unknown locale falls back to English translation."""

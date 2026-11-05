@@ -1,4 +1,4 @@
-"""Request ID middleware for the Endurain API.
+"""Request ID middleware for the Yamabiko API.
 
 Assigns a unique identifier to every request so that all
 log entries produced during a single request can be

@@ -1,9 +1,5 @@
 {
-  "badge": "Endurain v2",
-  "logoAlt": "Endurain-logo",
-  "title": "Grunnlaget for designsystemet er live",
-  "subtitle": "Tailwind v4, shadcn-vue, streng TypeScript og Endurains tokenpalett er koblet opp",
-  "primaryAction": "Hovedhandling",
+  "logoAlt": "Yamabiko-logo",
   "notFound": {
     "title": "Siden ble ikke funnet",
     "message": "Siden du leter etter finnes ikke eller er flyttet",
@@ -17,9 +13,9 @@
   },
   "configError": {
     "title": "Konfigurasjonsfeil",
-    "message": "Appen kunne ikke nå Endurain-backenden. Dette skyldes vanligvis en manglende eller feilkonfigurert ENDURAIN_HOST-miljøvariabel, eller at backenden ikke kjører.",
+    "message": "Appen kunne ikke nå Yamabiko-backenden. Dette skyldes vanligvis en manglende eller feilkonfigurert ENDURAIN_HOST-miljøvariabel, eller at backenden ikke kjører.",
     "notSet": "(ikke satt)",
-    "help": "Kontroller at ENDURAIN_HOST peker til URL-en der Endurain-instansen din er tilgjengelig (for eksempel https://endurain.example.com) og at backenden kjører, og last deretter inn siden på nytt.",
+    "help": "Kontroller at ENDURAIN_HOST peker til URL-en der Yamabiko-instansen din er tilgjengelig (for eksempel https://yamabiko.example.com) og at backenden kjører, og last deretter inn siden på nytt.",
     "reload": "Last inn på nytt"
   },
   "dismiss": "Lukk",

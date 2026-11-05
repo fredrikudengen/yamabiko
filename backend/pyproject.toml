@@ -1,8 +1,11 @@
 [project]
-name = "endurain"
+name = "yamabiko"
 version = "0.19.3"
-description = "Endurain API for the Endurain app"
-authors = [{name = "João Vitória Silva", email = "joao@endurain.com"}]
+description = "Yamabiko API, a personal fork of Endurain"
+authors = [
+    {name = "João Vitória Silva", email = "joao@endurain.com"},
+    {name = "Fredrik Udengen"},
+]
 # readme intentionally omitted — internal app, not published to PyPI
 requires-python = ">=3.13,<4.0"
 dependencies = [

@@ -42,7 +42,7 @@ class TestBuildSmtpUrl:
         assert "pass=secret123" in url
         assert "smtp=smtp.example.com" in url
         assert "port=587" in url
-        assert "name=Endurain" in url
+        assert "name=Yamabiko" in url
 
     def test_secure_no_auth(self):
         service = core_apprise.AppriseService()

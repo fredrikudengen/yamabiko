@@ -1337,7 +1337,7 @@ def location_based_on_coordinates(latitude: float | None, longitude: float | Non
 
     # Make the request and get the response
     try:
-        headers = {"User-Agent": f"Endurain/{core_config.API_VERSION} (ReverseGeocoding)"}
+        headers = {"User-Agent": f"Yamabiko/{core_config.API_VERSION} (ReverseGeocoding)"}
         # Make the request and get the response
         response = requests.get(url, headers=headers, timeout=10)
         response.raise_for_status()

@@ -87,7 +87,7 @@ class AppriseService:
             params.append(("pass", self.smtp_password))
         params.append(("smtp", self.smtp_host))
         params.append(("port", str(self.smtp_port)))
-        params.append(("name", "Endurain"))
+        params.append(("name", "Yamabiko"))
         # Set the "From" address so providers that validate
         # it (e.g. Brevo) accept the message. Omitted when
         # unset so Apprise keeps auto-detecting the sender.
