@@ -4,11 +4,11 @@
  * files in sync. Values are copied from frontend/src/assets/main.css.
  */
 [data-md-color-scheme="default"] {
-  --md-primary-fg-color: #1d9e75;
-  --md-primary-fg-color--light: #5dcaa5;
-  --md-primary-fg-color--dark: #0f6e56;
+  --md-primary-fg-color: #2f5d8c;
+  --md-primary-fg-color--light: #8fb3dc;
+  --md-primary-fg-color--dark: #234872;
   --md-primary-bg-color: #ffffff;
-  --md-accent-fg-color: #0f6e56;
+  --md-accent-fg-color: #234872;
   --md-accent-fg-color--transparent: rgba(29, 158, 117, 0.1);
   --md-accent-bg-color: #ffffff;
   --md-default-bg-color: #f1efe8;
@@ -16,7 +16,7 @@
   --md-default-fg-color--light: #5f5e5a;
   --md-default-fg-color--lighter: rgba(44, 44, 42, 0.32);
   --md-default-fg-color--lightest: rgba(44, 44, 42, 0.12);
-  --md-typeset-a-color: #0f6e56;
+  --md-typeset-a-color: #234872;
   --md-code-bg-color: #ffffff;
 }
 
@@ -24,16 +24,16 @@
   /* Dark navbar matches the dark-mode logo colour so the logo blends into the
      header, the same way the light logo blends into the light header. Header
      text/icons flip to a dark ink for contrast on the light-teal bar. */
-  --md-primary-fg-color: #5dcaa5;
-  --md-primary-fg-color--light: #5dcaa5;
-  --md-primary-fg-color--dark: #04342c;
-  --md-accent-fg-color: #5dcaa5;
+  --md-primary-fg-color: #8fb3dc;
+  --md-primary-fg-color--light: #8fb3dc;
+  --md-primary-fg-color--dark: #0f2236;
+  --md-accent-fg-color: #8fb3dc;
   --md-accent-fg-color--transparent: rgba(93, 202, 165, 0.12);
-  --md-accent-bg-color: #04342c;
+  --md-accent-bg-color: #0f2236;
   --md-default-bg-color: #18181b;
   --md-default-fg-color: #f4f4f5;
   --md-default-fg-color--light: #a1a1aa;
-  --md-typeset-a-color: #5dcaa5;
+  --md-typeset-a-color: #8fb3dc;
   --md-code-bg-color: #27272a;
 }
 

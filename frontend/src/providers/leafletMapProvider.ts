@@ -39,7 +39,7 @@ const DEFAULT_TILE_URL = 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png'
 const DEFAULT_ATTRIBUTION =
   '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
 const DEFAULT_MAX_ZOOM = 19
-/** Brand teal track colour, from the `--color-brand` design token. */
+/** Brand indigo track colour, from the `--color-brand` design token. */
 const DEFAULT_TRACK_COLOR = themeColor('--color-brand')
 /** Start-marker fill — the `--color-goal` design token (green). */
 const START_MARKER_COLOR = themeColor('--color-goal')

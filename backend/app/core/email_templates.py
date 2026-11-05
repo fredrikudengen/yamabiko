@@ -6,14 +6,14 @@ import core.i18n as core_i18n
 
 # Yamabiko brand palette (light surface), mirrored from the frontend design
 # tokens in frontend/src/assets/main.css so transactional emails match the UI.
-BRAND_PRIMARY = "#1d9e75"  # --primary           (brand green)
-BRAND_PRIMARY_DARK = "#0f6e56"  # --secondary-foreground (brand mid)
+BRAND_PRIMARY = "#2f5d8c"  # --primary           (brand indigo)
+BRAND_PRIMARY_DARK = "#234872"  # --secondary-foreground (brand mid)
 BRAND_FOREGROUND = "#2c2c2a"  # --foreground        (body text)
 BRAND_BACKGROUND = "#f1efe8"  # --background        (page backdrop)
 BRAND_MUTED_FOREGROUND = "#888780"  # --muted-foreground  (footer text)
 BRAND_BORDER = "#e2e0d8"  # subtle hairline border
 
-# The brand is green throughout, so every transactional email
+# The brand is indigo throughout, so every transactional email
 # shares one accent colour (previously Bootstrap blue/green per flow).
 LINK_COLOR_PRIMARY = BRAND_PRIMARY  # password reset
 LINK_COLOR_SUCCESS = BRAND_PRIMARY  # sign-up flows
@@ -22,8 +22,8 @@ LINK_COLOR_SUCCESS = BRAND_PRIMARY  # sign-up flows
 WARNING_BG = "#fdf3e3"  # soft amber surface for security notices
 WARNING_BORDER = "#f3dcae"
 WARNING_TEXT = "#92570a"
-INFO_BG = "#e1f5ee"  # brand secondary tint for informational details
-INFO_BORDER = "#bfe6d8"
+INFO_BG = "#e6edf6"  # brand secondary tint for informational details
+INFO_BORDER = "#c5d5e8"
 INFO_TEXT = BRAND_PRIMARY_DARK
 
 _LOGO_URL = "https://raw.githubusercontent.com/fredrikudengen/yamabiko/master/frontend/public/logo_light.png"

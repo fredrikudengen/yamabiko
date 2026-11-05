@@ -9,13 +9,13 @@
  * See devdocs/UX_INCREMENTAL_MIGRATION_PLAN.md § 12.4.
  */
 @theme {
-  /* Brand — Teal */
-  --color-brand-light: #e1f5ee;
-  --color-brand: #1d9e75;
-  --color-brand-mid: #0f6e56;
-  --color-brand-dark: #085041;
-  --color-brand-dark-foreground: #5dcaa5;
-  --color-brand-dark-surface: #04342c;
+  /* Brand — Ai-iro indigo */
+  --color-brand-light: #e6edf6;
+  --color-brand: #2f5d8c;
+  --color-brand-mid: #234872;
+  --color-brand-dark: #18344f;
+  --color-brand-dark-foreground: #8fb3dc;
+  --color-brand-dark-surface: #0f2236;
 
   /* Semantic accents */
   --color-effort: #ef9f27;
@@ -142,20 +142,20 @@
   --card-foreground: #2c2c2a;
   --popover: #ffffff;
   --popover-foreground: #2c2c2a;
-  --primary: #1d9e75;
+  --primary: #2f5d8c;
   --primary-foreground: #ffffff;
-  --secondary: #e1f5ee;
-  --secondary-foreground: #0f6e56;
+  --secondary: #e6edf6;
+  --secondary-foreground: #234872;
   --muted: #f1efe8;
   --muted-foreground: #888780;
-  --accent: #e1f5ee;
-  --accent-foreground: #0f6e56;
+  --accent: #e6edf6;
+  --accent-foreground: #234872;
   --destructive: #e24b4a;
   --destructive-foreground: #ffffff;
   --warning: #d97706;
   --border: rgba(0, 0, 0, 0.08);
   --input: rgba(0, 0, 0, 0.15);
-  --ring: #1d9e75;
+  --ring: #2f5d8c;
 }
 
 .dark {
@@ -165,20 +165,20 @@
   --card-foreground: #f4f4f5;
   --popover: #27272a;
   --popover-foreground: #f4f4f5;
-  --primary: #5dcaa5;
-  --primary-foreground: #04342c;
-  --secondary: #04342c;
-  --secondary-foreground: #5dcaa5;
+  --primary: #8fb3dc;
+  --primary-foreground: #0f2236;
+  --secondary: #0f2236;
+  --secondary-foreground: #8fb3dc;
   --muted: #27272a;
   --muted-foreground: #a1a1aa;
-  --accent: #04342c;
-  --accent-foreground: #5dcaa5;
+  --accent: #0f2236;
+  --accent-foreground: #8fb3dc;
   --destructive: #e24b4a;
   --destructive-foreground: #ffffff;
   --warning: #fbbf24;
   --border: rgba(255, 255, 255, 0.08);
   --input: rgba(255, 255, 255, 0.15);
-  --ring: #5dcaa5;
+  --ring: #8fb3dc;
 }
 
 @theme inline {

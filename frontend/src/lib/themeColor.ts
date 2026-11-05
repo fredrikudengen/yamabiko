@@ -23,8 +23,8 @@ export type ThemeColorToken =
  * available (SSR, unit tests). The single place these hex values are repeated.
  */
 const TOKEN_FALLBACKS: Record<ThemeColorToken, string> = {
-  '--color-brand': '#1d9e75',
-  '--color-brand-mid': '#0f6e56',
+  '--color-brand': '#2f5d8c',
+  '--color-brand-mid': '#234872',
   '--color-effort': '#ef9f27',
   '--color-hr': '#e24b4a',
   '--color-info': '#378add',

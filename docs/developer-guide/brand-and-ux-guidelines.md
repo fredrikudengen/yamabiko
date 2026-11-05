@@ -57,18 +57,18 @@ Two layers of tokens cohabit in `main.css`:
     `text-effort`, `text-info`, `text-goal`, `bg-brand`) only for data and
     semantic accents. Never hardcode a hex outside data-viz code.
 
-### Brand - teal
+### Brand - ai-iro indigo
 
 The brand anchor. Reads as "health, outdoors, forward motion".
 
 | Token | Hex | Usage |
 |---|---|---|
-| `--color-brand-light` | `#E1F5EE` | Badge backgrounds, active nav tints, hover fills |
-| `--color-brand` | `#1D9E75` | Primary buttons, active states, chart fills |
-| `--color-brand-mid` | `#0F6E56` | Hover on primary button, icon on light tint |
-| `--color-brand-dark` | `#085041` | Dark-mode active states |
-| `--color-brand-dark-foreground` | `#5DCAA5` | Teal text/icon on dark surfaces |
-| `--color-brand-dark-surface` | `#04342C` | Teal active tint on dark surfaces |
+| `--color-brand-light` | `#e6edf6` | Badge backgrounds, active nav tints, hover fills |
+| `--color-brand` | `#2f5d8c` | Primary buttons, active states, chart fills |
+| `--color-brand-mid` | `#234872` | Hover on primary button, icon on light tint |
+| `--color-brand-dark` | `#18344f` | Dark-mode active states |
+| `--color-brand-dark-foreground` | `#8fb3dc` | Indigo text/icon on dark surfaces |
+| `--color-brand-dark-surface` | `#0f2236` | Indigo active tint on dark surfaces |
 
 ### Semantic accents
 
@@ -115,8 +115,8 @@ component written with them needs no per-element `dark:` variant.
 |---|---|---|
 | `bg-background` / `text-foreground` | `#F1EFE8` / `#2C2C2A` | `#18181B` / `#F4F4F5` |
 | `bg-card` / `text-card-foreground` | `#FFFFFF` / `#2C2C2A` | `#27272A` / `#F4F4F5` |
-| `bg-primary` / `text-primary-foreground` | `#1D9E75` / `#FFFFFF` | `#5DCAA5` / `#04342C` |
-| `bg-secondary` / `text-secondary-foreground` | `#E1F5EE` / `#0F6E56` | `#04342C` / `#5DCAA5` |
+| `bg-primary` / `text-primary-foreground` | `#2f5d8c` / `#FFFFFF` | `#8fb3dc` / `#0f2236` |
+| `bg-secondary` / `text-secondary-foreground` | `#e6edf6` / `#234872` | `#0f2236` / `#8fb3dc` |
 | `text-muted-foreground` | `#888780` | `#A1A1AA` |
 | `bg-destructive` | `#E24B4A` | `#E24B4A` |
 | `border` | `rgba(0,0,0,0.08)` | `rgba(255,255,255,0.08)` |
@@ -215,7 +215,7 @@ specific primitives below.
 
 ### Buttons
 
-- **Primary:** `bg-primary text-primary-foreground` (brand teal).
+- **Primary:** `bg-primary text-primary-foreground` (brand indigo).
 - **Ghost / secondary:** bordered, `hover:bg-muted`.
 - **Destructive:** `text-destructive` with a subtle destructive-tinted border.
 
@@ -231,8 +231,8 @@ composable (`@custom-variant dark` in `main.css`).
   `text-muted-foreground`, `border`), they flip automatically, so most
   components need **no** `dark:` variants at all.
 - Only reach for explicit `dark:` utilities when styling with raw colors. For
-  teal on dark surfaces use `dark:text-brand-dark-foreground` and
-  `dark:bg-brand-dark-surface` (the base `#1D9E75` is too dark to read there).
+  indigo on dark surfaces use `dark:text-brand-dark-foreground` and
+  `dark:bg-brand-dark-surface` (the base `#2f5d8c` is too dark to read there).
 - Semantic accents (`hr`, `effort`, `info`, `goal`) keep the same hex in both
   modes, they're designed to work on either background.
 
@@ -242,7 +242,7 @@ composable (`@custom-variant dark` in `main.css`).
 The filter bar uses activity-type badges as toggle filters. Each card shows the
 4 core stats inline (no "expand to see stats"); tapping opens a detail view.
 
-**Activity detail**, full-width map at the top (GPX trace, teal polyline),
+**Activity detail**, full-width map at the top (GPX trace, indigo polyline),
 then a metric grid (2×4 or 2×3 by sport), compact lap-splits table, and
 HR/pace/elevation charts below the fold. Gear used links to gear detail.
 
@@ -252,7 +252,7 @@ widget grid.
 
 **Empty states**
 
-- First-time: large teal icon, friendly headline, single CTA button.
+- First-time: large indigo icon, friendly headline, single CTA button.
 - Filtered: muted text only, no illustration, e.g. "No running activities
   yet".
 
@@ -261,7 +261,7 @@ Destructive settings (delete account, delete activity) always require a
 confirmation dialog. Validation messages use `text-field-error` and
 `aria-live="polite"`.
 
-**Charts**, bar charts for weekly volume use a single teal ramp; HR-zone
+**Charts**, bar charts for weekly volume use a single indigo ramp; HR-zone
 charts use the green → amber → red ramp; elevation profiles use an `info`-tint
 fill with `info` stroke. Remove the Chart.js default legend and build a custom
 HTML legend with square swatches. No grid lines unless an axis would be
@@ -280,7 +280,7 @@ guidance below applies to any stack (native, Flutter, React Native).
 
 | Brand concept | Mobile mapping |
 |---|---|
-| Brand teal + accents (`hr`/`effort`/`info`/`goal`) | A theme-token file + a brand color helper. Accents identical in both modes; base teal → `#5DCAA5` on dark surfaces. (Flutter: `AppThemeTokens` + `BrandColors`.) |
+| Brand indigo + accents (`hr`/`effort`/`info`/`goal`) | A theme-token file + a brand color helper. Accents identical in both modes; base indigo → `#8fb3dc` on dark surfaces. (Flutter: `AppThemeTokens` + `BrandColors`.) |
 | shadcn semantic layer | Native color roles (Material `ColorScheme` / iOS semantic colors). Pin dialogs/sheets/menus to the card surface color. |
 | Warm neutrals, dark mode | Light/dark themes that follow the system setting. |
 | Type roles & sizes (400/500 only) | Native text styles at the same sizes: display 44, page-title 26, card 22, section 18, item 15, body 14, hint 13, caption 11. |
@@ -290,7 +290,7 @@ guidance below applies to any stack (native, Flutter, React Native).
 ### Where mobile deliberately diverges
 
 - **Font: system, not Inter.** SF (iOS) / Roboto (Android) are the platform
-  norm, ship free, and integrate with Dynamic Type. The brand signal is teal +
+  norm, ship free, and integrate with Dynamic Type. The brand signal is indigo +
   the type scale, so mobile keeps the sizes/weights but not the web font.
 - **Elevation: flat cards, subtle on transient surfaces.** Cards/app bars are
   flat (web parity), but dialogs/sheets/menus keep a small elevation (depth is
