@@ -31,7 +31,6 @@ export function useImportProfileMutation() {
     mutationFn: (file) => importProfileData(file),
     onSettled: () => {
       void client.invalidateQueries({ queryKey: queryKeys.profile.all() })
-      void client.invalidateQueries({ queryKey: queryKeys.gears.all() })
       void client.invalidateQueries({ queryKey: queryKeys.activities.all() })
       void client.invalidateQueries({ queryKey: queryKeys.notifications.all() })
       void client.invalidateQueries({ queryKey: queryKeys.currentUser() })

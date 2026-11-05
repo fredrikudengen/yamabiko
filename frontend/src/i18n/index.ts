@@ -9,7 +9,6 @@ import enSignup from './locales/en/signup.json'
 import enResetPassword from './locales/en/resetPassword.json'
 import enVerifyEmail from './locales/en/verifyEmail.json'
 import enNotifications from './locales/en/notifications.json'
-import enGears from './locales/en/gears.json'
 import enActivities from './locales/en/activities.json'
 import enSettings from './locales/en/settings.json'
 import enHome from './locales/en/home.json'
@@ -30,7 +29,6 @@ const en = {
   resetPassword: enResetPassword,
   verifyEmail: enVerifyEmail,
   notifications: enNotifications,
-  gears: enGears,
   activities: enActivities,
   settings: enSettings,
   home: enHome,

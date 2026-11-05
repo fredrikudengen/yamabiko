@@ -16,8 +16,6 @@ import core.database as core_database
 import core.file_uploads as file_uploads
 import core.logger as core_logger
 import core.text_imports as core_text_imports
-import gears.gear.crud as gears_crud
-import users.users.crud as users_crud
 import websocket.manager as websocket_manager
 
 _STRAVA_ACTIVITIES_HEADERS = {
@@ -97,47 +95,6 @@ def iterate_over_activities_csv() -> dict | None:
         return None
 
 
-def create_gear_dictionary_for_bulk_import(
-    token_user_id: Annotated[int, Depends(auth_dependencies.get_sub_from_access_token)],
-    db: Annotated[
-        Session,
-        Depends(core_database.get_db),
-    ],
-) -> dict | None:
-    """
-    Creates a dictionary that links gear nicknames in Endurain to their Endurain gear IDs.
-
-    The dictionary includes both base Endurain gear nickname and the gear name smoosh ("{brand} {model} {name}") that Strava uses for its shoe gear listing in activities.csv
-
-    Returns: Dictionary that uses the gear name as a key to look up the gear ID.
-    """
-    user = users_crud.get_user_by_id(token_user_id, db)
-    if user is not None:
-        user_gear_list = gears_crud.get_gear_user(user.id, db)
-        if user_gear_list is None:
-            # User has no gear.
-            users_existing_gear_nickname_to_id = None
-        else:
-            # User has gear - build dictionary to facilitate gear to ID work during import.
-            users_existing_gear_nickname_to_id = {}
-            for item in user_gear_list:
-                users_existing_gear_nickname_to_id[item.nickname] = [item.id]
-                # Strava apparently exports shoe names as a smoosh of "{brand} {model} {name}", so adding that as a second key for each gear item
-                strava_name_smoosh = " ".join(
-                    part
-                    for part in [
-                        (item.brand or "").strip(),
-                        (item.model or "").strip(),
-                        (item.nickname or "").strip(),
-                    ]
-                    if part
-                )
-                if strava_name_smoosh not in users_existing_gear_nickname_to_id:
-                    users_existing_gear_nickname_to_id[strava_name_smoosh] = [item.id]
-        return users_existing_gear_nickname_to_id
-    return None
-
-
 def queue_bulk_export_activities_for_import(
     token_user_id: Annotated[int, Depends(auth_dependencies.get_sub_from_access_token)],
     websocket_manager: websocket_manager.WebSocketManager,
@@ -146,7 +103,6 @@ def queue_bulk_export_activities_for_import(
         Depends(core_database.get_db),
     ],
     strava_activities_dict: dict,
-    users_existing_gear_nickname_to_id: dict,
     import_time: str,
 ) -> int:
     """
@@ -260,7 +216,6 @@ def queue_bulk_export_activities_for_import(
                         is_bulk_import=True,
                         strava_activities=strava_activities_dict,
                         import_initiated_time=import_time,
-                        users_existing_gear_nickname_to_id=users_existing_gear_nickname_to_id,
                     )
                 )
             except Exception as err:
@@ -292,15 +247,13 @@ def build_metadata_dict(
     file_base_name: str,  # String with the base filename being processed (also key to strava_activities dictionary)
     strava_activities: dict,  # dictionary with info for a Strava bulk import - format strava_activities["filename"]["column header from Strava activities spreadsheet"]
     import_initiated_time: str,  # String containing the time the Strava bulk import was initiated.
-    users_existing_gear_nickname_to_id: dict
-    | None = None,  # Dictionary containing gear nickname to ID, needed for Strava bulk import
 ) -> dict:
     """
     Creates a dictionary with metadata information pulled from a Strava activities file.
 
     The field strava_activity_metadata["metadata_found_in_csv"] identifies whether there was an entry for this activity in the activities.csv file or not.
 
-    Returns: Dictionary that contains the gear name as a key to look up the gear ID.
+    Returns: Dictionary with the activity's metadata from activities.csv.
     """
     strava_activity_metadata: dict[str, Any] = {}
     if isinstance(strava_activities, dict) and strava_activities.get(
@@ -316,20 +269,6 @@ def build_metadata_dict(
         # Needed for checking for duplicates within multi-file .fit file Strava bulk imports
         strava_activity_metadata["activity date"] = strava_activities[file_base_name]["Activity Date"]
 
-        # Gear work
-        activity_gear = None
-        activity_gear = strava_activities[file_base_name]["Activity Gear"]
-        if activity_gear and activity_gear is not None:
-            if activity_gear.replace("+", " ").strip() in users_existing_gear_nickname_to_id:
-                # Gear names in Endurain have all +'s swapped to spaces, thus need to do this here as well.
-                strava_activity_metadata["gear_id"] = users_existing_gear_nickname_to_id[activity_gear][0]
-            else:
-                strava_activity_metadata["gear_id"] = None
-                core_logger.print_to_log_and_console(
-                    f"Bulk file import: Gear for activity {file_base_name}, which activities.csv shows as {activity_gear}, was not found in the user's existing gear. Not adding gear to activity."
-                )
-        else:
-            strava_activity_metadata["gear_id"] = None
         import_dict = build_import_dictionary(file_base_name, import_initiated_time, True, strava_activities)
         strava_activity_metadata["import_dict"] = import_dict
         strava_activity_metadata["metadata_found_in_csv"] = True  # We found metadata in the CSV!
@@ -404,7 +343,6 @@ def append_bulk_import_metadata_to_activity(
         # Code to give preference to items in the parsed activity file, should we ever want such a thing:
         #    if activity["activity"].name is None and activity_metadata_dict.get("name"):
         #    if activity["activity"].description is None and activity_metadata_dict.get("description"):
-        #    if activity["activity"].gear_id is None and activity_metadata_dict.get("gear_id"):
         #    if activity["activity"].import_info is None and activity_metadata_dict.get("import_dict"):
     Note that basic bulk imports will not have many of these field names in activity_metadata_dict, so ensure that they are checked for existence before value checking.
 
@@ -420,9 +358,6 @@ def append_bulk_import_metadata_to_activity(
     if activity_metadata_dict.get("description"):
         activity["activity"].description = activity_metadata_dict["description"]
         # core_logger.print_to_log_and_console(f"TESTING CODE: Added metadata from Strava to the activity for DESCRIPTION", "debug") # Testing code
-    if activity_metadata_dict.get("gear_id"):
-        activity["activity"].gear_id = activity_metadata_dict["gear_id"]
-        # core_logger.print_to_log_and_console(f"TESTING CODE: Added metadata from Strava to the activity for GEAR ID", "debug") # Testing code
     if activity_metadata_dict.get("import_dict"):
         activity["activity"].import_info = activity_metadata_dict["import_dict"]
         # core_logger.print_to_log_and_console(f"TESTING CODE: Added metadata from Strava to the activity for IMPORT DICT", "debug") # Testing code

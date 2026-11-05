@@ -2,7 +2,7 @@
 import { computed } from 'vue'
 import { RouterLink } from 'vue-router'
 import { useI18n } from 'vue-i18n'
-import { Bell, Bike, House, Map as MapIcon, Menu, type LucideIcon } from '@lucide/vue'
+import { Bell, House, Map as MapIcon, Menu, type LucideIcon } from '@lucide/vue'
 
 import { useUnreadNotificationsCount } from '@/features/notifications/composables/useNotifications'
 import { useAuthStore } from '@/features/auth/stores/auth'
@@ -32,7 +32,6 @@ const alertsLabel = computed(() =>
  */
 const links = computed<BottomNavLink[]>(() => [
   { name: 'home', label: t('nav.home'), icon: House },
-  { name: 'gears', label: t('nav.gear'), icon: Bike },
   { name: 'coverage', label: t('nav.coverage'), icon: MapIcon },
 ])
 </script>
@@ -40,7 +39,7 @@ const links = computed<BottomNavLink[]>(() => [
 <template>
   <!--
     Mobile primary navigation. Mirrors the v1 bottom navbar: a sticky bar
-    pinned to the bottom on small screens (Home, Gear, Map, Alerts, Menu),
+    pinned to the bottom on small screens (Home, Map, Alerts, Menu),
     hidden from `lg` up where the top navbar takes over. Authenticated only.
   -->
   <nav

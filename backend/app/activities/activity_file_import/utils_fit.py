@@ -14,7 +14,6 @@ import activities.activity_file_import.utils as activity_file_import_utils
 import activities.activity_workout_steps.schema as activity_workout_steps_schema
 import core.config as core_config
 import core.logger as core_logger
-import users.users_default_gear.utils as user_default_gear_utils
 import users.users_privacy_settings.models as users_privacy_settings_models
 
 # Exact (sport, sub_sport) pairs that override the raw sport value.
@@ -54,9 +53,6 @@ def create_activity_objects(
             if session_record["session"]["activity_type"]:
                 # Set the activity type based on the session record
                 activity_type = activities_utils.define_activity_type(session_record["session"]["activity_type"])
-
-                if gear_id is None:
-                    gear_id = user_default_gear_utils.get_user_default_gear_by_activity_type(user_id, activity_type, db)
 
             if session_record["activity_name"] and session_record["activity_name"] != "Workout":
                 activity_name = session_record["activity_name"]

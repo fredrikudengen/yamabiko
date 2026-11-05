@@ -587,34 +587,6 @@ export async function fetchActivityExerciseTitles(
 }
 
 /**
- * Sets the gear associated with an activity, or clears it when `gearId` is
- * `null`. The backend `PUT /activities/edit` applies a partial update, but the
- * `ActivityEdit` contract requires `id`, `name`, and `activity_type`, so those
- * are sent alongside the gear (mirroring v1's editActivity payload).
- *
- * @param activity - The activity to update (supplies the required fields).
- * @param gearId - The gear to associate, or `null` to remove the association.
- * @returns The updated activity domain model.
- * @throws {HttpError} When the update fails.
- */
-export async function setActivityGear(
-  activity: Activity,
-  gearId: number | null,
-): Promise<Activity> {
-  const body: ActivityEditDto = {
-    id: activity.id,
-    name: activity.name,
-    activity_type: activity.activityType,
-    gear_id: gearId,
-  }
-  const dto = await apiFetch<ActivityDto>('/activities/edit', {
-    method: 'PUT',
-    body: JSON.stringify(body),
-  })
-  return mapActivity(dto)
-}
-
-/**
  * Permanently deletes an activity owned by the current user.
  *
  * @param id - Activity identifier.

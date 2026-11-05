@@ -12,14 +12,6 @@ import strava.bulk_import_utils as bulk_import_utils
 from core.file_uploads import UploadKind
 
 
-class _MockGear:
-    def __init__(self, gear_id: int, brand: str | None, model: str | None, nickname: str):
-        self.id = gear_id
-        self.brand = brand
-        self.model = model
-        self.nickname = nickname
-
-
 @pytest.mark.asyncio
 async def test_bulk_media_import_validates_before_move(tmp_path, monkeypatch):
     """Media import validates images before moving them into storage."""
@@ -103,88 +95,6 @@ async def test_bulk_media_import_rejects_invalid_image(tmp_path, monkeypatch):
     create_media.assert_not_called()
 
 
-def test_gear_dictionary_normal(monkeypatch):
-    """Smoosh key is built correctly with clean values."""
-    mock_user = Mock(id=42)
-    monkeypatch.setattr(bulk_import_utils.users_crud, "get_user_by_id", lambda uid, db: mock_user)
-    gear_items = [
-        _MockGear(gear_id=1, brand="Nike", model="Pegasus", nickname="Fast Shoes"),
-    ]
-    monkeypatch.setattr(bulk_import_utils.gears_crud, "get_gear_user", lambda uid, db: gear_items)
-
-    result = bulk_import_utils.create_gear_dictionary_for_bulk_import(42, Mock())
-
-    assert result is not None
-    assert result["Fast Shoes"] == [1]
-    assert result["Nike Pegasus Fast Shoes"] == [1]
-
-
-def test_gear_dictionary_trailing_whitespace(monkeypatch):
-    """Smoosh key strips trailing whitespace from brand/model/nickname."""
-    mock_user = Mock(id=42)
-    monkeypatch.setattr(bulk_import_utils.users_crud, "get_user_by_id", lambda uid, db: mock_user)
-    gear_items = [
-        _MockGear(gear_id=2, brand="Nike ", model=" Pegasus ", nickname="Fast Shoes "),
-    ]
-    monkeypatch.setattr(bulk_import_utils.gears_crud, "get_gear_user", lambda uid, db: gear_items)
-
-    result = bulk_import_utils.create_gear_dictionary_for_bulk_import(42, Mock())
-
-    assert result is not None
-    assert "Nike  Pegasus  Fast Shoes " not in result
-    assert result["Nike Pegasus Fast Shoes"] == [2]
-
-
-def test_gear_dictionary_none_fields(monkeypatch):
-    """Smoosh key handles None brand/model without TypeError."""
-    mock_user = Mock(id=42)
-    monkeypatch.setattr(bulk_import_utils.users_crud, "get_user_by_id", lambda uid, db: mock_user)
-    gear_items = [
-        _MockGear(gear_id=3, brand=None, model=None, nickname="Unbranded"),
-    ]
-    monkeypatch.setattr(bulk_import_utils.gears_crud, "get_gear_user", lambda uid, db: gear_items)
-
-    result = bulk_import_utils.create_gear_dictionary_for_bulk_import(42, Mock())
-
-    assert result is not None
-    assert result["Unbranded"] == [3]
-
-
-def test_gear_dictionary_leading_whitespace(monkeypatch):
-    """Smoosh key strips leading whitespace from brand/model/nickname."""
-    mock_user = Mock(id=42)
-    monkeypatch.setattr(bulk_import_utils.users_crud, "get_user_by_id", lambda uid, db: mock_user)
-    gear_items = [
-        _MockGear(gear_id=4, brand=" Nike", model=" Pegasus", nickname=" Pegasus"),
-    ]
-    monkeypatch.setattr(bulk_import_utils.gears_crud, "get_gear_user", lambda uid, db: gear_items)
-
-    result = bulk_import_utils.create_gear_dictionary_for_bulk_import(42, Mock())
-
-    assert result is not None
-    assert result["Nike Pegasus Pegasus"] == [4]
-
-
-def test_gear_dictionary_no_user(monkeypatch):
-    """Returns None when user does not exist."""
-    monkeypatch.setattr(bulk_import_utils.users_crud, "get_user_by_id", lambda uid, db: None)
-
-    result = bulk_import_utils.create_gear_dictionary_for_bulk_import(42, Mock())
-
-    assert result is None
-
-
-def test_gear_dictionary_no_gear(monkeypatch):
-    """Returns None when user has no gear."""
-    mock_user = Mock(id=42)
-    monkeypatch.setattr(bulk_import_utils.users_crud, "get_user_by_id", lambda uid, db: mock_user)
-    monkeypatch.setattr(bulk_import_utils.gears_crud, "get_gear_user", lambda uid, db: None)
-
-    result = bulk_import_utils.create_gear_dictionary_for_bulk_import(42, Mock())
-
-    assert result is None
-
-
 # --- queue_bulk_export_activities_for_import --------------------------------
 
 
@@ -201,9 +111,7 @@ def _queue_setup(monkeypatch, tmp_path, names):
 
 
 def _run_queue(db):
-    return bulk_import_utils.queue_bulk_export_activities_for_import(
-        1, Mock(), db, {}, {"Shoe": [1]}, "2026-10-23T00:00:00+00:00"
-    )
+    return bulk_import_utils.queue_bulk_export_activities_for_import(1, Mock(), db, {}, "2026-10-23T00:00:00+00:00")
 
 
 def test_one_failing_file_does_not_stop_the_rest(monkeypatch, tmp_path):

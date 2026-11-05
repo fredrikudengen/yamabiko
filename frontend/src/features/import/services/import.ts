@@ -20,21 +20,3 @@ export async function bulkImportActivities(): Promise<void> {
 export async function importStravaActivities(): Promise<void> {
   await apiFetch('/strava/import/activities', { method: 'POST', responseType: 'void' })
 }
-
-/**
- * Imports bikes from a Strava bulk export's gear CSV (completes synchronously).
- *
- * @throws {HttpError} When the request fails.
- */
-export async function importStravaBikes(): Promise<void> {
-  await apiFetch('/strava/import/bikes', { method: 'POST', responseType: 'void' })
-}
-
-/**
- * Imports shoes from a Strava bulk export's gear CSV (completes synchronously).
- *
- * @throws {HttpError} When the request fails.
- */
-export async function importStravaShoes(): Promise<void> {
-  await apiFetch('/strava/import/shoes', { method: 'POST', responseType: 'void' })
-}

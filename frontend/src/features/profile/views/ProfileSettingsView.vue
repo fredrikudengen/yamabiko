@@ -4,7 +4,6 @@ import { useI18n } from 'vue-i18n'
 
 import PrivacySettingsCard from '@/features/profile/components/PrivacySettingsCard.vue'
 import ProfileInfoCard from '@/features/profile/components/ProfileInfoCard.vue'
-import DefaultGearCard from '@/features/profile/components/DefaultGearCard.vue'
 import DataTransferCard from '@/features/profile/components/DataTransferCard.vue'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
@@ -64,7 +63,6 @@ const profile = computed(() => profileQuery.data.value ?? null)
 
     <template v-else-if="profile">
       <ProfileInfoCard :profile="profile" />
-      <DefaultGearCard />
       <PrivacySettingsCard :privacy="profile.privacy" />
       <DataTransferCard :user-id="profile.id" />
     </template>

@@ -34,8 +34,15 @@ def test_the_strava_api_link_is_gone():
 
 
 def test_the_strava_export_import_stays():
-    for kind in ("activities", "bikes", "shoes"):
-        assert f"{ROOT}/strava/import/{kind}" in PATHS
+    assert f"{ROOT}/strava/import/activities" in PATHS
+
+
+def test_gear_is_gone():
+    assert not [path for path in PATHS if path.startswith((f"{ROOT}/gears", f"{ROOT}/gear_components"))]
+    assert not [path for path in PATHS if path.startswith(f"{ROOT}/activities/gear")]
+    assert f"{ROOT}/profile/default_gear" not in PATHS
+    for kind in ("bikes", "shoes"):
+        assert f"{ROOT}/strava/import/{kind}" not in PATHS
 
 
 def test_the_laps_endpoints_are_gone():

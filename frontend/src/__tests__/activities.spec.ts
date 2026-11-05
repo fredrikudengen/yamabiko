@@ -14,7 +14,6 @@ import {
   fetchUserWeekActivities,
   mapActivity,
   mapActivityStream,
-  setActivityGear,
   updateUserActivitiesVisibility,
 } from '@/features/activities/services/activities'
 
@@ -203,33 +202,6 @@ describe('fetchActivityStreams', () => {
   it('maps a null response to an empty array', async () => {
     vi.mocked(apiFetch).mockResolvedValueOnce(null)
     expect(await fetchActivityStreams(5, { authenticated: true })).toEqual([])
-  })
-})
-
-describe('setActivityGear', () => {
-  it('sends the required edit fields plus the gear id and maps the result', async () => {
-    const activity = mapActivity(activityDto)
-    vi.mocked(apiFetch).mockResolvedValueOnce({ ...activityDto, gear_id: 42 })
-
-    const updated = await setActivityGear(activity, 42)
-
-    expect(apiFetch).toHaveBeenCalledWith('/activities/edit', {
-      method: 'PUT',
-      body: JSON.stringify({ id: 5, name: 'Morning run', activity_type: 1, gear_id: 42 }),
-    })
-    expect(updated.gearId).toBe(42)
-  })
-
-  it('clears the association when the gear id is null', async () => {
-    const activity = mapActivity(activityDto)
-    vi.mocked(apiFetch).mockResolvedValueOnce({ ...activityDto, gear_id: null })
-
-    await setActivityGear(activity, null)
-
-    expect(apiFetch).toHaveBeenCalledWith('/activities/edit', {
-      method: 'PUT',
-      body: JSON.stringify({ id: 5, name: 'Morning run', activity_type: 1, gear_id: null }),
-    })
   })
 })
 

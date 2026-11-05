@@ -7,36 +7,10 @@ import {
   activityTypeIsRunning,
   activityTypeIsSwimming,
   activityTypeIsVirtual,
-  activityTypeToGearType,
   activityTypeUsesKnots,
   activityTypeUsesPace,
   presentActivityType,
 } from '@/features/activities/utils/activityType'
-import { GEAR_TYPE } from '@/features/gears/utils/gearType'
-
-describe('activityTypeToGearType', () => {
-  it('maps each activity family to its gear type (v1 parity)', () => {
-    expect(activityTypeToGearType(4)).toBe(GEAR_TYPE.BICYCLE)
-    expect(activityTypeToGearType(1)).toBe(GEAR_TYPE.SHOES)
-    expect(activityTypeToGearType(11)).toBe(GEAR_TYPE.SHOES)
-    expect(activityTypeToGearType(8)).toBe(GEAR_TYPE.WETSUIT)
-    expect(activityTypeToGearType(21)).toBe(GEAR_TYPE.RACQUET)
-    expect(activityTypeToGearType(15)).toBe(GEAR_TYPE.SKIS)
-    expect(activityTypeToGearType(17)).toBe(GEAR_TYPE.SNOWBOARD)
-    expect(activityTypeToGearType(30)).toBe(GEAR_TYPE.WINDSURF)
-    expect(activityTypeToGearType(32)).toBe(GEAR_TYPE.WATER_SPORTS_BOARD)
-    expect(activityTypeToGearType(33)).toBe(GEAR_TYPE.WATER_SPORTS_BOARD)
-  })
-
-  it('prefers shoes over snow gear for snowshoeing (type 44, in both groups)', () => {
-    expect(activityTypeToGearType(44)).toBe(GEAR_TYPE.SHOES)
-  })
-
-  it('returns null for activity families with no associated gear', () => {
-    expect(activityTypeToGearType(19)).toBeNull()
-    expect(activityTypeToGearType(46)).toBeNull()
-  })
-})
 
 describe('activity type predicates', () => {
   it('classifies running, cycling and swimming types', () => {

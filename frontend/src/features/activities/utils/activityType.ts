@@ -11,8 +11,6 @@ import {
   type LucideIcon,
 } from '@lucide/vue'
 
-import { GEAR_TYPE } from '@/features/gears/utils/gearType'
-
 import type { ActivityBadgeType } from '@/components/ui/activity-type-badge'
 
 /**
@@ -164,44 +162,6 @@ export function activityTypeIsIceSkating(type: number): boolean {
 /** @returns Whether the type is jump rope (total cycles = total jumps). */
 export function activityTypeIsJumpRope(type: number): boolean {
   return type === JUMP_ROPE_TYPE
-}
-
-/**
- * Maps an activity type to the gear type whose gears may be associated with it,
- * mirroring v1's `ActivityView.getGearsByActivityType`. Returns `null` for
- * activity families that have no associated gear (e.g. strength, cardio, HIIT).
- * Running/walking is checked before snow sports so snowshoeing (type 44, which
- * is in both groups) resolves to shoes, matching v1's branch order.
- *
- * @param type - Numeric activity-type code.
- * @returns The numeric gear type, or `null` when no gear applies.
- */
-export function activityTypeToGearType(type: number): number | null {
-  if (activityTypeIsCycling(type)) {
-    return GEAR_TYPE.BICYCLE
-  }
-  if (activityTypeIsRunning(type) || activityTypeIsWalking(type)) {
-    return GEAR_TYPE.SHOES
-  }
-  if (activityTypeIsSwimming(type)) {
-    return GEAR_TYPE.WETSUIT
-  }
-  if (activityTypeIsRacquet(type)) {
-    return GEAR_TYPE.RACQUET
-  }
-  if (activityTypeIsSnowSkiing(type)) {
-    return GEAR_TYPE.SKIS
-  }
-  if (activityTypeIsSnowboarding(type)) {
-    return GEAR_TYPE.SNOWBOARD
-  }
-  if (activityTypeIsWindsurf(type)) {
-    return GEAR_TYPE.WINDSURF
-  }
-  if (activityTypeIsStandUpPaddling(type) || activityTypeIsSurf(type)) {
-    return GEAR_TYPE.WATER_SPORTS_BOARD
-  }
-  return null
 }
 
 /** @returns Whether the type is a virtual run/ride (shows a "virtual" badge). */

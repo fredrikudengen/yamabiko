@@ -12,7 +12,6 @@ import activities.activity_file_import.utils as activity_file_import_utils
 import core.config as core_config
 import core.logger as core_logger
 import core.timezone as core_timezone
-import users.users_default_gear.utils as user_default_gear_utils
 import users.users_privacy_settings.models as users_privacy_settings_models
 
 
@@ -348,7 +347,7 @@ def parse_tcx_file(
 
         activity_type = activities_utils.define_activity_type(tcx_file.activity_type)
 
-        gear_id = user_default_gear_utils.get_user_default_gear_by_activity_type(user_id, activity_type, db)
+        gear_id = None
 
         laps = _parse_laps(tcx_file)
         waypoints = _extract_waypoints(trackpoints, tcx_file)
