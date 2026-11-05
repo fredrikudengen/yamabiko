@@ -1,8 +1,0 @@
-{
-  "repository": "Koodivarasto",
-  "documentation": "Dokumentaatio",
-  "mastodon": "Endurainin Mastodon-tili",
-  "discord": "Endurainin Discord-palvelin",
-  "compatibleStrava": "Yhteensopiva Stravan kanssa",
-  "worksGarmin": "Toimii Garmin Connectin kanssa"
-}

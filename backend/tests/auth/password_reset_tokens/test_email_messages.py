@@ -57,15 +57,15 @@ class TestGetPasswordResetEmail:
         )
         assert 'lang="en-US"' in html_body
 
-    def test_html_lang_attribute_pt(self):
-        """HTML body uses lang='pt-PT' for the 'pt-PT' locale."""
+    def test_html_lang_attribute_nb(self):
+        """HTML body uses lang='nb-NO' for the 'nb' locale."""
         _, html_body, _ = email_messages.get_password_reset_email(
             "Alice",
             "https://example.com/reset",
             _make_service(),
-            locale="pt-PT",
+            locale="nb",
         )
-        assert 'lang="pt-PT"' in html_body
+        assert 'lang="nb-NO"' in html_body
 
     def test_unknown_locale_falls_back_to_english(self):
         """Unknown locale falls back to English content."""
@@ -154,7 +154,7 @@ class TestGetPasswordResetEmail:
 
         import core.i18n as core_i18n
 
-        for code, subj in (("en", "EN subject"), ("pt-PT", "PT subject")):
+        for code, subj in (("en", "EN subject"), ("nb", "NB subject")):
             (tmp_path / code).mkdir()
             (tmp_path / code / "email.json").write_text(
                 _json.dumps({"password_reset.subject": subj}),
@@ -169,12 +169,12 @@ class TestGetPasswordResetEmail:
                 _make_service(),
                 locale="en",
             )
-            subject_pt, _, _ = email_messages.get_password_reset_email(
+            subject_nb, _, _ = email_messages.get_password_reset_email(
                 "Alice",
                 "https://example.com/reset",
                 _make_service(),
-                locale="pt-PT",
+                locale="nb",
             )
         finally:
             core_i18n._load_catalog.cache_clear()
-        assert subject_us != subject_pt
+        assert subject_us != subject_nb

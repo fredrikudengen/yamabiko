@@ -111,7 +111,7 @@ class Users(Base):
     preferred_language: Mapped[str] = mapped_column(
         String(35),
         nullable=False,
-        comment="User preferred BCP 47 language tag (en, pt-PT, zh-Hans, others)",
+        comment="User preferred BCP 47 language tag (en or nb)",
     )
     gender: Mapped[str] = mapped_column(
         String(20),

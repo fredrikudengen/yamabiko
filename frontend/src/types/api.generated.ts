@@ -4018,39 +4018,11 @@ export interface components {
          * @description Supported application languages.
          *
          *     Attributes:
-         *         CATALAN: Catalan (ca).
-         *         CHINESE_SIMPLIFIED: Simplified Chinese (zh-Hans).
-         *         CHINESE_TRADITIONAL: Traditional Chinese (zh-Hant).
-         *         GERMAN: German (de).
-         *         FRENCH: French (fr).
-         *         GALICIAN: Galician (gl).
-         *         ITALIAN: Italian (it).
-         *         DUTCH: Dutch (nl).
-         *         PORTUGUESE: Portuguese (pt-PT).
-         *         SLOVENIAN: Slovenian (sl).
-         *         SWEDISH: Swedish (sv).
-         *         SPANISH: Spanish (es).
          *         ENGLISH: English (en).
-         *         POLISH: Polish (pl).
-         *         TURKISH: Turkish (tr).
-         *         UKRAINIAN: Ukrainian (uk).
-         *         ROMANIAN: Romanian (ro).
          *         NORWEGIAN: Norwegian Bokmål (nb).
-         *         DANISH: Danish (da).
-         *         FINNISH: Finnish (fi).
-         *         CZECH: Czech (cs).
-         *         GREEK: Greek (el).
-         *         HUNGARIAN: Hungarian (hu).
-         *         BULGARIAN: Bulgarian (bg).
-         *         CROATIAN: Croatian (hr).
-         *         SERBIAN: Serbian (sr).
-         *         SLOVAK: Slovak (sk).
-         *         LITHUANIAN: Lithuanian (lt).
-         *         LATVIAN: Latvian (lv).
-         *         ESTONIAN: Estonian (et).
          * @enum {string}
          */
-        Language: "ca" | "zh-Hans" | "zh-Hant" | "de" | "fr" | "gl" | "it" | "nl" | "pt-PT" | "sl" | "sv" | "es" | "en" | "pl" | "tr" | "uk" | "ro" | "nb" | "da" | "fi" | "cs" | "el" | "hu" | "bg" | "hr" | "sr" | "sk" | "lt" | "lv" | "et";
+        Language: "en" | "nb";
         /**
          * LicenseInfo
          * @description API license metadata.

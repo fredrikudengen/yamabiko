@@ -37,68 +37,12 @@ class Language(Enum):
     Supported application languages.
 
     Attributes:
-        CATALAN: Catalan (ca).
-        CHINESE_SIMPLIFIED: Simplified Chinese (zh-Hans).
-        CHINESE_TRADITIONAL: Traditional Chinese (zh-Hant).
-        GERMAN: German (de).
-        FRENCH: French (fr).
-        GALICIAN: Galician (gl).
-        ITALIAN: Italian (it).
-        DUTCH: Dutch (nl).
-        PORTUGUESE: Portuguese (pt-PT).
-        SLOVENIAN: Slovenian (sl).
-        SWEDISH: Swedish (sv).
-        SPANISH: Spanish (es).
         ENGLISH: English (en).
-        POLISH: Polish (pl).
-        TURKISH: Turkish (tr).
-        UKRAINIAN: Ukrainian (uk).
-        ROMANIAN: Romanian (ro).
         NORWEGIAN: Norwegian Bokmål (nb).
-        DANISH: Danish (da).
-        FINNISH: Finnish (fi).
-        CZECH: Czech (cs).
-        GREEK: Greek (el).
-        HUNGARIAN: Hungarian (hu).
-        BULGARIAN: Bulgarian (bg).
-        CROATIAN: Croatian (hr).
-        SERBIAN: Serbian (sr).
-        SLOVAK: Slovak (sk).
-        LITHUANIAN: Lithuanian (lt).
-        LATVIAN: Latvian (lv).
-        ESTONIAN: Estonian (et).
     """
 
-    CATALAN = "ca"
-    CHINESE_SIMPLIFIED = "zh-Hans"
-    CHINESE_TRADITIONAL = "zh-Hant"
-    GERMAN = "de"
-    FRENCH = "fr"
-    GALICIAN = "gl"
-    ITALIAN = "it"
-    DUTCH = "nl"
-    PORTUGUESE = "pt-PT"
-    SLOVENIAN = "sl"
-    SWEDISH = "sv"
-    SPANISH = "es"
     ENGLISH = "en"
-    POLISH = "pl"
-    TURKISH = "tr"
-    UKRAINIAN = "uk"
-    ROMANIAN = "ro"
     NORWEGIAN = "nb"
-    DANISH = "da"
-    FINNISH = "fi"
-    CZECH = "cs"
-    GREEK = "el"
-    HUNGARIAN = "hu"
-    BULGARIAN = "bg"
-    CROATIAN = "hr"
-    SERBIAN = "sr"
-    SLOVAK = "sk"
-    LITHUANIAN = "lt"
-    LATVIAN = "lv"
-    ESTONIAN = "et"
 
 
 class WeekDay(Enum):
