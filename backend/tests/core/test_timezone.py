@@ -3,12 +3,21 @@
 from datetime import UTC, datetime, timedelta, timezone
 from unittest.mock import patch
 
+import pytest
+
 import core.config as core_config
 import core.timezone as core_timezone
 
 
 class TestFormatAwareDatetime:
     """Tests for format_aware_datetime function."""
+
+    @pytest.fixture(autouse=True)
+    def _server_in_utc(self):
+        # The expected strings assume the default TZ of UTC. Without this the
+        # tests read TZ from the developer's .env (Europe/Oslo here) and fail.
+        with patch.object(core_config.settings, "TZ", "UTC"):
+            yield
 
     def test_naive_datetime_assumes_utc(self):
         dt = datetime(2025, 1, 15, 10, 30, 0)
