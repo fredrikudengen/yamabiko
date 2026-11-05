@@ -4,8 +4,6 @@
   "virtual": "Virtuell",
   "hidden": "Skjult",
   "privateNotes": "Private notater",
-  "openInStrava": "Åpne i Strava",
-  "openInGarmin": "Åpne i Garmin Connect",
   "list": {
     "title": "Aktiviteter",
     "subtitle": "Bla gjennom, filtrer og sorter alle aktivitetene dine.",

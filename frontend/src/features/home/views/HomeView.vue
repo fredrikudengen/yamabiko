@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { Activity as ActivityIcon, Plus, RefreshCw, Users as UsersIcon } from '@lucide/vue'
+import { Activity as ActivityIcon, Plus, Users as UsersIcon } from '@lucide/vue'
 import type { LucideIcon } from '@lucide/vue'
 
 import HomeProfileCard from '@/features/home/components/HomeProfileCard.vue'
@@ -15,7 +15,6 @@ import { EmptyState } from '@/components/ui/empty-state'
 import { ErrorState } from '@/components/ui/error-state'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { cn } from '@/lib/utils'
 import { useToasts } from '@/composables/useToasts'
 import { useInfiniteScroll } from '@/composables/useInfiniteScroll'
 import { useCurrentUser } from '@/features/auth/composables/useCurrentUser'
@@ -26,7 +25,6 @@ import {
   useActivityStatsQuery,
   useFollowersActivitiesFeed,
   useGoalResultsQuery,
-  useRefreshActivitiesMutation,
   useUserActivitiesFeed,
 } from '@/features/home/composables/useHome'
 
@@ -36,11 +34,6 @@ const toasts = useToasts()
 const { data: currentUser } = useCurrentUser()
 const units = useDisplayUnits()
 const currentUserId = computed(() => currentUser.value?.id ?? null)
-
-/** Whether the viewer can pull fresh activities from a linked integration. */
-const canRefresh = computed(
-  () => !!currentUser.value?.isStravaLinked || !!currentUser.value?.isGarminConnectLinked,
-)
 
 // --- Distance stats (left) ---
 const weekStats = useActivityStatsQuery(currentUserId, 'week')
@@ -153,17 +146,6 @@ function onFileChange(event: Event): void {
     onError: () => toasts.error(t('home.upload.error')),
   })
 }
-
-// --- Refresh integrations ---
-const refreshMutation = useRefreshActivitiesMutation()
-
-/** Pulls fresh activities from the viewer's linked integrations. */
-function onRefresh(): void {
-  refreshMutation.mutate(undefined, {
-    onSuccess: () => toasts.success(t('home.refresh.success')),
-    onError: () => toasts.error(t('home.refresh.error')),
-  })
-}
 </script>
 
 <template>
@@ -190,20 +172,6 @@ function onRefresh(): void {
         <Button :disabled="uploadMutation.isPending.value" @click="pickFile">
           <Plus class="size-4" aria-hidden="true" />
           {{ uploadMutation.isPending.value ? t('home.upload.uploading') : t('home.addActivity') }}
-        </Button>
-        <Button
-          v-if="canRefresh"
-          variant="outline"
-          :disabled="refreshMutation.isPending.value"
-          @click="onRefresh"
-        >
-          <RefreshCw
-            :class="cn('size-4', refreshMutation.isPending.value && 'animate-spin')"
-            aria-hidden="true"
-          />
-          {{
-            refreshMutation.isPending.value ? t('home.refresh.refreshing') : t('home.refresh.label')
-          }}
         </Button>
         <input
           ref="fileInput"

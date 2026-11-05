@@ -5,12 +5,6 @@
     "success": "Activity uploaded successfully",
     "error": "Could not upload the activity file"
   },
-  "refresh": {
-    "label": "Refresh",
-    "refreshing": "Refreshing…",
-    "success": "Refresh started",
-    "error": "Could not refresh activities"
-  },
   "feed": {
     "scopeLabel": "Feed scope",
     "myActivities": "My activities",

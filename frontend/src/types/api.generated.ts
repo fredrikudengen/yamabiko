@@ -274,23 +274,6 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/v1/activities/refresh": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Read Activities User Activities Refresh */
-        get: operations["read_activities_user_activities_refresh_api_v1_activities_refresh_get"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
     "/api/v1/activities/types": {
         parameters: {
             query?: never;
@@ -500,38 +483,6 @@ export interface paths {
          *         HTTPException: If a database error occurs.
          */
         get: operations["read_activities_exercise_titles_all_api_v1_activities_exercise_titles_all_get"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/activities_laps/activity_id/{activity_id}/all": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /**
-         * Read Activities Laps For Activity All
-         * @description Return all laps for the given activity visible to the caller.
-         *
-         *     Args:
-         *         activity_id: Activity primary key.
-         *         validate_id: FastAPI dependency that validates the path id.
-         *         _check_scopes: FastAPI security dependency enforcing scopes.
-         *         token_user_id: Authenticated user id derived from the access
-         *             token.
-         *         db: Database session.
-         *
-         *     Returns:
-         *         List of ``ActivityLapsRead`` or ``None`` if the activity is
-         *         hidden from the caller or has no laps.
-         */
-        get: operations["read_activities_laps_for_activity_all_api_v1_activities_laps_activity_id__activity_id__all_get"];
         put?: never;
         post?: never;
         delete?: never;
@@ -1268,108 +1219,6 @@ export interface paths {
         put?: never;
         post?: never;
         delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/garminconnect/activities": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Garminconnect Retrieve Activities Days */
-        get: operations["garminconnect_retrieve_activities_days_api_v1_garminconnect_activities_get"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/garminconnect/gear": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Garminconnect Retrieve Gear */
-        get: operations["garminconnect_retrieve_gear_api_v1_garminconnect_gear_get"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/garminconnect/health": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Garminconnect Retrieve Health Days */
-        get: operations["garminconnect_retrieve_health_days_api_v1_garminconnect_health_get"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/garminconnect/link": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /** Garminconnect Link */
-        post: operations["garminconnect_link_api_v1_garminconnect_link_post"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/garminconnect/mfa": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /** Garminconnect Mfa Code */
-        post: operations["garminconnect_mfa_code_api_v1_garminconnect_mfa_post"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/garminconnect/unlink": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post?: never;
-        /** Garminconnect Unlink */
-        delete: operations["garminconnect_unlink_api_v1_garminconnect_unlink_delete"];
         options?: never;
         head?: never;
         patch?: never;
@@ -4228,36 +4077,6 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/v1/public/activities_laps/activity_id/{activity_id}/all": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /**
-         * Read Public Activities Laps For Activity All
-         * @description Return public laps for an activity exposed via shareable link.
-         *
-         *     Args:
-         *         activity_id: Activity primary key.
-         *         validate_id: FastAPI dependency that validates the path id.
-         *         db: Database session.
-         *
-         *     Returns:
-         *         List of ``ActivityLapsRead`` or ``None`` when public sharing
-         *         is disabled, the activity is not public, or the laps are
-         *         hidden.
-         */
-        get: operations["read_public_activities_laps_for_activity_all_api_v1_public_activities_laps_activity_id__activity_id__all_get"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
     "/api/v1/public/activities_sets/activity_id/{activity_id}/all": {
         parameters: {
             query?: never;
@@ -5006,57 +4825,6 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/v1/strava/activities": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Strava Retrieve Activities Days */
-        get: operations["strava_retrieve_activities_days_api_v1_strava_activities_get"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/strava/client": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        /** Strava Set User Client */
-        put: operations["strava_set_user_client_api_v1_strava_client_put"];
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/strava/gear": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Strava Retrieve Gear */
-        get: operations["strava_retrieve_gear_api_v1_strava_gear_get"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
     "/api/v1/strava/import/activities": {
         parameters: {
             query?: never;
@@ -5103,57 +4871,6 @@ export interface paths {
         /** Import Shoes From Strava Export */
         post: operations["import_shoes_from_strava_export_api_v1_strava_import_shoes_post"];
         delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/strava/link": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        /** Strava Link */
-        put: operations["strava_link_api_v1_strava_link_put"];
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/strava/state/{state}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        /** Strava Set User Unique State */
-        put: operations["strava_set_user_unique_state_api_v1_strava_state__state__put"];
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/strava/unlink": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post?: never;
-        /** Strava Unlink */
-        delete: operations["strava_unlink_api_v1_strava_unlink_delete"];
         options?: never;
         head?: never;
         patch?: never;
@@ -5937,95 +5654,6 @@ export interface components {
             wkt_step_name: string;
         };
         /**
-         * ActivityLapsRead
-         * @description Schema for reading activity laps.
-         *
-         *     Attributes:
-         *         id: Lap primary key.
-         *         activity_id: Parent activity ID.
-         *         start_time: Lap start time as datetime.
-         *         timezone: Activity timezone for
-         *             serialization (excluded from output).
-         */
-        ActivityLapsRead: {
-            /** Activity Id */
-            activity_id: number;
-            /** Avg Cadence */
-            avg_cadence?: number | null;
-            /** Avg Fractional Cadence */
-            avg_fractional_cadence?: number | null;
-            /** Avg Heart Rate */
-            avg_heart_rate?: number | null;
-            /** Avg Power */
-            avg_power?: number | null;
-            /** Avg Stance Time */
-            avg_stance_time?: number | null;
-            /** Avg Step Length */
-            avg_step_length?: number | null;
-            /** Avg Vertical Oscillation */
-            avg_vertical_oscillation?: number | null;
-            /** Avg Vertical Ratio */
-            avg_vertical_ratio?: number | null;
-            /** End Position Lat */
-            end_position_lat?: number | null;
-            /** End Position Long */
-            end_position_long?: number | null;
-            /** Enhanced Avg Pace */
-            enhanced_avg_pace?: number | null;
-            /** Enhanced Avg Speed */
-            enhanced_avg_speed?: number | null;
-            /** Enhanced Max Altitude */
-            enhanced_max_altitude?: number | null;
-            /** Enhanced Max Pace */
-            enhanced_max_pace?: number | null;
-            /** Enhanced Max Speed */
-            enhanced_max_speed?: number | null;
-            /** Enhanced Min Altitude */
-            enhanced_min_altitude?: number | null;
-            /** Id */
-            id: number;
-            /** Intensity */
-            intensity?: string | null;
-            /** Lap Trigger */
-            lap_trigger?: string | null;
-            /** Max Cadence */
-            max_cadence?: number | null;
-            /** Max Fractional Cadence */
-            max_fractional_cadence?: number | null;
-            /** Max Heart Rate */
-            max_heart_rate?: number | null;
-            /** Max Power */
-            max_power?: number | null;
-            /** Normalized Power */
-            normalized_power?: number | null;
-            /** Sport */
-            sport?: string | null;
-            /** Start Position Lat */
-            start_position_lat?: number | null;
-            /** Start Position Long */
-            start_position_long?: number | null;
-            /** Start Time */
-            start_time: string;
-            /** Sub Sport */
-            sub_sport?: string | null;
-            /** Total Ascent */
-            total_ascent?: number | null;
-            /** Total Calories */
-            total_calories?: number | null;
-            /** Total Cycles */
-            total_cycles?: number | null;
-            /** Total Descent */
-            total_descent?: number | null;
-            /** Total Distance */
-            total_distance?: number | null;
-            /** Total Elapsed Time */
-            total_elapsed_time?: number | null;
-            /** Total Timer Time */
-            total_timer_time?: number | null;
-            /** Total Work */
-            total_work?: number | null;
-        };
-        /**
          * ActivityMedia
          * @description Activity media payload (photo/video attached to an activity).
          */
@@ -6520,18 +6148,6 @@ export interface components {
             following_id: number;
             /** Is Accepted */
             is_accepted: boolean;
-        };
-        /** GarminLogin */
-        GarminLogin: {
-            /**
-             * Is Cn
-             * @default false
-             */
-            is_cn: boolean;
-            /** Password */
-            password: string;
-            /** Username */
-            username: string;
         };
         /**
          * GearActivitiesListResponse
@@ -9520,6 +9136,21 @@ export interface components {
             username: string;
         };
         /**
+         * MFARequest
+         * @description Request model for MFA verification.
+         *
+         *     Attributes:
+         *         mfa_code: The MFA code to verify (6-digit TOTP or
+         *             9-char backup code).
+         */
+        MFARequest: {
+            /**
+             * Mfa Code
+             * @description MFA code (6-digit TOTP or XXXX-XXXX)
+             */
+            mfa_code: string;
+        };
+        /**
          * MFARequiredResponse
          * @description Response indicating MFA verification is required.
          *
@@ -10541,13 +10172,6 @@ export interface components {
              * @description TOTP or backup code, required when MFA is enabled
              */
             mfa_code?: string | null;
-        };
-        /** StravaClient */
-        StravaClient: {
-            /** Client Id */
-            client_id: number | null;
-            /** Client Secret */
-            client_secret: string | null;
         };
         /**
          * TileMapsTemplate
@@ -11699,8 +11323,6 @@ export interface components {
          *     Includes privacy settings and integration status.
          *
          *     Attributes:
-         *         is_strava_linked: Strava integration status.
-         *         is_garminconnect_linked: Garmin Connect status.
          *         default_activity_visibility: Default visibility level.
          *         hide_activity_start_time: Hide start time setting.
          *         hide_activity_location: Hide location setting.
@@ -11849,16 +11471,6 @@ export interface components {
              * @description User ID
              */
             id: number;
-            /**
-             * Is Garminconnect Linked
-             * @description Whether Garmin Connect is linked
-             */
-            is_garminconnect_linked?: number | null;
-            /**
-             * Is Strava Linked
-             * @description Whether Strava is linked
-             */
-            is_strava_linked?: number | null;
             /**
              * Max Heart Rate
              * @description Maximum heart rate in bpm
@@ -12459,26 +12071,6 @@ export interface components {
             type_breakdown?: components["schemas"]["TypeBreakdownItem"][] | null;
         };
         /**
-         * MFARequest
-         * @description Request model for MFA verification.
-         *
-         *     Attributes:
-         *         mfa_code: The MFA code to verify (6-digit TOTP or
-         *             9-char backup code).
-         */
-        auth__mfa__schema__MFARequest: {
-            /**
-             * Mfa Code
-             * @description MFA code (6-digit TOTP or XXXX-XXXX)
-             */
-            mfa_code: string;
-        };
-        /** MFARequest */
-        garmin__schema__MFARequest: {
-            /** Mfa Code */
-            mfa_code: string;
-        };
-        /**
          * Interval
          * @description Enumeration of time intervals for health weight data queries.
          *
@@ -12933,26 +12525,6 @@ export interface operations {
             };
         };
     };
-    read_activities_user_activities_refresh_api_v1_activities_refresh_get: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["Activity"][] | null;
-                };
-            };
-        };
-    };
     read_activities_types_api_v1_activities_types_get: {
         parameters: {
             query?: never;
@@ -13318,37 +12890,6 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ActivityExerciseTitles"][] | null;
-                };
-            };
-        };
-    };
-    read_activities_laps_for_activity_all_api_v1_activities_laps_activity_id__activity_id__all_get: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                activity_id: number;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ActivityLapsRead"][] | null;
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
                 };
             };
         };
@@ -14146,176 +13687,6 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    garminconnect_retrieve_activities_days_api_v1_garminconnect_activities_get: {
-        parameters: {
-            query: {
-                start_date: string;
-                end_date: string;
-            };
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            202: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": unknown;
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    garminconnect_retrieve_gear_api_v1_garminconnect_gear_get: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            202: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": unknown;
-                };
-            };
-        };
-    };
-    garminconnect_retrieve_health_days_api_v1_garminconnect_health_get: {
-        parameters: {
-            query: {
-                start_date: string;
-                end_date: string;
-            };
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            202: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": unknown;
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    garminconnect_link_api_v1_garminconnect_link_post: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["GarminLogin"];
-            };
-        };
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": unknown;
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    garminconnect_mfa_code_api_v1_garminconnect_mfa_post: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["garmin__schema__MFARequest"];
-            };
-        };
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": unknown;
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    garminconnect_unlink_api_v1_garminconnect_unlink_delete: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": unknown;
                 };
             };
         };
@@ -16943,7 +16314,7 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["auth__mfa__schema__MFARequest"];
+                "application/json": components["schemas"]["MFARequest"];
             };
         };
         responses: {
@@ -17171,37 +16542,6 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ActivityExerciseTitles"][] | null;
-                };
-            };
-        };
-    };
-    read_public_activities_laps_for_activity_all_api_v1_public_activities_laps_activity_id__activity_id__all_get: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                activity_id: number;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ActivityLapsRead"][] | null;
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
                 };
             };
         };
@@ -18123,91 +17463,6 @@ export interface operations {
             };
         };
     };
-    strava_retrieve_activities_days_api_v1_strava_activities_get: {
-        parameters: {
-            query: {
-                start_date: string;
-                end_date: string;
-            };
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            202: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": unknown;
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    strava_set_user_client_api_v1_strava_client_put: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["StravaClient"];
-            };
-        };
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": unknown;
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    strava_retrieve_gear_api_v1_strava_gear_get: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            201: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": unknown;
-                };
-            };
-        };
-    };
     import_activities_and_media_from_strava_export_api_v1_strava_import_activities_post: {
         parameters: {
             query?: never;
@@ -18259,89 +17514,6 @@ export interface operations {
         responses: {
             /** @description Successful Response */
             201: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": unknown;
-                };
-            };
-        };
-    };
-    strava_link_api_v1_strava_link_put: {
-        parameters: {
-            query: {
-                state: string;
-                code: string;
-            };
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": unknown;
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    strava_set_user_unique_state_api_v1_strava_state__state__put: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                state: string | null;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": unknown;
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    strava_unlink_api_v1_strava_unlink_delete: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
                 headers: {
                     [name: string]: unknown;
                 };

@@ -9,8 +9,6 @@ import { fetchPublicServerSettings } from './serverSettings'
 export const DEFAULT_APP_CONFIG: AppConfig = {
   features: {
     signUp: false,
-    strava: true,
-    garmin: true,
     federation: false,
   },
   branding: {

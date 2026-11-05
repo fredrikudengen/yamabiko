@@ -4,8 +4,6 @@
   "virtual": "Virtual",
   "hidden": "Hidden",
   "privateNotes": "Private notes",
-  "openInStrava": "Open in Strava",
-  "openInGarmin": "Open in Garmin Connect",
   "list": {
     "title": "Activities",
     "subtitle": "Browse, filter, and sort all your activities.",

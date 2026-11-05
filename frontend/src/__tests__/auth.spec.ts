@@ -58,8 +58,6 @@ const authUser: User = {
   active: true,
   mfaEnabled: false,
   avatarUrl: null,
-  isStravaLinked: false,
-  isGarminConnectLinked: false,
   hasLocalPassword: true,
   units: 'metric',
   currency: 'euro',

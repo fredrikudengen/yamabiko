@@ -4,16 +4,6 @@ import { getAvatarCacheToken } from '@/lib/avatarCache'
 import { getBackendAssetUrl } from '@/services/runtime'
 
 /**
- * Coerces the backend's number/boolean-encoded flags into a real boolean.
- *
- * @param value - Raw flag from the API (`1`/`0`, `true`/`false`, or null).
- * @returns The value as a boolean.
- */
-function toBoolean(value: number | boolean | null | undefined): boolean {
-  return Boolean(value)
-}
-
-/**
  * Resolves the backend `photo_path` into a servable avatar URL.
  *
  * The backend stores an absolute filesystem path (e.g.
@@ -59,8 +49,6 @@ export function mapUserProfile(dto: UserProfileDto): User {
     active: dto.active,
     mfaEnabled: dto.mfa_enabled,
     avatarUrl: resolveAvatarUrl(dto.photo_path),
-    isStravaLinked: toBoolean(dto.is_strava_linked),
-    isGarminConnectLinked: toBoolean(dto.is_garminconnect_linked),
     hasLocalPassword: dto.has_local_password ?? false,
     units: dto.units,
     currency: dto.currency,

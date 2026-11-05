@@ -1,18 +1,8 @@
-import os
 from collections.abc import AsyncIterator, Awaitable, Callable
 from contextlib import asynccontextmanager
 from typing import cast
 
 from alembic.config import Config
-
-from alembic import command
-
-# Silence stravalib token warnings as early as
-# possible: this env var is consulted at import time by
-# stravalib, so it must be set before any module that
-# transitively imports it runs.
-os.environ["SILENCE_TOKEN_WARNINGS"] = "TRUE"
-
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
@@ -33,13 +23,10 @@ import core.network as core_network
 import core.rate_limit as core_rate_limit
 import core.scheduler as core_scheduler
 import core.tracing as core_tracing
-import garmin.activity_utils as garmin_activity_utils
-import garmin.health_utils as garmin_health_utils
 import google_health.activity_utils as google_health_activity_utils
 import server_settings.schema as server_settings_schema
 import server_settings.utils as server_settings_utils
-import strava.activity_utils as strava_activity_utils
-import strava.utils as strava_utils
+from alembic import command
 from core.database import SessionLocal
 from core.database import engine as core_db_engine
 from core.routes import router as api_router
@@ -102,32 +89,9 @@ def _run_alembic_migrations() -> None:
     command.upgrade(alembic_cfg, "head")
 
 
-def _refresh_strava_tokens() -> None:
-    """Refresh persisted Strava OAuth tokens."""
-    strava_utils.refresh_strava_tokens(True)
-
-
-async def _retrieve_recent_garmin_activities() -> None:
-    """Backfill the last day of Garmin Connect activities."""
-    await garmin_activity_utils.retrieve_garminconnect_users_activities_for_days(1)
-
-
-async def _retrieve_recent_strava_activities() -> None:
-    """Backfill the last day of Strava activities."""
-    await strava_activity_utils.retrieve_strava_users_activities_for_days(
-        1,
-        True,
-    )
-
-
 async def _sync_google_health() -> None:
     """Import new Google Health exercises from the last week."""
     await google_health_activity_utils.sync_all_users()
-
-
-async def _retrieve_recent_garmin_health() -> None:
-    """Backfill the last day of Garmin Connect health stats."""
-    await garmin_health_utils.retrieve_garminconnect_users_health_for_days(1)
 
 
 def _purge_expired_tokens() -> None:
@@ -209,23 +173,8 @@ async def startup_event(fastapi_app: FastAPI) -> None:
     core_scheduler.start_scheduler()
 
     # Phase 2: best-effort background syncs and clean-up.
-    core_logger.print_to_log_and_console("Refreshing Strava tokens on startup")
-    _safe_run("refresh_strava_tokens", _refresh_strava_tokens)
-
-    core_logger.print_to_log_and_console("Retrieving last day activities from Garmin Connect on startup")
-    await _safe_run_async("retrieve_recent_garmin_activities", _retrieve_recent_garmin_activities)
-
-    core_logger.print_to_log_and_console("Retrieving last day activities from Strava on startup")
-    await _safe_run_async("retrieve_recent_strava_activities", _retrieve_recent_strava_activities)
-
     core_logger.print_to_log_and_console("Importing recent Google Health exercises on startup")
     await _safe_run_async("sync_google_health", _sync_google_health)
-
-    core_logger.print_to_log_and_console("Retrieving last day health stats from Garmin Connect on startup")
-    await _safe_run_async(
-        "retrieve_recent_garmin_health",
-        _retrieve_recent_garmin_health,
-    )
 
     core_logger.print_to_log_and_console("Purging expired tokens (password reset, sign-up, OAuth state, IdP link)")
     _safe_run("purge_expired_tokens", _purge_expired_tokens)

@@ -33,9 +33,7 @@ import core.database as core_database
 import core.dependencies as core_dependencies
 import core.file_uploads as core_file_uploads
 import core.logger as core_logger
-import garmin.activity_utils as garmin_activity_utils
 import gears.gear.dependencies as gears_dependencies
-import strava.activity_utils as strava_activity_utils
 import users.users.dependencies as users_dependencies
 import users.users.utils as users_utils
 import websocket.manager as websocket_manager
@@ -552,60 +550,6 @@ async def read_activities_followed_user_activities_number(
 
     # Return the number of activities
     return len(activities)
-
-
-@router.get(
-    "/refresh",
-    response_model=list[activities_schema.Activity] | None,
-)
-async def read_activities_user_activities_refresh(
-    _check_scopes: Annotated[Callable, Security(auth_dependencies.check_scopes, scopes=["activities:read"])],
-    token_user_id: Annotated[
-        int,
-        Depends(auth_dependencies.get_sub_from_access_token),
-    ],
-    db: Annotated[
-        Session,
-        Depends(core_database.get_db),
-    ],
-    ws_manager: Annotated[
-        websocket_manager.WebSocketManager,
-        Depends(websocket_manager.get_websocket_manager),
-    ],
-):
-    # Set the activities to empty list
-    activities = []
-
-    # Get the strava activities for the user for the last 24h
-    strava_activities = await strava_activity_utils.get_user_strava_activities_by_dates(
-        start_date=datetime.now(UTC) - timedelta(days=1),
-        end_date=datetime.now(UTC),
-        user_id=token_user_id,
-        ws_manager=ws_manager,
-        db=db,
-    )
-
-    # Get the garmin activities for the user for the last 24h
-    garmin_activities = await garmin_activity_utils.get_user_garminconnect_activities_by_dates(
-        start_date=datetime.now(UTC) - timedelta(days=1),
-        end_date=datetime.now(UTC),
-        user_id=token_user_id,
-        ws_manager=ws_manager,
-        db=db,
-    )
-
-    # Extend the activities to the list
-    if strava_activities is not None:
-        activities.extend(strava_activities)
-
-    if garmin_activities is not None:
-        activities.extend(garmin_activities)
-
-    # Filter out None values from the activities list
-    activities = [activity for activity in activities if activity is not None]
-
-    # Return the activities or None if the list is empty
-    return activities if activities else None
 
 
 @router.get(

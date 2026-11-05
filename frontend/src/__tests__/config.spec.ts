@@ -42,8 +42,6 @@ describe('mapServerSettingsToAppConfig', () => {
   it('keeps self-hosted defaults for fields the public settings do not carry', () => {
     const config = mapServerSettingsToAppConfig(publicSettings)
 
-    expect(config.features.strava).toBe(DEFAULT_APP_CONFIG.features.strava)
-    expect(config.features.garmin).toBe(DEFAULT_APP_CONFIG.features.garmin)
     expect(config.features.federation).toBe(DEFAULT_APP_CONFIG.features.federation)
     expect(config.branding).toEqual(DEFAULT_APP_CONFIG.branding)
     expect(config.map).toEqual({

@@ -40,8 +40,6 @@ def _make_user_mock() -> MagicMock:
     user.email_verified = True
     user.pending_admin_approval = False
     user.external_auth_count = 0
-    user.is_strava_linked = 0
-    user.is_garminconnect_linked = 0
     user.default_activity_visibility = "public"
     user.hide_activity_start_time = False
     user.hide_activity_location = False
@@ -146,7 +144,8 @@ class TestReadUsersMe:
         data = response.json()
         assert data["id"] == 1
         assert data["name"] == "Test User"
-        assert data["is_strava_linked"] == 0
+        assert "is_strava_linked" not in data
+        assert "is_garminconnect_linked" not in data
         assert data["has_local_password"] is True
         assert data["mfa_enabled"] is True
 

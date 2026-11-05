@@ -2,7 +2,5 @@
   "repository": "Kodelager",
   "documentation": "Dokumentasjon",
   "mastodon": "Endurains Mastodon-konto",
-  "discord": "Endurains Discord-server",
-  "compatibleStrava": "Kompatibel med Strava",
-  "worksGarmin": "Fungerer med Garmin Connect"
+  "discord": "Endurains Discord-server"
 }

@@ -15,7 +15,6 @@ import UserAvatar from '@/components/UserAvatar.vue'
 import ActivityActionsMenu from '@/features/activities/components/ActivityActionsMenu.vue'
 import ActivityGallery from '@/features/activities/components/ActivityGallery.vue'
 import ActivityMetricsGrid from '@/features/activities/components/ActivityMetricsGrid.vue'
-import { INTEGRATION_LOGOS } from '@/constants/integrationLogos'
 import { useCurrentUser } from '@/features/auth/composables/useCurrentUser'
 import { useActivityOwnerQuery } from '@/features/activities/composables/useActivityDetail'
 import {
@@ -101,17 +100,6 @@ const locationLabel = computed(() => {
   return [place, props.activity.country].filter(Boolean).join(', ') || null
 })
 
-const stravaUrl = computed(() =>
-  props.activity.stravaActivityId
-    ? `https://www.strava.com/activities/${props.activity.stravaActivityId}`
-    : null,
-)
-const garminUrl = computed(() =>
-  props.activity.garminActivityId
-    ? `https://connect.garmin.com/modern/activity/${props.activity.garminActivityId}`
-    : null,
-)
-
 const metricVisibility = computed(() => buildMetricVisibility(props.activity, props.currentUserId))
 
 /**
@@ -178,26 +166,6 @@ const ownerRoute = computed(() =>
       </div>
 
       <div class="flex shrink-0 items-center gap-2">
-        <a
-          v-if="isOwner && stravaUrl"
-          :href="stravaUrl"
-          target="_blank"
-          rel="noopener noreferrer"
-          :aria-label="t('activities.openInStrava')"
-          class="rounded-input p-1 hover:bg-accent"
-        >
-          <img :src="INTEGRATION_LOGOS.stravaMark" alt="" class="size-5 object-contain" />
-        </a>
-        <a
-          v-if="isOwner && garminUrl"
-          :href="garminUrl"
-          target="_blank"
-          rel="noopener noreferrer"
-          :aria-label="t('activities.openInGarmin')"
-          class="rounded-input p-1 hover:bg-accent"
-        >
-          <img :src="INTEGRATION_LOGOS.garminApp" alt="" class="size-5 rounded object-contain" />
-        </a>
         <ActivityActionsMenu v-if="isOwner" :activity="activity" />
       </div>
     </div>

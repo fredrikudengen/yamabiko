@@ -14,8 +14,6 @@ import activities.activity_file_import.utils as activity_file_import_utils
 import activities.activity_workout_steps.schema as activity_workout_steps_schema
 import core.config as core_config
 import core.logger as core_logger
-import garmin.utils as garmin_utils
-import gears.gear.crud as gears_crud
 import users.users_default_gear.utils as user_default_gear_utils
 import users.users_privacy_settings.models as users_privacy_settings_models
 
@@ -37,8 +35,6 @@ def create_activity_objects(
     sessions_records: dict,
     user_id: int,
     user_privacy_settings: users_privacy_settings_models.UsersPrivacySettings,
-    garmin_activity_id: int | None = None,
-    garminconnect_gear: dict | None = None,
     db: Session = None,
 ) -> list:
     try:
@@ -46,17 +42,6 @@ def create_activity_objects(
 
         # Define variables
         gear_id = None
-
-        if garminconnect_gear:
-            user_integrations = garmin_utils.fetch_user_integrations_and_validate_token(user_id, db)
-
-            if user_integrations.garminconnect_sync_gear:
-                # set the gear id for the activity
-                gear = gears_crud.get_gear_by_garminconnect_id_from_user_id(garminconnect_gear[0]["uuid"], user_id, db)
-
-                # set the gear id for the activity
-                if gear is not None:
-                    gear_id = gear.id
 
         activities = []
 
@@ -221,8 +206,8 @@ def create_activity_objects(
                 gear_id=gear_id,
                 strava_gear_id=None,
                 strava_activity_id=None,
-                garminconnect_activity_id=garmin_activity_id,
-                garminconnect_gear_id=(garminconnect_gear[0]["uuid"] if garminconnect_gear else None),
+                garminconnect_activity_id=None,
+                garminconnect_gear_id=None,
                 tracker_manufacturer=(
                     str(manufacturer)
                     if (manufacturer := session_record["file_id"].get("manufacturer")) is not None

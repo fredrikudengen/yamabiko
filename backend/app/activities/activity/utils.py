@@ -521,9 +521,7 @@ async def parse_and_store_activity_from_file(
     file_path: str,
     websocket_manager: websocket_manager.WebSocketManager,
     db: Session,
-    from_garmin: bool = False,
     is_bulk_import: bool = False,
-    garminconnect_gear: dict | None = None,
     strava_activities: dict | None = None,
     import_initiated_time: str | None = None,
     users_existing_gear_nickname_to_id: dict | None = None,
@@ -543,9 +541,6 @@ async def parse_and_store_activity_from_file(
         websocket_manager: Manager used to push real-time notifications to
             connected clients.
         db: SQLAlchemy database session.
-        from_garmin: Whether the file originates from a Garmin Connect sync.
-        garminconnect_gear: Garmin Connect gear metadata to associate with the
-            activity.
         strava_activities: Strava bulk-import metadata dict keyed by filename,
             then by activities.csv column header.
         import_initiated_time: ISO timestamp of when the bulk import was
@@ -586,11 +581,6 @@ async def parse_and_store_activity_from_file(
 
         # Get pathless file name with extension, as this is the dictionary key for Strava's bulk import activities dictionary.
         _, file_base_name = os.path.split(file_path)
-
-        garmin_connect_activity_id = None
-
-        if from_garmin:
-            garmin_connect_activity_id = os.path.basename(file_path).split("_")[0]
 
         if file_extension == ".gz":
             file_path, file_extension = handle_gzipped_file(file_path)
@@ -686,24 +676,12 @@ async def parse_and_store_activity_from_file(
                     split_records_by_activity = fit_utils.split_records_by_activity(parsed_info)
 
                     # Create activity objects for each activity in the file
-                    if from_garmin:
-                        created_activities_objects = fit_utils.create_activity_objects(
-                            split_records_by_activity,
-                            token_user_id,
-                            user_privacy_settings,
-                            (int(garmin_connect_activity_id) if garmin_connect_activity_id else None),
-                            garminconnect_gear if garminconnect_gear else None,
-                            db,
-                        )
-                    else:
-                        created_activities_objects = fit_utils.create_activity_objects(
-                            split_records_by_activity,
-                            token_user_id,
-                            user_privacy_settings,
-                            None,
-                            None,
-                            db,
-                        )
+                    created_activities_objects = fit_utils.create_activity_objects(
+                        split_records_by_activity,
+                        token_user_id,
+                        user_privacy_settings,
+                        db=db,
+                    )
 
                     for activity in created_activities_objects:
                         activity = _prepare_bulk_import_activity(
@@ -981,9 +959,7 @@ async def parse_and_store_activity_from_uploaded_file(
                     split_records_by_activity,
                     token_user_id,
                     user_privacy_settings,
-                    None,
-                    None,
-                    db,
+                    db=db,
                 )
 
                 for activity in created_activities_objects:

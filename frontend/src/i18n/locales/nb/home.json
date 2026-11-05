@@ -5,12 +5,6 @@
     "success": "Aktiviteten ble lastet opp",
     "error": "Kunne ikke laste opp aktivitetsfilen"
   },
-  "refresh": {
-    "label": "Oppdater",
-    "refreshing": "Oppdaterer…",
-    "success": "Oppdatering startet",
-    "error": "Kunne ikke oppdatere aktiviteter"
-  },
   "feed": {
     "scopeLabel": "Strømomfang",
     "myActivities": "Mine aktiviteter",

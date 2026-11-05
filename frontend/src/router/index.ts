@@ -269,13 +269,6 @@ const router = createRouter({
       meta: { requiresAuth: true, cardless: true },
     },
     {
-      path: '/strava/callback',
-      name: 'strava-callback',
-      component: () => import('@/features/integrations/views/StravaCallbackView.vue'),
-      // Transient OAuth landing: finishes the link then redirects to settings.
-      meta: { requiresAuth: true, bare: true },
-    },
-    {
       path: '/notifications',
       name: 'notifications',
       component: () => import('@/features/notifications/views/NotificationsView.vue'),

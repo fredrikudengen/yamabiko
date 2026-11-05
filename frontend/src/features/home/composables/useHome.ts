@@ -1,6 +1,6 @@
 import { computed, type MaybeRefOrGetter, toValue } from 'vue'
 import { storeToRefs } from 'pinia'
-import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tanstack/vue-query'
+import { useInfiniteQuery, useQuery } from '@tanstack/vue-query'
 
 import type { Activity, ActivityStats } from '@/features/activities/types'
 import type { GoalProgress } from '@/features/goals/types'
@@ -14,7 +14,6 @@ import {
   fetchUserActivities,
   fetchUserThisMonthActivityCount,
   fetchUserWeekActivities,
-  refreshActivities,
 } from '@/features/activities/services/activities'
 import { fetchGoalResults } from '@/features/goals/services/goals'
 
@@ -176,23 +175,5 @@ export function useGoalResultsQuery(enabled: MaybeRefOrGetter<boolean> = true) {
     queryFn: ({ signal }) => fetchGoalResults(signal),
     enabled: computed(() => toValue(enabled) && isAuthenticated.value),
     staleTime: 5 * 60_000,
-  })
-}
-
-/**
- * Triggers a refresh of the viewer's linked-integration activities (Strava /
- * Garmin Connect). On settle it invalidates the activities domain so every feed
- * refetches and shows any newly imported activities.
- *
- * @returns The TanStack mutation for refreshing integration activities.
- */
-export function useRefreshActivitiesMutation() {
-  const client = useQueryClient()
-
-  return useMutation<Activity[], Error, void>({
-    mutationFn: () => refreshActivities(),
-    onSettled: () => {
-      void client.invalidateQueries({ queryKey: queryKeys.activities.all() })
-    },
   })
 }

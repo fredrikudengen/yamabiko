@@ -3,12 +3,10 @@ import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { BookOpen, GitBranch } from '@lucide/vue'
 
-import { useAppConfig, useFeatureFlags } from '@/features/config/composables/useAppConfig'
-import { INTEGRATION_LOGOS } from '@/constants/integrationLogos'
+import { useAppConfig } from '@/features/config/composables/useAppConfig'
 
 const { t } = useI18n()
 const { config } = useAppConfig()
-const { isEnabled } = useFeatureFlags()
 
 const startYear = 2023
 const yearRange = computed(() => {
@@ -66,26 +64,6 @@ const yearRange = computed(() => {
         </a>
         <span aria-hidden="true">•</span>
         <span>v0.19.3</span>
-      </p>
-
-      <p
-        v-if="isEnabled('strava') || isEnabled('garmin')"
-        class="flex flex-wrap items-center justify-center gap-3"
-      >
-        <img
-          v-if="isEnabled('strava')"
-          :src="INTEGRATION_LOGOS.strava"
-          :alt="t('footer.compatibleStrava')"
-          height="25"
-          class="h-[25px] w-auto"
-        />
-        <img
-          v-if="isEnabled('garmin')"
-          :src="INTEGRATION_LOGOS.garmin"
-          :alt="t('footer.worksGarmin')"
-          height="25"
-          class="h-[25px] w-auto"
-        />
       </p>
     </div>
   </footer>
