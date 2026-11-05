@@ -51,7 +51,5 @@
   "ssoAutoCreateDisabled": "Automatic account creation is disabled",
   "ssoErrorUndefined": "Single sign-on failed",
   "noLoginMethods": "No login methods are enabled on this server",
-  "imageAlt": "Yamabiko login illustration",
-  "tagline1": "Track every move",
-  "tagline2": "Own every moment"
+  "imageAlt": "Yamabiko login illustration"
 }

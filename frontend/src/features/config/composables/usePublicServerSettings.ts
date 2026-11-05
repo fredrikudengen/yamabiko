@@ -11,7 +11,7 @@ import {
   DEFAULT_PUBLIC_SERVER_SETTINGS,
   fetchPublicServerSettings,
 } from '@/features/config/services/serverSettings'
-import defaultLoginImage from '@/assets/login.png'
+import defaultLoginImage from '@/assets/login.svg'
 
 /** Shared cache lifetime so every auth screen reuses one fetch per window. */
 const PUBLIC_SETTINGS_STALE_TIME = 5 * 60_000
