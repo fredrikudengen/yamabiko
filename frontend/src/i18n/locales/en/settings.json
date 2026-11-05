@@ -6,7 +6,6 @@
     "account": "Account",
     "administration": "Administration",
     "profile": "My profile",
-    "goals": "My goals",
     "security": "Security",
     "integrations": "Integrations",
     "import": "Import",
@@ -439,91 +438,6 @@
       "updateSuccess": "Provider updated",
       "slugConflict": "That slug is already in use",
       "saveError": "Couldn't save the provider. Please try again."
-    }
-  },
-  "goals": {
-    "title": "My goals",
-    "subtitle": "Set targets for your activities and track your progress",
-    "buttonAdd": "Add goal",
-    "count": "There is a total of {count} goal(s):",
-    "filters": "Filters",
-    "filter": {
-      "all": "All",
-      "interval": "Interval",
-      "activityType": "Activity type",
-      "goalType": "Goal type",
-      "clear": "Clear filters"
-    },
-    "noMatch": {
-      "title": "No goals match these filters",
-      "description": "Try adjusting or clearing the filters"
-    },
-    "interval": {
-      "daily": "Daily",
-      "weekly": "Weekly",
-      "monthly": "Monthly",
-      "yearly": "Yearly"
-    },
-    "activityType": {
-      "run": "Run",
-      "bike": "Bike",
-      "swim": "Swim",
-      "walk": "Walk",
-      "strength": "Strength",
-      "cardio": "Cardio"
-    },
-    "metric": {
-      "calories": "Calories",
-      "activities": "Number of activities",
-      "distance": "Distance",
-      "elevation": "Elevation",
-      "duration": "Duration"
-    },
-    "unit": {
-      "calories": "kcal",
-      "km": "km",
-      "miles": "mi",
-      "meters": "m",
-      "feet": "ft"
-    },
-    "list": {
-      "edit": "Edit {name} goal",
-      "delete": "Delete {name} goal"
-    },
-    "error": {
-      "title": "Couldn't load goals",
-      "description": "Something went wrong while loading your goals. You can try again.",
-      "retry": "Try again"
-    },
-    "empty": {
-      "title": "No goals yet",
-      "description": "Add a goal to start tracking your activity targets"
-    },
-    "delete": {
-      "title": "Delete goal",
-      "body": "Are you sure you want to delete this goal? This can't be undone.",
-      "confirm": "Delete",
-      "cancel": "Cancel",
-      "close": "Close",
-      "success": "Goal deleted",
-      "error": "Couldn't delete the goal. Please try again."
-    },
-    "form": {
-      "addTitle": "Add goal",
-      "editTitle": "Edit goal",
-      "description": "Set a target for an activity over a recurring period",
-      "create": "Add goal",
-      "save": "Save changes",
-      "cancel": "Cancel",
-      "close": "Close",
-      "interval": "Interval",
-      "activityType": "Activity type",
-      "metric": "Goal type",
-      "durationHours": "Hours",
-      "durationMinutes": "Minutes",
-      "createSuccess": "Goal added",
-      "updateSuccess": "Goal updated",
-      "saveError": "Couldn't save the goal. Please try again."
     }
   },
   "security": {

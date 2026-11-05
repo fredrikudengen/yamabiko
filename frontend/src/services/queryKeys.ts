@@ -38,73 +38,6 @@ export const queryKeys = {
     identityProviders: () => ['public-identity-providers'] as const,
   },
 
-  /**
-   * Health domain — the consolidated daily dashboard stats and the user's
-   * health targets. Same shape as {@link queryKeys.notifications}: `all()` is
-   * the broad prefix so a targets write can cascade to the dashboard.
-   */
-  health: {
-    /** Broad prefix; invalidating this cascades to every health query. */
-    all: () => ['health'] as const,
-    /** The user's health targets (sleep/steps/weight/… goals). */
-    targets: () => ['health', 'targets'] as const,
-    /** The consolidated daily dashboard stats (today's metrics + last weight). */
-    dashboard: () => ['health', 'dashboard'] as const,
-    /** Broad prefix for every paginated weight-history query. */
-    weightLists: () => ['health', 'weight'] as const,
-    /**
-     * @param filters - Serializable list filters (page, size, interval).
-     * @returns A weight-history list key scoped to the given filters.
-     */
-    weight: (filters: Record<string, unknown> = {}) => ['health', 'weight', filters] as const,
-    /** Broad prefix for every paginated steps-history query. */
-    stepsLists: () => ['health', 'steps'] as const,
-    /**
-     * @param filters - Serializable list filters (page, size, interval).
-     * @returns A steps-history list key scoped to the given filters.
-     */
-    steps: (filters: Record<string, unknown> = {}) => ['health', 'steps', filters] as const,
-    /** Broad prefix for every paginated water-history query. */
-    waterLists: () => ['health', 'water'] as const,
-    /**
-     * @param filters - Serializable list filters (page, size, interval).
-     * @returns A water-history list key scoped to the given filters.
-     */
-    water: (filters: Record<string, unknown> = {}) => ['health', 'water', filters] as const,
-    /** Broad prefix for every paginated bowel-movement-history query. */
-    poopLists: () => ['health', 'poop'] as const,
-    /**
-     * @param filters - Serializable list filters (page, size, interval).
-     * @returns A bowel-movement-history list key scoped to the given filters.
-     */
-    poop: (filters: Record<string, unknown> = {}) => ['health', 'poop', filters] as const,
-    /** Broad prefix for every paginated resting-heart-rate-history query. */
-    rhrLists: () => ['health', 'rhr'] as const,
-    /**
-     * @param filters - Serializable list filters (page, size, interval).
-     * @returns A resting-heart-rate-history list key scoped to the given filters.
-     */
-    rhr: (filters: Record<string, unknown> = {}) => ['health', 'rhr', filters] as const,
-    /** Broad prefix for every fasting query (history, active session, stats). */
-    fastingLists: () => ['health', 'fasting'] as const,
-    /**
-     * @param filters - Serializable list filters (page, size, interval).
-     * @returns A fasting-history list key scoped to the given filters.
-     */
-    fasting: (filters: Record<string, unknown> = {}) => ['health', 'fasting', filters] as const,
-    /** The user's active (in-progress) fasting session, or `null`. */
-    fastingActive: () => ['health', 'fasting', 'active'] as const,
-    /** Aggregate fasting statistics (streaks, totals, completion rate). */
-    fastingStats: () => ['health', 'fasting', 'stats'] as const,
-    /** Broad prefix for every paginated sleep-history query. */
-    sleepLists: () => ['health', 'sleep'] as const,
-    /**
-     * @param filters - Serializable list filters (page, size, interval).
-     * @returns A sleep-history list key scoped to the given filters.
-     */
-    sleep: (filters: Record<string, unknown> = {}) => ['health', 'sleep', filters] as const,
-  },
-
   /** Reference domain factory — copy this shape for activities, gears, etc. */
   notifications: {
     /** Broad prefix; invalidating this cascades to every notifications query. */
@@ -146,11 +79,6 @@ export const queryKeys = {
      */
     list: (filters: Record<string, unknown> = {}) => ['activities', 'list', filters] as const,
     details: () => ['activities', 'detail'] as const,
-    /**
-     * @param name - The activity-name search term.
-     * @returns A query key for a name "contains" search.
-     */
-    search: (name: string) => ['activities', 'search', name] as const,
     /**
      * @param id - Activity identifier.
      * @returns A detail query key for a single activity.
@@ -426,23 +354,6 @@ export const queryKeys = {
     detail: () => ['profile', 'detail'] as const,
     /** The user's per-activity default-gear assignments. */
     defaultGear: () => ['profile', 'default-gear'] as const,
-  },
-
-  /**
-   * The authenticated user's fitness goals (account settings zone). `all()` is
-   * the broad prefix the create/update/delete mutations invalidate on settle so
-   * the list refetches the server-authoritative state.
-   */
-  goals: {
-    /** Broad prefix; invalidating this cascades to every goals query. */
-    all: () => ['goals'] as const,
-    /**
-     * @param filters - Serializable list filters (interval, activity type, goal type).
-     * @returns A list query key scoped to the given filters.
-     */
-    list: (filters: Record<string, unknown> = {}) => ['goals', 'list', filters] as const,
-    /** Per-goal progress for the current interval (home dashboard panel). */
-    results: () => ['goals', 'results'] as const,
   },
 
   /**

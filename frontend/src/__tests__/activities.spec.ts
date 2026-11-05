@@ -14,7 +14,6 @@ import {
   fetchUserWeekActivities,
   mapActivity,
   mapActivityStream,
-  searchActivitiesByName,
   setActivityGear,
   updateUserActivitiesVisibility,
 } from '@/features/activities/services/activities'
@@ -165,24 +164,6 @@ describe('fetchActivity', () => {
     const { HttpError } = await import('@/services/http')
     vi.mocked(apiFetch).mockRejectedValueOnce(new HttpError(500, 'Server Error'))
     await expect(fetchActivity(5, { authenticated: true })).rejects.toBeInstanceOf(HttpError)
-  })
-})
-
-describe('searchActivitiesByName', () => {
-  it('encodes the name search term and maps the results', async () => {
-    vi.mocked(apiFetch).mockResolvedValueOnce([activityDto])
-    const result = await searchActivitiesByName('morning run')
-    expect(apiFetch).toHaveBeenCalledWith(
-      '/activities/name/contains/morning%20run',
-      expect.objectContaining({ signal: undefined }),
-    )
-    expect(result).toHaveLength(1)
-    expect(result[0]?.id).toBe(5)
-  })
-
-  it('treats a null search body as no matches', async () => {
-    vi.mocked(apiFetch).mockResolvedValueOnce(null)
-    await expect(searchActivitiesByName('x')).resolves.toEqual([])
   })
 })
 

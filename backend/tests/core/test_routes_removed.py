@@ -1,4 +1,4 @@
-"""The integrations Yamabiko dropped are gone from the API; what it kept is still there."""
+"""The features Yamabiko dropped are gone from the API; what it kept is still there."""
 
 from fastapi import FastAPI
 
@@ -44,3 +44,19 @@ def test_the_laps_endpoints_are_gone():
 
 def test_the_integration_refresh_is_gone():
     assert f"{ROOT}/activities/refresh" not in PATHS
+
+
+def test_health_is_gone():
+    assert not [path for path in PATHS if path.startswith(f"{ROOT}/health")]
+
+
+def test_google_health_stays():
+    assert [path for path in PATHS if path.startswith(f"{ROOT}/googlehealth")]
+
+
+def test_goals_are_gone():
+    assert not [path for path in PATHS if path.startswith(f"{ROOT}/profile/goals")]
+
+
+def test_the_activity_name_search_is_gone():
+    assert not [path for path in PATHS if path.startswith(f"{ROOT}/activities/name/contains")]

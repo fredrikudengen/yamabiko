@@ -6,7 +6,6 @@ import type { LucideIcon } from '@lucide/vue'
 
 import HomeProfileCard from '@/features/home/components/HomeProfileCard.vue'
 import UserDistanceStats from '@/features/home/components/UserDistanceStats.vue'
-import UserGoalResults from '@/features/home/components/UserGoalResults.vue'
 import HomeActivityCard from '@/features/home/components/HomeActivityCard.vue'
 import HomeActivityCardSkeleton from '@/features/home/components/HomeActivityCardSkeleton.vue'
 import { Button } from '@/components/ui/button'
@@ -24,7 +23,6 @@ import { useUploadActivityFileMutation } from '@/features/upload/composables/use
 import {
   useActivityStatsQuery,
   useFollowersActivitiesFeed,
-  useGoalResultsQuery,
   useUserActivitiesFeed,
 } from '@/features/home/composables/useHome'
 
@@ -38,9 +36,6 @@ const currentUserId = computed(() => currentUser.value?.id ?? null)
 // --- Distance stats (left) ---
 const weekStats = useActivityStatsQuery(currentUserId, 'week')
 const monthStats = useActivityStatsQuery(currentUserId, 'month')
-
-// --- Goal results (right) ---
-const goalResults = useGoalResultsQuery()
 
 // --- Feed (center) ---
 type FeedScope = 'mine' | 'following'
@@ -194,7 +189,7 @@ function onFileChange(event: Event): void {
     </aside>
 
     <!-- Center feed -->
-    <section class="flex flex-col gap-3 lg:col-span-6">
+    <section class="flex flex-col gap-3 lg:col-span-9">
       <!-- Scope toggle -->
       <Tabs v-model="scopeModel">
         <TabsList class="grid w-full grid-cols-2" :aria-label="t('home.feed.scopeLabel')">
@@ -265,14 +260,5 @@ function onFileChange(event: Event): void {
         </div>
       </template>
     </section>
-
-    <!-- Right sidebar (hidden on small screens, matching v1). -->
-    <aside class="hidden flex-col gap-3 lg:col-span-3 lg:flex">
-      <UserGoalResults
-        :goals="goalResults.data.value ?? []"
-        :units="units"
-        :is-loading="goalResults.isLoading.value"
-      />
-    </aside>
   </div>
 </template>

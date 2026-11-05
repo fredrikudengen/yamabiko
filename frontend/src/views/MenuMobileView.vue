@@ -2,7 +2,7 @@
 import { computed } from 'vue'
 import { RouterLink, useRouter, type RouteLocationRaw } from 'vue-router'
 import { useI18n } from 'vue-i18n'
-import { Activity, Calendar, LogOut, Search, Settings, User } from '@lucide/vue'
+import { Activity, Calendar, LogOut, Settings, User } from '@lucide/vue'
 
 import LocaleSwitcher from '@/components/LocaleSwitcher.vue'
 import ThemeToggle from '@/components/ThemeToggle.vue'
@@ -40,8 +40,8 @@ async function signOut(): Promise<void> {
 <template>
   <!--
     Mobile-only "Menu" destination reached from the bottom navigation. Mirrors
-    the v1 MenuMobileView: stacked, full-width, touch-friendly groups (Search;
-    Activities/Summary; Settings/Profile; Logout) plus the footer (which is
+    the v1 MenuMobileView: stacked, full-width, touch-friendly groups
+    (Activities/Summary; Settings/Profile; Logout) plus the footer (which is
     hidden in the main shell on small screens).
   -->
   <section class="flex flex-col gap-3">
@@ -50,17 +50,6 @@ async function signOut(): Promise<void> {
     </h1>
 
     <template v-if="auth.isAuthenticated">
-      <!-- Search -->
-      <Card padding="none" class="overflow-hidden">
-        <RouterLink
-          :to="{ name: 'search' }"
-          class="flex items-center gap-3 px-4 py-3 text-sm text-foreground hover:bg-accent hover:text-accent-foreground"
-        >
-          <Search class="size-4" />
-          <span>{{ t('nav.search') }}</span>
-        </RouterLink>
-      </Card>
-
       <!-- Activities / Summary -->
       <Card padding="none" class="overflow-hidden">
         <RouterLink

@@ -56,12 +56,5 @@
     "sailing": "Sailing",
     "snowshoeing": "Snowshoeing",
     "inline_skating": "Inline skating"
-  },
-  "goals": {
-    "title": "Goals",
-    "empty": {
-      "title": "No goals set",
-      "description": "Set goals in settings to track your progress here."
-    }
   }
 }

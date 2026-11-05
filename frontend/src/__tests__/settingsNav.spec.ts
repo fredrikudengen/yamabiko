@@ -16,7 +16,7 @@ describe('accessibleSettingsZones', () => {
   it('exposes admin-only zones to administrators', () => {
     const zones = accessibleSettingsZones(true)
     expect(zones.some((zone) => zone.name === 'settings-profile')).toBe(true)
-    expect(zones.some((zone) => zone.name === 'settings-goals')).toBe(true)
+    expect(zones.some((zone) => zone.name === 'settings-goals')).toBe(false)
     expect(zones.some((zone) => zone.name === 'settings-security')).toBe(true)
     expect(zones.some((zone) => zone.name === 'settings-users')).toBe(true)
     expect(zones.some((zone) => zone.name === 'settings-idp')).toBe(true)
@@ -26,7 +26,7 @@ describe('accessibleSettingsZones', () => {
   it('hides admin-only zones from non-administrators but keeps the account zones', () => {
     const zones = accessibleSettingsZones(false)
     expect(zones.some((zone) => zone.name === 'settings-profile')).toBe(true)
-    expect(zones.some((zone) => zone.name === 'settings-goals')).toBe(true)
+    expect(zones.some((zone) => zone.name === 'settings-goals')).toBe(false)
     expect(zones.some((zone) => zone.name === 'settings-security')).toBe(true)
     expect(zones.every((zone) => !zone.adminOnly)).toBe(true)
     expect(zones.some((zone) => zone.name === 'settings-users')).toBe(false)

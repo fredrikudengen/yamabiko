@@ -16,7 +16,6 @@ from fastapi import (
     HTTPException,
     Query,
     Security,
-    UploadFile,
     status,
 )
 from fastapi.concurrency import run_in_threadpool
@@ -571,75 +570,6 @@ async def read_activities_activity_from_id(
 ):
     # Get the activity from the database and return it
     return activities_crud.get_activity_by_id_from_user_id_or_has_visibility(activity_id, token_user_id, db)
-
-
-@router.get(
-    "/name/contains/{name}",
-    response_model=list[activities_schema.Activity] | None,
-)
-async def read_activities_contain_name(
-    name: str,
-    _check_scopes: Annotated[Callable, Security(auth_dependencies.check_scopes, scopes=["activities:read"])],
-    token_user_id: Annotated[
-        int,
-        Depends(auth_dependencies.get_sub_from_access_token),
-    ],
-    db: Annotated[
-        Session,
-        Depends(core_database.get_db),
-    ],
-):
-    # Get the activities from the database by name
-    return activities_crud.get_activities_if_contains_name(name, token_user_id, db)
-
-
-@api_upload_router.post(
-    "/create/upload",
-    status_code=201,
-    response_model=list[activities_schema.Activity],
-)
-async def create_activity_with_uploaded_file(
-    token_user_id: Annotated[
-        int,
-        Depends(auth_dependencies.get_user_id_from_auth),
-    ],
-    file: UploadFile,
-    _check_scopes: Annotated[
-        Callable,
-        Security(
-            auth_dependencies.check_auth_scopes,
-            scopes=["activities:upload"],
-        ),
-    ],
-    ws_manager: Annotated[
-        websocket_manager.WebSocketManager,
-        Depends(websocket_manager.get_websocket_manager),
-    ],
-    db: Annotated[
-        Session,
-        Depends(core_database.get_db),
-    ],
-):
-    """
-    Upload an activity file (GPX, FIT, TCX, GZ).
-
-    Accepts both JWT bearer token and API key
-    authentication (X-API-Key header or ?api_key=
-    query parameter). Requires the
-    ``activities:upload`` scope.
-
-    Args:
-        token_user_id: Authenticated user ID.
-        file: The activity file to upload.
-        _check_scopes: Scope validation dependency.
-        ws_manager: WebSocket manager for real-time
-            notifications.
-        db: Database session dependency.
-
-    Returns:
-        List of created activity objects.
-    """
-    return await activities_utils.parse_and_store_activity_from_uploaded_file(token_user_id, file, ws_manager, db)
 
 
 @router.post(

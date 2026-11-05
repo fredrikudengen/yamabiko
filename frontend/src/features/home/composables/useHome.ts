@@ -3,7 +3,6 @@ import { storeToRefs } from 'pinia'
 import { useInfiniteQuery, useQuery } from '@tanstack/vue-query'
 
 import type { Activity, ActivityStats } from '@/features/activities/types'
-import type { GoalProgress } from '@/features/goals/types'
 
 import { queryKeys } from '@/services/queryKeys'
 import { useAuthStore } from '@/features/auth/stores/auth'
@@ -15,7 +14,6 @@ import {
   fetchUserThisMonthActivityCount,
   fetchUserWeekActivities,
 } from '@/features/activities/services/activities'
-import { fetchGoalResults } from '@/features/goals/services/goals'
 
 /** Default number of activities fetched per feed page (matches v1's fallback). */
 export const DEFAULT_FEED_PAGE_SIZE = 25
@@ -153,27 +151,6 @@ export function useUserMonthlyActivityCountQuery(userId: MaybeRefOrGetter<number
     queryKey: computed(() => queryKeys.activities.monthCount(id.value)),
     queryFn: ({ signal }) => fetchUserThisMonthActivityCount(id.value, signal),
     enabled: computed(() => isAuthenticated.value && id.value > 0),
-    staleTime: 5 * 60_000,
-  })
-}
-
-/**
- * The viewer's per-goal progress for the current interval, backing the home
- * dashboard's goal-results panel (and the public profile's own-goals panel).
- * Always scoped to the authenticated viewer (the backend's `profile/goals`
- * endpoint), so callers should only enable it on the viewer's own profile.
- *
- * @param enabled - Reactive gate ANDed with the auth gate (e.g. "this is my
- *   own profile"); defaults to always-on for the home dashboard.
- * @returns The TanStack query result for the goal progress list.
- */
-export function useGoalResultsQuery(enabled: MaybeRefOrGetter<boolean> = true) {
-  const { isAuthenticated } = storeToRefs(useAuthStore())
-
-  return useQuery<GoalProgress[]>({
-    queryKey: queryKeys.goals.results(),
-    queryFn: ({ signal }) => fetchGoalResults(signal),
-    enabled: computed(() => toValue(enabled) && isAuthenticated.value),
     staleTime: 5 * 60_000,
   })
 }

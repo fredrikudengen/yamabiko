@@ -62,7 +62,6 @@ function invalidateWeekDependentQueries(
     return
   }
   void client.invalidateQueries({ queryKey: queryKeys.activities.all() })
-  void client.invalidateQueries({ queryKey: queryKeys.goals.all() })
 }
 
 /**

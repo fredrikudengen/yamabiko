@@ -4,7 +4,6 @@ import {
   Plug,
   ServerCog,
   ShieldCheck,
-  Target,
   User,
   Users,
   type LucideIcon,
@@ -37,7 +36,6 @@ export const SETTINGS_ZONES: readonly SettingsZone[] = [
   { name: 'settings-idp', labelKey: 'settings.nav.idp', icon: KeyRound, adminOnly: true },
   { name: 'settings-server', labelKey: 'settings.nav.server', icon: ServerCog, adminOnly: true },
   { name: 'settings-profile', labelKey: 'settings.nav.profile', icon: User, adminOnly: false },
-  { name: 'settings-goals', labelKey: 'settings.nav.goals', icon: Target, adminOnly: false },
   {
     name: 'settings-security',
     labelKey: 'settings.nav.security',
