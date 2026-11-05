@@ -70,7 +70,6 @@ describe('useUpdateProfileMutation', () => {
     await flushPromises()
 
     expect(invalidateQueries).toHaveBeenCalledWith({ queryKey: queryKeys.activities.all() })
-    expect(invalidateQueries).toHaveBeenCalledWith({ queryKey: queryKeys.goals.all() })
   })
 
   it('does not invalidate week-dependent data when the weekday is unchanged', async () => {
@@ -84,7 +83,6 @@ describe('useUpdateProfileMutation', () => {
     await flushPromises()
 
     expect(invalidateQueries).not.toHaveBeenCalledWith({ queryKey: queryKeys.activities.all() })
-    expect(invalidateQueries).not.toHaveBeenCalledWith({ queryKey: queryKeys.goals.all() })
     expect(invalidateQueries).toHaveBeenCalledWith({ queryKey: queryKeys.profile.all() })
     expect(invalidateQueries).toHaveBeenCalledWith({ queryKey: queryKeys.currentUser() })
   })

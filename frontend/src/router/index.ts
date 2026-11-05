@@ -132,67 +132,6 @@ const router = createRouter({
       meta: { requiresAuth: false, cardless: true },
     },
     {
-      path: '/health',
-      component: () => import('@/features/health/views/HealthView.vue'),
-      // Cardless: the health shell supplies its own sidebar + content surfaces.
-      meta: { requiresAuth: true, cardless: true },
-      children: [
-        {
-          path: '',
-          name: 'health',
-          // Land on the dashboard zone by default.
-          redirect: { name: 'health-dashboard' },
-        },
-        {
-          path: 'dashboard',
-          name: 'health-dashboard',
-          component: () => import('@/features/health/views/HealthDashboardView.vue'),
-        },
-        {
-          path: 'sleep',
-          name: 'health-sleep',
-          component: () => import('@/features/health/views/HealthSleepView.vue'),
-        },
-        {
-          path: 'rhr',
-          name: 'health-rhr',
-          component: () => import('@/features/health/views/HealthRestingHeartRateView.vue'),
-        },
-        {
-          path: 'steps',
-          name: 'health-steps',
-          component: () => import('@/features/health/views/HealthStepsView.vue'),
-        },
-        {
-          path: 'weight',
-          name: 'health-weight',
-          component: () => import('@/features/health/views/HealthWeightView.vue'),
-        },
-        {
-          path: 'fasting',
-          name: 'health-fasting',
-          component: () => import('@/features/health/views/HealthFastingView.vue'),
-        },
-        {
-          path: 'water',
-          name: 'health-water',
-          component: () => import('@/features/health/views/HealthWaterView.vue'),
-        },
-        {
-          path: 'poop',
-          name: 'health-poop',
-          component: () => import('@/features/health/views/HealthPoopView.vue'),
-        },
-      ],
-    },
-    {
-      path: '/search',
-      name: 'search',
-      component: () => import('@/features/search/views/SearchView.vue'),
-      // Cardless: the view supplies its own controls + results surfaces.
-      meta: { requiresAuth: true, cardless: true },
-    },
-    {
       path: '/settings',
       component: () => import('@/features/settings/views/SettingsView.vue'),
       // Cardless: the settings shell supplies its own sidebar + content surfaces.
@@ -213,11 +152,6 @@ const router = createRouter({
           path: 'profile',
           name: 'settings-profile',
           component: () => import('@/features/profile/views/ProfileSettingsView.vue'),
-        },
-        {
-          path: 'goals',
-          name: 'settings-goals',
-          component: () => import('@/features/goals/views/GoalsSettingsView.vue'),
         },
         {
           path: 'security',

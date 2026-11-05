@@ -56,12 +56,5 @@
     "sailing": "Seiling",
     "snowshoeing": "Truging",
     "inline_skating": "Rulleskøyter"
-  },
-  "goals": {
-    "title": "Mål",
-    "empty": {
-      "title": "Ingen mål satt",
-      "description": "Sett mål i innstillingene for å følge fremgangen din her."
-    }
   }
 }

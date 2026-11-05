@@ -179,27 +179,6 @@ export async function fetchActivity(
   }
 }
 
-/**
- * Searches the viewer's activities whose name contains the given term. The
- * backend scopes the result to activities the caller may see (their own plus
- * any visible to them).
- *
- * @param name - The search term.
- * @param signal - Optional abort signal for cancellation.
- * @returns The matching activities, mapped to the clean model.
- * @throws {HttpError} When the request fails.
- */
-export async function searchActivitiesByName(
-  name: string,
-  signal?: AbortSignal,
-): Promise<Activity[]> {
-  const dtos = await apiFetch<ActivityDto[] | null>(
-    `/activities/name/contains/${encodeURIComponent(name)}`,
-    { signal },
-  )
-  return (dtos ?? []).map(mapActivity)
-}
-
 /** A timeframe accepted by the activity stats endpoints. */
 export type ActivityStatsTimeframe = 'week' | 'month'
 

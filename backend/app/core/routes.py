@@ -25,14 +25,6 @@ import followers.router as followers_router
 import gears.gear.router as gears_router
 import gears.gear_components.router as gear_components_router
 import google_health.router as google_health_router
-import health.health_fasting.router as health_fasting_router
-import health.health_poop.router as health_poop_router
-import health.health_sleep.router as health_sleep_router
-import health.health_steps.router as health_steps_router
-import health.health_targets.router as health_targets_router
-import health.health_water.router as health_water_router
-import health.health_weight.router as health_weight_router
-import health.router as health_router
 import notifications.router as notifications_router
 import segments.router as segments_router
 import server_settings.public_router as server_settings_public_router
@@ -41,7 +33,6 @@ import strava.router as strava_router
 import users.users.public_router as users_public_router
 import users.users.router as users_router
 import users.users_default_gear.router as user_default_gear_router
-import users.users_goals.router as user_goals_router
 import users.users_profile.browser_redirect_router as profile_browser_redirect_router
 import users.users_profile.router as profile_router
 import websocket.router as websocket_router
@@ -139,54 +130,6 @@ router.include_router(
     dependencies=[Depends(auth_dependencies.validate_access_token)],
 )
 router.include_router(
-    health_router.router,
-    prefix=core_config.ROOT_PATH + "/health",
-    tags=["health"],
-    dependencies=[Depends(auth_dependencies.validate_access_token)],
-)
-router.include_router(
-    health_sleep_router.router,
-    prefix=core_config.ROOT_PATH + "/health/sleep",
-    tags=["health_sleep"],
-    dependencies=[Depends(auth_dependencies.validate_access_token)],
-)
-router.include_router(
-    health_weight_router.router,
-    prefix=core_config.ROOT_PATH + "/health/weight",
-    tags=["health_weight"],
-    dependencies=[Depends(auth_dependencies.validate_access_token)],
-)
-router.include_router(
-    health_steps_router.router,
-    prefix=core_config.ROOT_PATH + "/health/steps",
-    tags=["health_steps"],
-    dependencies=[Depends(auth_dependencies.validate_access_token)],
-)
-router.include_router(
-    health_fasting_router.router,
-    prefix=core_config.ROOT_PATH + "/health/fasting",
-    tags=["health_fasting"],
-    dependencies=[Depends(auth_dependencies.validate_access_token)],
-)
-router.include_router(
-    health_poop_router.router,
-    prefix=core_config.ROOT_PATH + "/health/poop",
-    tags=["health_poop"],
-    dependencies=[Depends(auth_dependencies.validate_access_token)],
-)
-router.include_router(
-    health_targets_router.router,
-    prefix=core_config.ROOT_PATH + "/health/targets",
-    tags=["health_targets"],
-    dependencies=[Depends(auth_dependencies.validate_access_token)],
-)
-router.include_router(
-    health_water_router.router,
-    prefix=core_config.ROOT_PATH + "/health/water",
-    tags=["health_water"],
-    dependencies=[Depends(auth_dependencies.validate_access_token)],
-)
-router.include_router(
     identity_providers_router.router,
     prefix=core_config.ROOT_PATH + "/idp",
     tags=["identity_providers"],
@@ -261,15 +204,6 @@ router.include_router(
 router.include_router(
     user_default_gear_router.router,
     prefix=core_config.ROOT_PATH + "/profile/default_gear",
-    tags=["profile"],
-    dependencies=[
-        Depends(auth_dependencies.validate_access_token),
-        Security(auth_dependencies.check_scopes, scopes=["profile"]),
-    ],
-)
-router.include_router(
-    user_goals_router.router,
-    prefix=core_config.ROOT_PATH + "/profile/goals",
     tags=["profile"],
     dependencies=[
         Depends(auth_dependencies.validate_access_token),

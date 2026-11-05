@@ -11,7 +11,6 @@ Exports:
     - Schemas: UsersGoalBase, UsersGoalCreate, UsersGoalUpdate,
       UsersGoalRead, UsersGoalProgress
     - Enums: Interval, ActivityType, GoalType
-    - Utils: calculate_user_goals
 """
 
 from .crud import (
@@ -31,7 +30,6 @@ from .schema import (
     UsersGoalRead,
     UsersGoalUpdate,
 )
-from .utils import calculate_user_goals
 
 __all__ = [
     "ActivityType",
@@ -44,8 +42,6 @@ __all__ = [
     "UsersGoalProgress",
     "UsersGoalRead",
     "UsersGoalUpdate",
-    # Utility functions
-    "calculate_user_goals",
     "create_user_goal",
     "delete_user_goal",
     "get_user_goal_by_user_and_goal_id",

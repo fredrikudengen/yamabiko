@@ -13,10 +13,8 @@ import enGears from './locales/en/gears.json'
 import enActivities from './locales/en/activities.json'
 import enSettings from './locales/en/settings.json'
 import enHome from './locales/en/home.json'
-import enSearch from './locales/en/search.json'
 import enUserProfile from './locales/en/userProfile.json'
 import enSummary from './locales/en/summary.json'
-import enHealth from './locales/en/health.json'
 
 /**
  * English message set, assembled from one file per feature namespace. The
@@ -36,10 +34,8 @@ const en = {
   activities: enActivities,
   settings: enSettings,
   home: enHome,
-  search: enSearch,
   userProfile: enUserProfile,
   summary: enSummary,
-  health: enHealth,
 }
 
 /**

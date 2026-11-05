@@ -272,16 +272,6 @@ class TestGear:
             assert resp.status_code == 200 and resp.json() == 0
 
 
-class TestContainName:
-    def test_success(self, mock_db):
-        with patch("activities.activity.router.activities_crud.get_activities_if_contains_name") as m:
-            m.return_value = [_valid_activity()]
-            resp = TestClient(_build_app(mock_db)).get(
-                "/activities/name/contains/Morning", headers={"Authorization": "Bearer x"}
-            )
-            assert resp.status_code == 200
-
-
 class TestFollowing:
     def test_other_user_forbidden(self, mock_db):
         resp = TestClient(_build_app(mock_db)).get(

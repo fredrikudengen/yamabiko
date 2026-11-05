@@ -6,7 +6,6 @@
     "account": "Konto",
     "administration": "Administrasjon",
     "profile": "Min profil",
-    "goals": "Mine mål",
     "security": "Sikkerhet",
     "integrations": "Integrasjoner",
     "import": "Importer",
@@ -439,91 +438,6 @@
       "updateSuccess": "Leverandør oppdatert",
       "slugConflict": "Den slug-en er allerede i bruk",
       "saveError": "Kunne ikke lagre leverandøren. Vennligst prøv igjen."
-    }
-  },
-  "goals": {
-    "title": "Mine mål",
-    "subtitle": "Sett mål for aktivitetene dine og følg fremgangen din",
-    "buttonAdd": "Legg til mål",
-    "count": "Det er totalt {count} mål:",
-    "filters": "Filtre",
-    "filter": {
-      "all": "Alle",
-      "interval": "Intervall",
-      "activityType": "Aktivitetstype",
-      "goalType": "Måltype",
-      "clear": "Tøm filtre"
-    },
-    "noMatch": {
-      "title": "Ingen mål samsvarer med disse filtrene",
-      "description": "Prøv å justere eller tømme filtrene"
-    },
-    "interval": {
-      "daily": "Daglig",
-      "weekly": "Ukentlig",
-      "monthly": "Månedlig",
-      "yearly": "Årlig"
-    },
-    "activityType": {
-      "run": "Løp",
-      "bike": "Sykkel",
-      "swim": "Svømming",
-      "walk": "Gåing",
-      "strength": "Styrke",
-      "cardio": "Kondisjon"
-    },
-    "metric": {
-      "calories": "Kalorier",
-      "activities": "Antall aktiviteter",
-      "distance": "Distanse",
-      "elevation": "Stigning",
-      "duration": "Varighet"
-    },
-    "unit": {
-      "calories": "kcal",
-      "km": "km",
-      "miles": "mi",
-      "meters": "m",
-      "feet": "ft"
-    },
-    "list": {
-      "edit": "Rediger {name}-mål",
-      "delete": "Slett {name}-mål"
-    },
-    "error": {
-      "title": "Kunne ikke laste mål",
-      "description": "Noe gikk galt under lasting av målene dine. Du kan prøve igjen.",
-      "retry": "Prøv igjen"
-    },
-    "empty": {
-      "title": "Ingen mål ennå",
-      "description": "Legg til et mål for å begynne å følge aktivitetsmålene dine"
-    },
-    "delete": {
-      "title": "Slett mål",
-      "body": "Er du sikker på at du vil slette dette målet? Dette kan ikke angres.",
-      "confirm": "Slett",
-      "cancel": "Avbryt",
-      "close": "Lukk",
-      "success": "Mål slettet",
-      "error": "Kunne ikke slette målet. Vennligst prøv igjen."
-    },
-    "form": {
-      "addTitle": "Legg til mål",
-      "editTitle": "Rediger mål",
-      "description": "Sett et mål for en aktivitet over en gjentakende periode",
-      "create": "Legg til mål",
-      "save": "Lagre endringer",
-      "cancel": "Avbryt",
-      "close": "Lukk",
-      "interval": "Intervall",
-      "activityType": "Aktivitetstype",
-      "metric": "Måltype",
-      "durationHours": "Timer",
-      "durationMinutes": "Minutter",
-      "createSuccess": "Mål lagt til",
-      "updateSuccess": "Mål oppdatert",
-      "saveError": "Kunne ikke lagre målet. Vennligst prøv igjen."
     }
   },
   "security": {

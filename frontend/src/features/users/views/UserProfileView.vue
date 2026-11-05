@@ -8,7 +8,6 @@ import UserProfileHeader from '@/features/users/components/UserProfileHeader.vue
 import FollowButton from '@/features/followers/components/FollowButton.vue'
 import FollowerListItem from '@/features/followers/components/FollowerListItem.vue'
 import UserDistanceStats from '@/features/home/components/UserDistanceStats.vue'
-import UserGoalResults from '@/features/home/components/UserGoalResults.vue'
 import HomeActivityCard from '@/features/home/components/HomeActivityCard.vue'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
@@ -22,7 +21,6 @@ import { shiftWeeks, todayIsoDate, weekEnd, weekStart } from '@/utils/datetime'
 import { usePublicUserQuery } from '@/features/users/composables/usePublicUser'
 import {
   useActivityStatsQuery,
-  useGoalResultsQuery,
   useUserMonthlyActivityCountQuery,
   useUserWeekActivitiesQuery,
 } from '@/features/home/composables/useHome'
@@ -63,9 +61,6 @@ const monthStats = useActivityStatsQuery(profileId, 'month')
 const monthCount = useUserMonthlyActivityCountQuery(profileId)
 const followersCount = useFollowersCountQuery(profileId)
 const followingCount = useFollowingCountQuery(profileId)
-
-// --- Sidebar goals (own profile only; the backend scopes goals to the viewer) ---
-const goalResults = useGoalResultsQuery(() => isSelf.value)
 
 // --- Tabs ---
 const initialTab: TabKey =
@@ -222,13 +217,6 @@ function refetchFollowers(): void {
         :month-stats="monthStats.data.value"
         :units="units"
         :is-loading="weekStats.isLoading.value || monthStats.isLoading.value"
-      />
-
-      <UserGoalResults
-        v-if="isSelf"
-        :goals="goalResults.data.value ?? []"
-        :units="units"
-        :is-loading="goalResults.isLoading.value"
       />
     </aside>
 
