@@ -7,7 +7,7 @@ import {
   numberRange,
   resolveHeightCm,
   WEEKDAY_OPTIONS,
-} from '@/features/users/utils/userFieldOptions'
+} from '@/features/profile/utils/userFieldOptions'
 
 describe('numberRange', () => {
   const validate = numberRange(10, 'out of range')

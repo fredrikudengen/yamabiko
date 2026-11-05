@@ -144,7 +144,7 @@ describe('useRealtime', () => {
     expect(realtime.status.value).toBe('idle')
   })
 
-  it('dispatches events to subscribers and invalidates query keys', async () => {
+  it('dispatches events to subscribers', async () => {
     const realtime = useRealtime()
     const handler = vi.fn<(event: unknown) => void>()
     realtime.connect()
@@ -152,20 +152,18 @@ describe('useRealtime', () => {
     const socket = latestSocket()
     socket.open()
 
-    const unsubscribe = realtime.on('NEW_ACTIVITY_NOTIFICATION', handler)
+    const unsubscribe = realtime.on('SOME_EVENT', handler)
     socket.onmessage?.({
-      data: JSON.stringify({ message: 'NEW_ACTIVITY_NOTIFICATION', notification_id: 9 }),
+      data: JSON.stringify({ message: 'SOME_EVENT', id: 9 }),
     })
 
-    expect(handler).toHaveBeenCalledWith({
-      message: 'NEW_ACTIVITY_NOTIFICATION',
-      notification_id: 9,
-    })
-    expect(invalidateQueries).toHaveBeenCalledWith({ queryKey: ['notifications'] })
+    expect(handler).toHaveBeenCalledWith({ message: 'SOME_EVENT', id: 9 })
+    // Nothing is mapped to query keys since notifications went away.
+    expect(invalidateQueries).not.toHaveBeenCalled()
 
     unsubscribe()
     socket.onmessage?.({
-      data: JSON.stringify({ message: 'NEW_ACTIVITY_NOTIFICATION', notification_id: 10 }),
+      data: JSON.stringify({ message: 'SOME_EVENT', id: 10 }),
     })
     expect(handler).toHaveBeenCalledTimes(1)
   })

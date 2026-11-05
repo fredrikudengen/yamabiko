@@ -18,10 +18,7 @@ import { useCurrentUser } from '@/features/auth/composables/useCurrentUser'
 import { useDisplayUnits } from '@/features/activities/composables/useActivityDetail'
 import { ACTIVITY_FILE_EXTENSIONS } from '@/features/upload/types'
 import { useUploadActivityFileMutation } from '@/features/upload/composables/useUpload'
-import {
-  useActivityStatsQuery,
-  useUserActivitiesFeed,
-} from '@/features/home/composables/useHome'
+import { useActivityStatsQuery, useUserActivitiesFeed } from '@/features/home/composables/useHome'
 
 const { t } = useI18n()
 const toasts = useToasts()
