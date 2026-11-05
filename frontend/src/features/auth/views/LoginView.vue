@@ -218,12 +218,6 @@ onMounted(async () => {
         {{ config.branding.appName }}
       </h1>
 
-      <!-- Brand tagline on mobile, where the photo and its overlay are hidden. -->
-      <div class="mt-3 text-center text-meta text-muted-foreground lg:hidden">
-        <p>{{ t('login.tagline1') }}</p>
-        <p>{{ t('login.tagline2') }}</p>
-      </div>
-
       <!-- Subtitle on mobile, where the photo and its overlay are hidden. -->
       <p class="mt-2 text-center text-body">
         {{ t('login.subtitle') }}
