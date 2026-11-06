@@ -9,7 +9,6 @@
     "security": "Sikkerhet",
     "integrations": "Integrasjoner",
     "import": "Importer",
-    "idp": "Identitetsleverandører",
     "server": "Serverinnstillinger"
   },
   "server": {
@@ -42,15 +41,6 @@
       "typeLengthOnly": "Kun lengde",
       "lengthRegular": "Minimumslengde for vanlige brukere",
       "lengthAdmin": "Minimumslengde for administratorbrukere"
-    },
-    "sso": {
-      "title": "Autentisering",
-      "enabled": "Aktiver SSO / enkel pålogging",
-      "enabledInfo": "Identitetsleverandører konfigureres separat i seksjonen for identitetsleverandører",
-      "localLogin": "Tillat lokal innlogging med brukernavn og passord",
-      "localLoginWarning": "Å deaktivere lokal innlogging stenger ute innlogging med brukernavn og passord for alle, inkludert administratorer. Sørg for at SSO fungerer først.",
-      "autoRedirect": "Automatisk omdirigering til SSO",
-      "autoRedirectInfo": "Når én enkelt identitetsleverandør er konfigurert og lokal innlogging er deaktivert, sendes brukere rett til den"
     },
     "sharing": {
       "title": "Offentlig deling",
@@ -90,91 +80,6 @@
       "deleteError": "Kunne ikke fjerne innloggingsbildet. Vennligst prøv igjen.",
       "cancel": "Avbryt",
       "close": "Lukk"
-    }
-  },
-  "idp": {
-    "title": "Identitetsleverandører",
-    "subtitle": "Konfigurer SSO-leverandører for enkel pålogging",
-    "buttonAdd": "Legg til leverandør",
-    "toggleError": "Kunne ikke endre leverandøren. Vennligst prøv igjen.",
-    "enableSuccess": "Leverandør aktivert",
-    "disableSuccess": "Leverandør deaktivert",
-    "type": {
-      "oidc": "OpenID Connect",
-      "oauth2": "OAuth 2.0"
-    },
-    "list": {
-      "disabled": "Deaktivert",
-      "toggle": "Aktiver eller deaktiver {name}",
-      "edit": "Rediger {name}",
-      "delete": "Slett {name}"
-    },
-    "error": {
-      "title": "Kunne ikke laste identitetsleverandører",
-      "description": "Noe gikk galt under lasting av leverandørene. Du kan prøve igjen.",
-      "retry": "Prøv igjen"
-    },
-    "empty": {
-      "title": "Ingen identitetsleverandører ennå",
-      "description": "Legg til en leverandør for å la folk logge inn med enkel pålogging"
-    },
-    "delete": {
-      "title": "Slett leverandør",
-      "body": "Er du sikker på at du vil slette «{name}»? Dette kan ikke angres.",
-      "confirm": "Slett",
-      "cancel": "Avbryt",
-      "close": "Lukk",
-      "success": "Leverandør slettet",
-      "error": "Kunne ikke slette leverandøren. Den kan fortsatt ha koblede brukere."
-    },
-    "form": {
-      "addTitle": "Legg til identitetsleverandør",
-      "editTitle": "Rediger identitetsleverandør",
-      "description": "Konfigurer en ekstern leverandør for enkel pålogging",
-      "create": "Legg til leverandør",
-      "save": "Lagre endringer",
-      "cancel": "Avbryt",
-      "close": "Lukk",
-      "template": "Start fra en forhåndsinnstilling",
-      "templateCustom": "Egendefinert (ingen forhåndsinnstilling)",
-      "name": "Navn",
-      "nameRequired": "Navn er obligatorisk",
-      "nameTooLong": "Navn må være 100 tegn eller færre",
-      "slug": "Slug",
-      "slugHint": "Brukes i innloggings-URL-en. Kun små bokstaver, tall og bindestreker; kan ikke endres senere.",
-      "slugRequired": "Slug er obligatorisk",
-      "slugTooLong": "Slug må være 50 tegn eller færre",
-      "slugInvalid": "Bruk bare små bokstaver, tall og bindestreker",
-      "providerType": "Leverandørtype",
-      "typeOidc": "OpenID Connect (OIDC)",
-      "typeOauth2": "OAuth 2.0",
-      "issuerUrl": "Utsteder-URL",
-      "issuerUrlHint": "Leverandørens OIDC-utsteder- eller discovery-URL",
-      "issuerUrlRequired": "Utsteder-URL er obligatorisk",
-      "issuerUrlTooLong": "Utsteder-URL må være 500 tegn eller færre",
-      "clientId": "Klient-ID",
-      "clientIdRequired": "Klient-ID er obligatorisk",
-      "clientIdTooLong": "Klient-ID må være 512 tegn eller færre",
-      "clientSecret": "Klienthemmelighet",
-      "clientSecretRequired": "Klienthemmelighet er obligatorisk",
-      "clientSecretTooLong": "Klienthemmelighet må være 512 tegn eller færre",
-      "clientSecretHintEdit": "La stå tom for å beholde den nåværende hemmeligheten",
-      "clientSecretPlaceholderEdit": "Uendret",
-      "scopes": "Omfang",
-      "scopesHint": "Mellomromsadskilte OAuth-omfang",
-      "scopesTooLong": "Omfang må være 500 tegn eller færre",
-      "icon": "Ikon",
-      "iconNone": "Ingen",
-      "iconCustom": "Egendefinert URL",
-      "customIconUrl": "URL til egendefinert ikon",
-      "customIconUrlHint": "Lenke til et bilde som vises på innloggingsknappen",
-      "enabled": "Aktivert",
-      "autoCreateUsers": "Opprett brukere automatisk ved første innlogging",
-      "syncUserInfo": "Synkroniser profilinformasjon ved hver innlogging",
-      "createSuccess": "Leverandør lagt til",
-      "updateSuccess": "Leverandør oppdatert",
-      "slugConflict": "Den slug-en er allerede i bruk",
-      "saveError": "Kunne ikke lagre leverandøren. Vennligst prøv igjen."
     }
   },
   "security": {
@@ -266,28 +171,6 @@
       "revokeOthersConfirm": "Logg ut andre",
       "revokeOthersSuccess": "Andre økter logget ut",
       "revokeOthersError": "Kunne ikke logge ut de andre øktene. Vennligst prøv igjen."
-    },
-    "linked": {
-      "title": "Koblede kontoer",
-      "subtitle": "Logg inn på kontoen din med en ekstern leverandør",
-      "error": "Kunne ikke laste de koblede kontoene dine.",
-      "empty": "Ingen kontoer er koblet ennå.",
-      "available": "Koble til en konto",
-      "link": "Koble til",
-      "unlink": "Koble fra",
-      "unlinkAria": "Koble fra {name}",
-      "linkTitle": "Koble til konto",
-      "linkDescription": "Bekreft identiteten din for å koble til {name}.",
-      "unlinkTitle": "Koble fra konto",
-      "unlinkDescription": "Bekreft identiteten din for å koble fra {name}.",
-      "linkSuccess": "Koblet til {name}",
-      "linkSuccessGeneric": "Konto koblet til",
-      "linkError": "Kunne ikke koble til kontoen. Vennligst prøv igjen.",
-      "unlinkSuccess": "Konto koblet fra",
-      "unlinkError": "Kunne ikke koble fra kontoen. Vennligst prøv igjen.",
-      "invalidCredentials": "Passordet eller koden din er feil.",
-      "alreadyLinked": "Den kontoen er allerede koblet til.",
-      "lastMethodError": "Du kan ikke koble fra den eneste innloggingsmetoden din. Sett et passord først."
     },
     "apiKeys": {
       "title": "API-nøkler",

@@ -9,8 +9,6 @@ from fastapi.staticfiles import StaticFiles
 from slowapi.middleware import SlowAPIMiddleware
 from starlette.middleware.sessions import SessionMiddleware
 
-import auth.identity_providers.link_tokens.utils as idp_link_token_utils
-import auth.oauth_state.utils as oauth_state_utils
 import auth.password_reset_tokens.utils as password_reset_tokens_utils
 import auth.utils as auth_utils
 import core.config as core_config
@@ -96,8 +94,6 @@ async def _sync_google_health() -> None:
 def _purge_expired_tokens() -> None:
     """Sweep expired/invalid auth-related tokens from the DB."""
     password_reset_tokens_utils.delete_invalid_tokens_from_db()
-    oauth_state_utils.delete_expired_oauth_states_from_db()
-    idp_link_token_utils.delete_idp_link_expired_tokens_from_db()
 
 
 def _generate_missing_thumbnails() -> None:

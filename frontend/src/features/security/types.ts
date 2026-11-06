@@ -108,41 +108,6 @@ export interface SecuritySession {
   expiresAt: string
 }
 
-/** Raw linked identity-provider payload (snake_case wire shape). */
-export type LinkedProviderDto = Schemas['UsersIdentityProviderResponse']
-
-/** Raw link-token payload from the generate-link-token step. */
-export type LinkTokenDto = Schemas['IdpLinkTokenResponse']
-
-/** A provider a user can link to (an enabled public provider). */
-export type AvailableProvider = Schemas['IdentityProviderPublic']
-
-/**
- * A clean linked identity-provider model for the security zone. Mapped from
- * {@link LinkedProviderDto} at the service boundary.
- *
- * @property id - The link record id.
- * @property idpId - The identity-provider id (used to unlink).
- * @property name - Provider display name, or `null`.
- * @property slug - Provider slug, or `null`.
- * @property icon - Provider icon key or URL, or `null`.
- * @property providerType - Provider protocol (oidc/oauth2/saml), or `null`.
- * @property subject - The user's subject id at the provider.
- * @property linkedAt - When the account was linked (ISO).
- * @property lastLogin - Last login via this provider (ISO), or `null`.
- */
-export interface LinkedProvider {
-  id: number
-  idpId: number
-  name: string | null
-  slug: string | null
-  icon: string | null
-  providerType: string | null
-  subject: string
-  linkedAt: string
-  lastLogin: string | null
-}
-
 /** Raw API-key payload (snake_case wire shape; `scopes` is a JSON string). */
 export type ApiKeyDto = Schemas['UsersApiKeyRead']
 

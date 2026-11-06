@@ -88,16 +88,7 @@ class Settings(BaseSettings):
     # comma-separated env value (e.g. "a,b,c") rather than
     # JSON. Without this pydantic-settings would attempt
     # ``json.loads`` first and raise on plain strings.
-    ALLOWED_REDIRECT_SCHEMES: Annotated[set[str], NoDecode] = {"endurain"}
     TRUSTED_PROXIES: Annotated[list[str], NoDecode] = []
-    # Narrow SSRF exception list for admin-configured
-    # outbound calls (currently OIDC discovery / JWKS).
-    # Accepts exact hostnames (case-insensitive) and
-    # explicit IPv4/IPv6 CIDRs. Wildcards and overly
-    # broad ranges (IPv4 prefix < 8, IPv6 prefix < 32)
-    # are rejected at startup to prevent accidental
-    # neutering of the SSRF guard.
-    SSRF_ALLOWED_HOSTS: Annotated[list[str], NoDecode] = []
     # Extra origins appended to the Content-Security-Policy
     # ``connect-src`` directive. Needed when Yamabiko runs
     # behind a forward-auth reverse proxy (e.g. Pangolin)
@@ -195,16 +186,6 @@ class Settings(BaseSettings):
             )
             return "starttls"
         return normalised
-
-    @field_validator("ALLOWED_REDIRECT_SCHEMES", mode="before")
-    @classmethod
-    def _parse_allowed_schemes(cls, v):
-        """Accept comma-separated env value or already-parsed iterable."""
-        if v is None or v == "":
-            return set()
-        if isinstance(v, str):
-            return {s.strip().lower() for s in v.split(",") if s.strip()}
-        return {str(s).strip().lower() for s in v if str(s).strip()}
 
     @field_validator("TRUSTED_PROXIES", mode="before")
     @classmethod
@@ -306,92 +287,6 @@ class Settings(BaseSettings):
                 )
                 continue
             cleaned.append(entry)
-        return cleaned
-
-    @field_validator("SSRF_ALLOWED_HOSTS", mode="before")
-    @classmethod
-    def _parse_ssrf_allowed_hosts(cls, v):
-        """Parse and validate the SSRF allowlist.
-
-        Accepts a comma-separated env value or an already
-        parsed iterable. Entries may be:
-
-        - Exact hostnames (e.g. ``auth.example.com``).
-          Lower-cased and stripped of any URL scheme,
-          path, or port (only the host label is kept).
-        - Explicit CIDRs (e.g. ``10.10.0.0/24`` or
-          ``fd00::/64``). The prefix length must be
-          tight enough to be auditable: IPv4 ``>= 8``
-          and IPv6 ``>= 32``.
-
-        Rejects:
-
-        - Wildcards (``*`` or empty entries).
-        - ``0.0.0.0/0`` / ``::/0`` and any range broader
-          than the limits above.
-
-        Invalid entries are dropped with a warning so a
-        single typo does not block startup, but at least
-        one valid entry must remain for the field to
-        take effect.
-        """
-
-        if v is None or v == "":
-            return []
-        raw_entries = [e.strip() for e in v.split(",")] if isinstance(v, str) else [str(e).strip() for e in v]
-
-        cleaned: list[str] = []
-        for entry in raw_entries:
-            if not entry or entry == "*":
-                if entry == "*":
-                    core_logger.print_to_log_and_console(
-                        "Ignoring wildcard '*' entry in SSRF_ALLOWED_HOSTS (not permitted).",
-                        "warning",
-                    )
-                continue
-
-            # CIDR / IP entry
-            if "/" in entry or core_network._looks_like_ip(entry):
-                try:
-                    network = ipaddress.ip_network(entry, strict=False)
-                except ValueError:
-                    core_logger.print_to_log_and_console(
-                        f"Ignoring invalid SSRF_ALLOWED_HOSTS entry '{entry}': not a valid IP or CIDR.",
-                        "warning",
-                    )
-                    continue
-                min_prefix = 8 if network.version == 4 else 32
-                if network.prefixlen < min_prefix:
-                    core_logger.print_to_log_and_console(
-                        f"Ignoring overly broad SSRF_ALLOWED_HOSTS "
-                        f"entry '{entry}': prefix /{network.prefixlen} "
-                        f"is wider than the minimum /{min_prefix} for "
-                        f"IPv{network.version}.",
-                        "warning",
-                    )
-                    continue
-                cleaned.append(str(network))
-                continue
-
-            # Hostname entry — strip scheme/port/path
-            host = entry.lower()
-            if "://" in host:
-                host = host.split("://", 1)[1]
-            host = host.split("/", 1)[0]
-            if host.startswith("["):  # IPv6 literal w/ optional :port
-                bracket = host.find("]")
-                if bracket != -1:
-                    host = host[1:bracket]
-            elif ":" in host and host.count(":") == 1:
-                host = host.split(":", 1)[0]
-            if not host:
-                core_logger.print_to_log_and_console(
-                    f"Ignoring empty SSRF_ALLOWED_HOSTS hostname from entry '{entry}'.",
-                    "warning",
-                )
-                continue
-            cleaned.append(host)
-
         return cleaned
 
     @field_validator("REVERSE_GEO_RATE_LIMIT", mode="before")
@@ -746,7 +641,7 @@ DEPRECATED_ENV_VARS: dict[str, str] = {
     ),
     "FRONTEND_PROTOCOL": (
         "removed. ENVIRONMENT is now the single source of truth for the cookie "
-        "'Secure' flag across login, refresh, and SSO. Use ENVIRONMENT=production "
+        "'Secure' flag across login and refresh. Use ENVIRONMENT=production "
         "(or demo) to serve over HTTPS."
     ),
 }

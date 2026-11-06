@@ -16,9 +16,6 @@ vi.mock('@/features/config/services/serverSettings', () => ({
 const publicSettings: PublicServerSettings = {
   login_photo_set: false,
   signup_enabled: true,
-  sso_enabled: false,
-  local_login_enabled: true,
-  sso_auto_redirect: false,
   units: 'metric',
   currency: 'euro',
   password_type: 'strict',

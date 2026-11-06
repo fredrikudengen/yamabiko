@@ -62,9 +62,6 @@ function toFormValues(settings: ServerSettings): ServerSettingsFormValues {
     signupEnabled: settings.signupEnabled,
     signupRequireAdminApproval: settings.signupRequireAdminApproval,
     signupRequireEmailVerification: settings.signupRequireEmailVerification,
-    ssoEnabled: settings.ssoEnabled,
-    localLoginEnabled: settings.localLoginEnabled,
-    ssoAutoRedirect: settings.ssoAutoRedirect,
     tileserverUrl: settings.tileserverUrl,
     tileserverAttribution: settings.tileserverAttribution,
     tileserverApiKey: settings.tileserverApiKey,
@@ -247,25 +244,6 @@ watch(selectedTemplate, (templateId) => {
 
     <!-- Registration settings are not shown: Yamabiko has no self-service
          sign-up. Their values still round-trip unchanged. -->
-
-    <!-- Authentication -->
-    <Card class="flex flex-col gap-3">
-      <h2 class="text-card-heading">{{ t('settings.server.sso.title') }}</h2>
-      <Switch v-model="values.ssoEnabled" :disabled="isSubmitting">
-        {{ t('settings.server.sso.enabled') }}
-      </Switch>
-      <Alert kind="info">{{ t('settings.server.sso.enabledInfo') }}</Alert>
-      <Switch v-model="values.localLoginEnabled" :disabled="isSubmitting">
-        {{ t('settings.server.sso.localLogin') }}
-      </Switch>
-      <Alert v-if="!values.localLoginEnabled" kind="warning">
-        {{ t('settings.server.sso.localLoginWarning') }}
-      </Alert>
-      <Switch v-model="values.ssoAutoRedirect" :disabled="isSubmitting">
-        {{ t('settings.server.sso.autoRedirect') }}
-      </Switch>
-      <Alert kind="info">{{ t('settings.server.sso.autoRedirectInfo') }}</Alert>
-    </Card>
 
     <!-- Public sharing -->
     <Card class="flex flex-col gap-3">

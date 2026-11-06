@@ -597,12 +597,6 @@ export interface paths {
          *     and returns an MFA-required response. Otherwise, it completes the login process and returns
          *     the required information.
          *
-         *     PKCE Support (Mobile):
-         *     - Mobile clients can optionally provide code_challenge and code_challenge_method
-         *     - For mobile clients with PKCE parameters, tokens are not returned directly
-         *         - Instead, a session_id is returned for secure token exchange via
-         *             /public/idp/session/{session_id}/tokens
-         *
          *     Args:
          *         response: The HTTP response object
          *         request: The HTTP request object
@@ -613,14 +607,11 @@ export interface paths {
          *         password_hasher: The password hasher instance used for verifying passwords
          *         token_manager: The token manager instance used for token operations
          *         db: Database session
-         *         code_challenge: PKCE code challenge (base64url-encoded SHA256, optional for mobile)
-         *         code_challenge_method: PKCE method (must be S256 if provided, optional for mobile)
          *
          *     Returns:
          *         Union[auth_schema.MFARequiredResponse, dict, str]:
          *             - If MFA is required, returns an MFA-required response (schema or dict depending on client type)
-         *             - If MFA is not required and mobile client with PKCE, returns session_id for token exchange
-         *             - If MFA is not required and no PKCE, proceeds with normal login via auth_utils.complete_login()
+         *             - Otherwise, proceeds with normal login via auth_utils.complete_login()
          *
          *     Raises:
          *         HTTPException: If authentication fails, user is inactive, or account is locked
@@ -686,12 +677,6 @@ export interface paths {
          *     This endpoint verifies the MFA code for a pending login and completes
          *     the authentication process if the code is valid.
          *
-         *     PKCE Support (Mobile):
-         *     - Mobile clients can optionally provide code_challenge and code_challenge_method
-         *     - For mobile clients with PKCE parameters, tokens are not returned directly
-         *         - Instead, a session_id is returned for secure token exchange via
-         *             /public/idp/session/{session_id}/tokens
-         *
          *     Args:
          *         response: The HTTP response object
          *         request: The HTTP request object
@@ -703,11 +688,9 @@ export interface paths {
          *         password_hasher: The password hasher instance used for verifying passwords
          *         token_manager: The token manager instance used for token operations
          *         db: Database session
-         *         code_challenge: PKCE code challenge (base64url-encoded SHA256, optional for mobile)
-         *         code_challenge_method: PKCE method (must be S256 if provided, optional for mobile)
          *
          *     Returns:
-         *         Result from auth_utils.complete_login() or PKCE session response
+         *         Result from auth_utils.complete_login()
          *
          *     Raises:
          *         HTTPException: If no pending login found, MFA code is invalid, or user not found
@@ -927,126 +910,6 @@ export interface paths {
          */
         post: operations["googlehealth_sync_api_v1_googlehealth_sync_post"];
         delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/idp": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /**
-         * List Identity Providers
-         * @description Retrieve a list of all identity providers.
-         *
-         *     Args:
-         *         db: SQLAlchemy database session dependency.
-         *         _check_scopes: Authenticated user with the
-         *             'identity_providers:read' scope.
-         *
-         *     Returns:
-         *         A list of all configured identity providers.
-         */
-        get: operations["list_identity_providers_api_v1_idp_get"];
-        put?: never;
-        /**
-         * Create Identity Provider
-         * @description Create a new identity provider.
-         *
-         *     Args:
-         *         idp_data: Data required to create the identity provider.
-         *         db: SQLAlchemy database session dependency.
-         *         _check_scopes: Authenticated user with the
-         *             'identity_providers:write' scope.
-         *
-         *     Returns:
-         *         The newly created identity provider.
-         *
-         *     Raises:
-         *         HTTPException: 409 if the slug already exists, 500 on
-         *             database errors.
-         */
-        post: operations["create_identity_provider_api_v1_idp_post"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/idp/templates": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /**
-         * List Idp Templates
-         * @description Get the list of pre-configured IdP templates (admin only).
-         *
-         *     Args:
-         *         _check_scopes: Authenticated user with the
-         *             'identity_providers:read' scope.
-         *
-         *     Returns:
-         *         A list of identity provider templates.
-         */
-        get: operations["list_idp_templates_api_v1_idp_templates_get"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/idp/{idp_id}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        /**
-         * Update Identity Provider
-         * @description Update an existing identity provider.
-         *
-         *     Args:
-         *         idp_id: The unique identifier of the identity provider to update.
-         *         idp_data: The data to update the identity provider with.
-         *         db: SQLAlchemy database session dependency.
-         *         _check_scopes: Authenticated user with the
-         *             'identity_providers:write' scope.
-         *
-         *     Returns:
-         *         The updated identity provider.
-         *
-         *     Raises:
-         *         HTTPException: 404 if the provider is not found, 409 on slug
-         *             conflict, 500 on database errors.
-         */
-        put: operations["update_identity_provider_api_v1_idp__idp_id__put"];
-        post?: never;
-        /**
-         * Delete Identity Provider
-         * @description Delete an identity provider by ID.
-         *
-         *     Args:
-         *         idp_id: The unique identifier of the identity provider to delete.
-         *         _check_scopes: Authenticated user with the
-         *             'identity_providers:write' scope.
-         *         db: SQLAlchemy database session dependency.
-         *
-         *     Raises:
-         *         HTTPException: 404 if the provider is not found, 409 if users
-         *             are still linked to the provider.
-         */
-        delete: operations["delete_identity_provider_api_v1_idp__idp_id__delete"];
         options?: never;
         head?: never;
         patch?: never;
@@ -1317,202 +1180,6 @@ export interface paths {
         get: operations["export_profile_data_api_v1_profile_export_get"];
         put?: never;
         post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/profile/idp": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /**
-         * Get My Identity Providers
-         * @description Retrieve all identity provider links for the authenticated user.
-         *     This endpoint fetches all external identity provider (IdP) connections associated
-         *     with the current user's account. Each link includes connection metadata and enriched
-         *     details about the identity provider (name, slug, icon, and provider type).
-         *     Args:
-         *         token_user_id (int): The authenticated user's ID extracted from the JWT access token.
-         *             Injected automatically via dependency injection.
-         *         db (Session): Database session for executing queries.
-         *             Injected automatically via dependency injection.
-         *     Returns:
-         *         list[dict]: A list of dictionaries representing the user's IdP links. Each dictionary contains:
-         *             - id (int): Unique identifier for the user-IdP link
-         *             - user_id (int): ID of the user
-         *             - idp_id (int): ID of the identity provider
-         *             - idp_subject (str): User's unique identifier at the IdP
-         *             - linked_at (datetime): Timestamp when the link was created
-         *             - last_login (datetime): Timestamp of the last login via this IdP
-         *             - idp_access_token_expires_at (datetime): Expiration time of the IdP access token
-         *             - idp_refresh_token_updated_at (datetime): Last update time of the refresh token
-         *             - idp_name (str): Display name of the identity provider (if available)
-         *             - idp_slug (str): URL-safe identifier for the IdP (if available)
-         *             - idp_icon (str): Icon/logo URL for the IdP (if available)
-         *             - idp_provider_type (str): Type of provider (e.g., "oauth2", "oidc") (if available)
-         *     Raises:
-         *         HTTPException: May raise authentication/authorization errors via the dependency injection.
-         */
-        get: operations["get_my_identity_providers_api_v1_profile_idp_get"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/profile/idp/{idp_id}/link": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /**
-         * Link Identity Provider
-         * @description Initiate linking an identity provider using a one-time link token.
-         *
-         *     This endpoint validates the one-time link token and initiates the OAuth flow
-         *     to link an external identity provider (IdP) to the user's account. The user
-         *     will be redirected to the IdP's authorization page.
-         *
-         *     Security:
-         *         - Uses one-time, short-lived (60s) link tokens instead of access tokens
-         *         - Validates token expiry and single-use constraint
-         *         - Optional IP address validation
-         *
-         *     Args:
-         *         idp_id (int): The ID of the identity provider to link.
-         *         link_token (str): One-time link token from query parameter.
-         *         request (Request): The FastAPI request object containing request context.
-         *         db (Session): The database session for performing CRUD operations.
-         *
-         *     Returns:
-         *         RedirectResponse: A redirect to the identity provider's authorization URL
-         *             with HTTP 307 status code.
-         *
-         *     Raises:
-         *         HTTPException:
-         *             - 401 UNAUTHORIZED: If the link token is invalid, expired, or already used.
-         *             - 404 NOT_FOUND: If the identity provider doesn't exist or is disabled.
-         *             - 409 CONFLICT: If the identity provider is already linked to the user's account.
-         *             - 500 INTERNAL_SERVER_ERROR: If an unexpected error occurs during the linking process.
-         */
-        get: operations["link_identity_provider_api_v1_profile_idp__idp_id__link_get"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/profile/idp/{idp_id}/link/token": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /**
-         * Generate Link Token
-         * @description Generate a one-time token for linking an identity provider.
-         *
-         *     This endpoint creates a short-lived (60 seconds), single-use token
-         *     that can be used to securely initiate the OAuth flow for linking
-         *     an identity provider to the authenticated user's account.
-         *
-         *     Linking an identity provider is a sensitive operation that enables
-         *     persistent authentication. Step-up verification is required: the
-         *     caller MUST supply ``current_password``, and an MFA code when MFA
-         *     is enabled on the account.
-         *
-         *     This approach is more secure than passing access tokens in query
-         *     parameters, as the link token:
-         *     - Expires in 60 seconds
-         *     - Can only be used once
-         *     - Is scoped specifically for IdP linking
-         *     - Limits exposure in server logs and browser history
-         *
-         *     Args:
-         *         idp_id (int): The ID of the identity provider to link.
-         *         link_request (IdpLinkTokenRequest): Request with step-up credentials.
-         *         request (Request): The FastAPI request object.
-         *         token_user_id (int): The authenticated user's ID extracted from the access token.
-         *         identity_service: Identity service dependency.
-         *
-         *     Returns:
-         *         IdpLinkTokenResponse: Contains the one-time token and expiration time.
-         *
-         *     Raises:
-         *         HTTPException:
-         *             - 401 UNAUTHORIZED: If step-up verification fails.
-         *             - 404 NOT_FOUND: If the identity provider doesn't exist or is disabled.
-         *             - 409 CONFLICT: If the identity provider is already linked.
-         *             - 500 INTERNAL_SERVER_ERROR: If token generation fails.
-         */
-        post: operations["generate_link_token_api_v1_profile_idp__idp_id__link_token_post"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/profile/idp/{idp_id}/unlink": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /**
-         * Delete My Identity Provider
-         * @description Delete (unlink) an identity provider from the authenticated user's account.
-         *
-         *     This endpoint allows users to remove the association between their
-         *     account and a specific identity provider. It requires step-up
-         *     verification (current password and MFA when enabled) and includes
-         *     safety checks to prevent account lockout by ensuring users maintain
-         *     at least one authentication method (either a password or another
-         *     IdP link).
-         *
-         *     Args:
-         *         idp_id (int): The ID of the identity provider to unlink.
-         *         step_up (StepUpVerification): Step-up verification payload.
-         *         request (Request): The FastAPI request object.
-         *         token_user_id (int): User ID extracted from the access token.
-         *         identity_service: Identity service dependency.
-         *
-         *     Returns:
-         *         None: Returns 204 No Content on successful deletion.
-         *
-         *     Raises:
-         *         HTTPException (401): If step-up verification fails.
-         *         HTTPException (404): If the identity provider doesn't exist or
-         *             is not linked to the user's account.
-         *         HTTPException (400): If attempting to unlink the last authentication method
-         *             without having a password set (prevents account lockout).
-         *         HTTPException (500): If the deletion operation fails at the database level.
-         *
-         *     Notes:
-         *         - Enforces step-up verification before unlinking.
-         *         - Prevents account lockout by ensuring users have at least one
-         *           authentication method (password or remaining IdP link).
-         *         - Logs the unlinking action for audit purposes.
-         *         - Uses token-based authentication to ensure users can only
-         *           unlink their own IdPs.
-         */
-        post: operations["delete_my_identity_provider_api_v1_profile_idp__idp_id__unlink_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -2145,168 +1812,6 @@ export interface paths {
         get: operations["read_public_activity_workout_steps_all_api_v1_public_activities_workout_steps_activity_id__activity_id__all_get"];
         put?: never;
         post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/public/idp": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /**
-         * Get Enabled Identity Providers
-         * @description Retrieve a list of enabled identity providers from the database.
-         *
-         *     Args:
-         *         db (Session): SQLAlchemy database session dependency.
-         *
-         *     Returns:
-         *         List[IdentityProviderPublic]: A list of enabled identity providers, each represented as an IdentityProviderPublic schema.
-         */
-        get: operations["get_enabled_identity_providers_api_v1_public_idp_get"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/public/idp/callback/{idp_slug}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /**
-         * Handle Callback
-         * @description Handle OAuth callback from an identity provider.
-         *
-         *     This endpoint processes the OAuth authorization callback from external identity providers.
-         *     It supports two modes: login mode (default) and link mode (for linking IdP to existing account).
-         *     Args:
-         *         idp_slug (str): The slug identifier of the identity provider.
-         *         password_hasher (auth_password_hasher.PasswordHasher): Password hasher dependency for session management.
-         *         token_manager (auth_token_manager.TokenManager): Token manager dependency for creating session tokens.
-         *         db (Session): Database session dependency.
-         *         code (str): Authorization code received from the identity provider.
-         *         state (str): State parameter used for CSRF protection (database state ID).
-         *         request (Request): The incoming HTTP request.
-         *
-         *     Returns:
-         *         RedirectResponse: A redirect response to either:
-         *             - Settings page (link mode): /settings with success parameters
-         *             - Login page (login mode): /login with session_id for token exchange
-         *             - Error page: /login with error parameter if callback fails
-         *
-         *     Raises:
-         *         HTTPException: If the identity provider is not found, disabled, or if callback processing fails.
-         *
-         *     Notes:
-         *         - In link mode: Redirects to settings without creating a new session
-         *         - In login mode: Creates session, redirects with session_id (client must exchange for tokens)
-         *         - All clients must call /tokens exchange endpoint with PKCE verifier to get JWT tokens
-         *         - On error: Redirects to login page with error parameter
-         *         - All redirects use HTTP 307 (Temporary Redirect) status code
-         */
-        get: operations["handle_callback_api_v1_public_idp_callback__idp_slug__get"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/public/idp/login/{idp_slug}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /**
-         * Initiate Login
-         * @description Initiates the login process for a given identity provider using OAuth.
-         *
-         *     PKCE (Proof Key for Code Exchange) is REQUIRED for all clients (OAuth 2.1 compliance).
-         *     Both code_challenge and code_challenge_method=S256 must be provided.
-         *
-         *     Rate Limit: 10 requests per minute per IP
-         *     Args:
-         *         idp_slug (str): The slug identifier for the identity provider.
-         *         request (Request): The incoming HTTP request object.
-         *         db (Session): Database session dependency.
-         *         redirect (str | None): Optional frontend path to redirect to after login.
-         *         code_challenge (str): PKCE code challenge (base64url-encoded SHA256, 43-128 chars). REQUIRED.
-         *         code_challenge_method (str): PKCE method (only S256 supported). REQUIRED.
-         *
-         *     Returns:
-         *         RedirectResponse: A redirect response to the identity provider's authorization URL.
-         *
-         *     Raises:
-         *         HTTPException: If the identity provider is not found, disabled, or PKCE validation fails.
-         */
-        get: operations["initiate_login_api_v1_public_idp_login__idp_slug__get"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/public/idp/session/{session_id}/tokens": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /**
-         * Exchange Tokens For Session
-         * @description Exchange a PKCE code verifier for JWT tokens.
-         *
-         *     After OAuth callback or password PKCE login creates a session, clients
-         *     call this endpoint to prove they possess the code_verifier (PKCE) and
-         *     receive the actual JWT tokens. This prevents token leakage through
-         *     browser redirects and ensures only the legitimate client can access the
-         *     tokens.
-         *
-         *     Security Features:
-         *     - PKCE verification (SHA256 hash of verifier must match challenge)
-         *     - One-time exchange (tokens_exchanged flag prevents replay)
-         *     - Rate limited (10 requests/minute)
-         *     - Session must be linked to OAuth state with PKCE data
-         *
-         *     Rate Limit: 10 requests per minute per IP
-         *
-         *     Args:
-         *         session_id (str): Session ID from OAuth callback redirect.
-         *         request (Request): FastAPI request object (for rate limiting).
-         *         response (Response): FastAPI response object.
-         *         token_exchange (TokenExchangeRequest): Request body with code_verifier.
-         *         token_manager (TokenManager): Token manager dependency.
-         *         db (Session): Database session dependency.
-         *
-         *     Returns:
-         *         TokenExchangeResponse: JWT tokens (access, refresh, csrf) and metadata.
-         *
-         *     Raises:
-         *         HTTPException:
-         *             - 404 NOT_FOUND: Session not found or not linked to OAuth state
-         *             - 400 BAD_REQUEST: Invalid code_verifier or tokens already exchanged
-         *             - 409 CONFLICT: Tokens already exchanged for this session
-         */
-        post: operations["exchange_tokens_for_session_api_v1_public_idp_session__session_id__tokens_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -3593,427 +3098,6 @@ export interface components {
             detail?: components["schemas"]["ValidationError"][];
         };
         /**
-         * IdentityProvider
-         * @description Represents an identity provider with decrypted client credentials.
-         *
-         *     Inherits from:
-         *         IdentityProviderBase
-         *
-         *     Attributes:
-         *         id (int): Unique identifier of the identity provider.
-         *         created_at (datetime): Timestamp when the identity provider was created.
-         *         updated_at (datetime): Timestamp when the identity provider was last updated.
-         *
-         *     Config:
-         *         model_config (ConfigDict): Pydantic model configuration to enable attribute-based initialization,
-         *             forbid extra fields, and validate assignment.
-         *
-         *     Methods:
-         *         decrypt_client_id():
-         *             Decrypts the `client_id` attribute after loading from the database.
-         *
-         *                 IdentityProvider: The instance with the decrypted `client_id`.
-         */
-        IdentityProvider: {
-            /**
-             * Authorization Endpoint
-             * @description OAuth2/OIDC authorization endpoint
-             */
-            authorization_endpoint?: string | null;
-            /**
-             * Auto Create Users
-             * @description Auto-create users on first login
-             * @default true
-             */
-            auto_create_users: boolean;
-            /** Client Id */
-            client_id?: string | null;
-            /**
-             * Created At
-             * Format: date-time
-             */
-            created_at: string;
-            /**
-             * Enabled
-             * @description Whether this provider is enabled
-             * @default false
-             */
-            enabled: boolean;
-            /**
-             * Icon
-             * @description Icon name or URL
-             */
-            icon?: string | null;
-            /** Id */
-            id: number;
-            /**
-             * Issuer Url
-             * @description OIDC issuer/discovery URL
-             */
-            issuer_url?: string | null;
-            /**
-             * Jwks Uri
-             * @description OIDC JWKS URI
-             */
-            jwks_uri?: string | null;
-            /**
-             * Name
-             * @description Display name of the IdP
-             */
-            name: string;
-            /**
-             * Provider Type
-             * @description Provider type: oidc, oauth2, or saml
-             * @default oidc
-             */
-            provider_type: string;
-            /**
-             * Scopes
-             * @description OAuth2/OIDC scopes
-             * @default openid profile email
-             */
-            scopes: string;
-            /**
-             * Slug
-             * @description URL-safe identifier
-             */
-            slug: string;
-            /**
-             * Sync User Info
-             * @description Sync user info on each login
-             * @default true
-             */
-            sync_user_info: boolean;
-            /**
-             * Token Endpoint
-             * @description OAuth2/OIDC token endpoint
-             */
-            token_endpoint?: string | null;
-            /**
-             * Updated At
-             * Format: date-time
-             */
-            updated_at: string;
-            /**
-             * User Mapping
-             * @description Claims mapping configuration
-             */
-            user_mapping?: {
-                [key: string]: unknown;
-            } | null;
-            /**
-             * Userinfo Endpoint
-             * @description OIDC userinfo endpoint
-             */
-            userinfo_endpoint?: string | null;
-        };
-        /**
-         * IdentityProviderCreate
-         * @description Schema for creating a new Identity Provider.
-         *
-         *     Inherits from:
-         *         IdentityProviderBase
-         *
-         *     Attributes:
-         *         client_secret (str): OAuth2/OIDC client secret. Must be between 1 and 512 characters.
-         */
-        IdentityProviderCreate: {
-            /**
-             * Authorization Endpoint
-             * @description OAuth2/OIDC authorization endpoint
-             */
-            authorization_endpoint?: string | null;
-            /**
-             * Auto Create Users
-             * @description Auto-create users on first login
-             * @default true
-             */
-            auto_create_users: boolean;
-            /** Client Id */
-            client_id?: string | null;
-            /**
-             * Client Secret
-             * @description OAuth2/OIDC client secret
-             */
-            client_secret: string;
-            /**
-             * Enabled
-             * @description Whether this provider is enabled
-             * @default false
-             */
-            enabled: boolean;
-            /**
-             * Icon
-             * @description Icon name or URL
-             */
-            icon?: string | null;
-            /**
-             * Issuer Url
-             * @description OIDC issuer/discovery URL
-             */
-            issuer_url?: string | null;
-            /**
-             * Jwks Uri
-             * @description OIDC JWKS URI
-             */
-            jwks_uri?: string | null;
-            /**
-             * Name
-             * @description Display name of the IdP
-             */
-            name: string;
-            /**
-             * Provider Type
-             * @description Provider type: oidc, oauth2, or saml
-             * @default oidc
-             */
-            provider_type: string;
-            /**
-             * Scopes
-             * @description OAuth2/OIDC scopes
-             * @default openid profile email
-             */
-            scopes: string;
-            /**
-             * Slug
-             * @description URL-safe identifier
-             */
-            slug: string;
-            /**
-             * Sync User Info
-             * @description Sync user info on each login
-             * @default true
-             */
-            sync_user_info: boolean;
-            /**
-             * Token Endpoint
-             * @description OAuth2/OIDC token endpoint
-             */
-            token_endpoint?: string | null;
-            /**
-             * User Mapping
-             * @description Claims mapping configuration
-             */
-            user_mapping?: {
-                [key: string]: unknown;
-            } | null;
-            /**
-             * Userinfo Endpoint
-             * @description OIDC userinfo endpoint
-             */
-            userinfo_endpoint?: string | null;
-        };
-        /**
-         * IdentityProviderPublic
-         * @description Represents the public-facing information of an identity provider.
-         *
-         *     Attributes:
-         *         id (int): Unique identifier of the identity provider.
-         *         name (str): Display name of the identity provider.
-         *         slug (str): URL-friendly unique identifier for the provider.
-         *         icon (str | None): URL or path to the provider's icon image.
-         *
-         *     Config:
-         *         model_config (dict): Pydantic model configuration to allow population from ORM attributes.
-         */
-        IdentityProviderPublic: {
-            /** Icon */
-            icon?: string | null;
-            /** Id */
-            id: number;
-            /** Name */
-            name: string;
-            /** Slug */
-            slug: string;
-        };
-        /**
-         * IdentityProviderTemplate
-         * @description Represents a template for an identity provider configuration.
-         *
-         *     Attributes:
-         *         template_id (str): Template identifier (e.g., 'keycloak', 'authentik').
-         *         name (str): Human-readable name of the identity provider template.
-         *         provider_type (str): Type of the identity provider (e.g., 'oidc', 'saml').
-         *         issuer_url (str | None): URL of the identity provider's issuer, if applicable.
-         *         scopes (str): Scopes required for authentication.
-         *         icon (str | None): URL or path to the icon representing the identity provider.
-         *         user_mapping (Dict[str, Any] | None): Mapping configuration for user attributes.
-         *         description (str): Description of this template.
-         *         configuration_notes (str | None): Setup instructions for this identity provider.
-         */
-        IdentityProviderTemplate: {
-            /**
-             * Configuration Notes
-             * @description Setup instructions for this IdP
-             */
-            configuration_notes?: string | null;
-            /**
-             * Description
-             * @description Description of this template
-             */
-            description: string;
-            /** Icon */
-            icon?: string | null;
-            /** Issuer Url */
-            issuer_url?: string | null;
-            /** Name */
-            name: string;
-            /** Provider Type */
-            provider_type: string;
-            /** Scopes */
-            scopes: string;
-            /**
-             * Template Id
-             * @description Template identifier (e.g., 'keycloak', 'authentik')
-             */
-            template_id: string;
-            /** User Mapping */
-            user_mapping?: {
-                [key: string]: unknown;
-            } | null;
-        };
-        /**
-         * IdentityProviderUpdate
-         * @description Schema for updating an existing Identity Provider.
-         *
-         *     Inherits from:
-         *         IdentityProviderBase
-         *
-         *     Attributes:
-         *         client_secret (str | None): The client secret for the provider (1-512 characters).
-         */
-        IdentityProviderUpdate: {
-            /**
-             * Authorization Endpoint
-             * @description OAuth2/OIDC authorization endpoint
-             */
-            authorization_endpoint?: string | null;
-            /**
-             * Auto Create Users
-             * @description Auto-create users on first login
-             * @default true
-             */
-            auto_create_users: boolean;
-            /** Client Id */
-            client_id?: string | null;
-            /** Client Secret */
-            client_secret?: string | null;
-            /**
-             * Enabled
-             * @description Whether this provider is enabled
-             * @default false
-             */
-            enabled: boolean;
-            /**
-             * Icon
-             * @description Icon name or URL
-             */
-            icon?: string | null;
-            /**
-             * Issuer Url
-             * @description OIDC issuer/discovery URL
-             */
-            issuer_url?: string | null;
-            /**
-             * Jwks Uri
-             * @description OIDC JWKS URI
-             */
-            jwks_uri?: string | null;
-            /**
-             * Name
-             * @description Display name of the IdP
-             */
-            name: string;
-            /**
-             * Provider Type
-             * @description Provider type: oidc, oauth2, or saml
-             * @default oidc
-             */
-            provider_type: string;
-            /**
-             * Scopes
-             * @description OAuth2/OIDC scopes
-             * @default openid profile email
-             */
-            scopes: string;
-            /**
-             * Slug
-             * @description URL-safe identifier
-             */
-            slug: string;
-            /**
-             * Sync User Info
-             * @description Sync user info on each login
-             * @default true
-             */
-            sync_user_info: boolean;
-            /**
-             * Token Endpoint
-             * @description OAuth2/OIDC token endpoint
-             */
-            token_endpoint?: string | null;
-            /**
-             * User Mapping
-             * @description Claims mapping configuration
-             */
-            user_mapping?: {
-                [key: string]: unknown;
-            } | null;
-            /**
-             * Userinfo Endpoint
-             * @description OIDC userinfo endpoint
-             */
-            userinfo_endpoint?: string | null;
-        };
-        /**
-         * IdpLinkTokenRequest
-         * @description Schema for requesting an IdP link token with step-up verification.
-         *
-         *     Linking an identity provider is a sensitive operation that enables
-         *     persistent authentication without local password verification.
-         *     It must be gated by step-up verification: the caller MUST supply
-         *     ``current_password``, and an MFA code when MFA is enabled.
-         *
-         *     For SSO-only accounts (no local password set), the password field
-         *     may be omitted and the password check is skipped.
-         *
-         *     Attributes:
-         *         current_password: Caller's existing password (step-up verification).
-         *             Required when the account has a local password; may be omitted
-         *             for SSO-only accounts.
-         *         mfa_code: TOTP or backup code, required when MFA is enabled on
-         *             the account.
-         */
-        IdpLinkTokenRequest: {
-            /**
-             * Current Password
-             * @description Current password (step-up verification). Required when the account has a local password.
-             */
-            current_password?: string | null;
-            /**
-             * Mfa Code
-             * @description TOTP or backup code, required when MFA is enabled
-             */
-            mfa_code?: string | null;
-        };
-        /**
-         * IdpLinkTokenResponse
-         * @description Schema for IdP link token response.
-         */
-        IdpLinkTokenResponse: {
-            /**
-             * Expires At
-             * Format: date-time
-             * @description Token expiration timestamp
-             */
-            expires_at: string;
-            /**
-             * Token
-             * @description One-time link token
-             */
-            token: string;
-        };
-        /**
          * Language
          * @description Supported application languages.
          *
@@ -4310,29 +3394,6 @@ export interface components {
              * @description Whether MFA is enabled
              */
             mfa_enabled: boolean;
-        };
-        /**
-         * MobileSessionResponse
-         * @description Response for mobile password login with PKCE exchange flow.
-         *
-         *     Attributes:
-         *         session_id: Session identifier for token exchange.
-         *         mfa_required: Whether MFA is required.
-         *         message: Instructions for the client on next steps.
-         */
-        MobileSessionResponse: {
-            /**
-             * Message
-             * @default Complete authentication by exchanging tokens at /public/idp/session/{session_id}/tokens
-             */
-            message: string;
-            /**
-             * Mfa Required
-             * @default false
-             */
-            mfa_required: boolean;
-            /** Session Id */
-            session_id: string;
         };
         /**
          * MonthSummary
@@ -4760,11 +3821,6 @@ export interface components {
              */
             id: number;
             /**
-             * Local Login Enabled
-             * @description Allow local username/password login (true - yes, false - no)
-             */
-            local_login_enabled: boolean;
-            /**
              * Login Photo Set
              * @description Is login photo set (true - yes, false - no)
              */
@@ -4822,16 +3878,6 @@ export interface components {
              * @description Require email verification for new sign-ups (true - yes, false - no)
              */
             signup_require_email_verification: boolean;
-            /**
-             * Sso Auto Redirect
-             * @description Auto-redirect to SSO if only one IdP (true - yes, false - no)
-             */
-            sso_auto_redirect: boolean;
-            /**
-             * Sso Enabled
-             * @description Enable SSO/IdP login (true - yes, false - no)
-             */
-            sso_enabled: boolean;
             /**
              * Tileserver Api Key
              * @description API key encrypted for the tile server
@@ -4876,11 +3922,6 @@ export interface components {
              */
             id: number;
             /**
-             * Local Login Enabled
-             * @description Allow local username/password login (true - yes, false - no)
-             */
-            local_login_enabled: boolean;
-            /**
              * Login Photo Set
              * @description Is login photo set (true - yes, false - no)
              */
@@ -4939,16 +3980,6 @@ export interface components {
              */
             signup_require_email_verification: boolean;
             /**
-             * Sso Auto Redirect
-             * @description Auto-redirect to SSO if only one IdP (true - yes, false - no)
-             */
-            sso_auto_redirect: boolean;
-            /**
-             * Sso Enabled
-             * @description Enable SSO/IdP login (true - yes, false - no)
-             */
-            sso_enabled: boolean;
-            /**
              * Tileserver Api Key
              * @description API key encrypted for the tile server
              */
@@ -4989,11 +4020,6 @@ export interface components {
         ServerSettingsReadPublic: {
             /** @description Currency (euro, dollar, pound) */
             currency: components["schemas"]["Currency"];
-            /**
-             * Local Login Enabled
-             * @description Allow local username/password login (true - yes, false - no)
-             */
-            local_login_enabled: boolean;
             /**
              * Login Photo Set
              * @description Is login photo set (true - yes, false - no)
@@ -5042,16 +4068,6 @@ export interface components {
              * @description Allow user sign-up registration (true - yes, false - no)
              */
             signup_enabled: boolean;
-            /**
-             * Sso Auto Redirect
-             * @description Auto-redirect to SSO if only one IdP (true - yes, false - no)
-             */
-            sso_auto_redirect: boolean;
-            /**
-             * Sso Enabled
-             * @description Enable SSO/IdP login (true - yes, false - no)
-             */
-            sso_enabled: boolean;
             /**
              * Tileserver Attribution
              * @description Attribution string for the map tileserver
@@ -5163,83 +4179,6 @@ export interface components {
              * @description URL template for fetching map tiles
              */
             url_template: string;
-        };
-        /**
-         * TokenExchangeRequest
-         * @description Request schema for mobile PKCE token exchange.
-         *
-         *     After OAuth callback completes, mobile clients exchange the session_id
-         *     for actual JWT tokens by proving they possess the code_verifier that
-         *     matches the code_challenge sent during login initiation.
-         *
-         *     Attributes:
-         *         code_verifier (str): PKCE code verifier (43-128 chars, base64url).
-         *             Must hash to the code_challenge stored in OAuth state.
-         */
-        TokenExchangeRequest: {
-            /**
-             * Code Verifier
-             * @description PKCE code verifier (base64url, 43-128 chars)
-             */
-            code_verifier: string;
-        };
-        /**
-         * TokenExchangeResponse
-         * @description Response schema for successful PKCE token exchange.
-         *
-         *     Returns the actual JWT tokens that clients need for API access.
-         *     Response format varies by client type:
-         *     - Web clients: access_token, csrf_token (refresh_token in httpOnly cookie)
-         *     - Mobile clients: access_token, refresh_token (no CSRF token)
-         *
-         *     Attributes:
-         *         session_id (str): Session identifier.
-         *         access_token (str): JWT access token (15-minute expiry).
-         *         refresh_token (str | None): JWT refresh token (7-day expiry). Only for mobile clients.
-         *         csrf_token (str | None): CSRF protection token. Only for web clients.
-         *         expires_in (int): Access token lifetime in seconds (900 = 15 minutes).
-         *         refresh_token_expires_in (int): Refresh token lifetime in seconds (604800 = 7 days).
-         *         token_type (str): Token type, always "Bearer".
-         */
-        TokenExchangeResponse: {
-            /**
-             * Access Token
-             * @description JWT access token
-             */
-            access_token: string;
-            /**
-             * Csrf Token
-             * @description CSRF protection token (web only)
-             */
-            csrf_token?: string | null;
-            /**
-             * Expires In
-             * @description Access token lifetime in seconds
-             * @default 900
-             */
-            expires_in: number;
-            /**
-             * Refresh Token
-             * @description JWT refresh token (mobile only)
-             */
-            refresh_token?: string | null;
-            /**
-             * Refresh Token Expires In
-             * @description Refresh token lifetime in seconds
-             * @default 604800
-             */
-            refresh_token_expires_in: number;
-            /**
-             * Session Id
-             * @description Session identifier
-             */
-            session_id: string;
-            /**
-             * Token Type
-             * @description Token type
-             * @default Bearer
-             */
-            token_type: string;
         };
         /**
          * TokenResponseMobile
@@ -5594,82 +4533,6 @@ export interface components {
              * @default false
              */
             revoke_other_sessions: boolean;
-        };
-        /**
-         * UsersIdentityProviderResponse
-         * @description Response schema with enriched identity provider details.
-         *
-         *     Extends Read schema with display fields added by API layer
-         *     for frontend convenience.
-         *
-         *     Attributes:
-         *         idp_name: Identity provider name (enriched).
-         *         idp_slug: Identity provider slug (enriched).
-         *         idp_icon: Identity provider icon (enriched).
-         *         idp_provider_type: Provider type (enriched).
-         */
-        UsersIdentityProviderResponse: {
-            /**
-             * Id
-             * @description Link ID
-             */
-            id: number;
-            /**
-             * Idp Access Token Expires At
-             * @description Access token expiry
-             */
-            idp_access_token_expires_at?: string | null;
-            /**
-             * Idp Icon
-             * @description Identity provider icon
-             */
-            idp_icon?: string | null;
-            /**
-             * Idp Id
-             * @description Identity Provider ID
-             */
-            idp_id: number;
-            /**
-             * Idp Name
-             * @description Identity provider name
-             */
-            idp_name?: string | null;
-            /**
-             * Idp Provider Type
-             * @description Provider type
-             */
-            idp_provider_type?: string | null;
-            /**
-             * Idp Refresh Token Updated At
-             * @description Last refresh token update
-             */
-            idp_refresh_token_updated_at?: string | null;
-            /**
-             * Idp Slug
-             * @description Identity provider slug
-             */
-            idp_slug?: string | null;
-            /**
-             * Idp Subject
-             * @description Subject/ID from the identity provider
-             */
-            idp_subject: string;
-            /**
-             * Last Login
-             * @description Last login using this IdP
-             */
-            last_login?: string | null;
-            /**
-             * Linked At
-             * Format: date-time
-             * @description When linked
-             */
-            linked_at: string;
-            /**
-             * User Id
-             * @description User ID
-             */
-            user_id: number;
         };
         /**
          * UsersMe
@@ -7092,10 +5955,7 @@ export interface operations {
     };
     login_for_access_token_api_v1_auth_login_post: {
         parameters: {
-            query?: {
-                code_challenge?: string | null;
-                code_challenge_method?: string | null;
-            };
+            query?: never;
             header?: never;
             path?: never;
             cookie?: never;
@@ -7112,7 +5972,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["MFARequiredResponse"] | components["schemas"]["MobileSessionResponse"] | components["schemas"]["TokenResponseWeb"] | components["schemas"]["TokenResponseMobile"];
+                    "application/json": components["schemas"]["MFARequiredResponse"] | components["schemas"]["TokenResponseWeb"] | components["schemas"]["TokenResponseMobile"];
                 };
             };
             /** @description Validation Error */
@@ -7148,10 +6008,7 @@ export interface operations {
     };
     verify_mfa_and_login_api_v1_auth_mfa_verify_post: {
         parameters: {
-            query?: {
-                code_challenge?: string | null;
-                code_challenge_method?: string | null;
-            };
+            query?: never;
             header?: never;
             path?: never;
             cookie?: never;
@@ -7168,7 +6025,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["MobileSessionResponse"] | components["schemas"]["TokenResponseWeb"] | components["schemas"]["TokenResponseMobile"];
+                    "application/json": components["schemas"]["TokenResponseWeb"] | components["schemas"]["TokenResponseMobile"];
                 };
             };
             /** @description Validation Error */
@@ -7397,143 +6254,6 @@ export interface operations {
                 content: {
                     "application/json": unknown;
                 };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    list_identity_providers_api_v1_idp_get: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["IdentityProvider"][];
-                };
-            };
-        };
-    };
-    create_identity_provider_api_v1_idp_post: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["IdentityProviderCreate"];
-            };
-        };
-        responses: {
-            /** @description Successful Response */
-            201: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["IdentityProvider"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    list_idp_templates_api_v1_idp_templates_get: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["IdentityProviderTemplate"][];
-                };
-            };
-        };
-    };
-    update_identity_provider_api_v1_idp__idp_id__put: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                idp_id: number;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["IdentityProviderUpdate"];
-            };
-        };
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["IdentityProvider"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    delete_identity_provider_api_v1_idp__idp_id__delete: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                idp_id: number;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            204: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
             };
             /** @description Validation Error */
             422: {
@@ -7793,127 +6513,6 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content?: never;
-            };
-        };
-    };
-    get_my_identity_providers_api_v1_profile_idp_get: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["UsersIdentityProviderResponse"][];
-                };
-            };
-        };
-    };
-    link_identity_provider_api_v1_profile_idp__idp_id__link_get: {
-        parameters: {
-            query: {
-                link_token: string;
-                /** @description Frontend return path after linking (relative path or a configured custom scheme) */
-                redirect?: string | null;
-            };
-            header?: never;
-            path: {
-                idp_id: number;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            307: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    generate_link_token_api_v1_profile_idp__idp_id__link_token_post: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                idp_id: number;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["IdpLinkTokenRequest"];
-            };
-        };
-        responses: {
-            /** @description Successful Response */
-            201: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["IdpLinkTokenResponse"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    delete_my_identity_provider_api_v1_profile_idp__idp_id__unlink_post: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                idp_id: number;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["StepUpVerification"];
-            };
-        };
-        responses: {
-            /** @description Successful Response */
-            204: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
             };
         };
     };
@@ -8501,135 +7100,6 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ActivityWorkoutSteps"][] | null;
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    get_enabled_identity_providers_api_v1_public_idp_get: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["IdentityProviderPublic"][];
-                };
-            };
-        };
-    };
-    handle_callback_api_v1_public_idp_callback__idp_slug__get: {
-        parameters: {
-            query: {
-                /** @description Authorization code from IdP */
-                code: string;
-                /** @description State parameter for CSRF protection */
-                state: string;
-            };
-            header?: never;
-            path: {
-                idp_slug: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            307: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": unknown;
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    initiate_login_api_v1_public_idp_login__idp_slug__get: {
-        parameters: {
-            query: {
-                /** @description PKCE code challenge (base64url-encoded SHA256, 43-128 chars). REQUIRED for OAuth 2.1 compliance. */
-                code_challenge: string;
-                /** @description PKCE method (must be S256). REQUIRED for OAuth 2.1 compliance. */
-                code_challenge_method: string;
-                /** @description Frontend redirect path after successful login */
-                redirect?: string | null;
-            };
-            header?: never;
-            path: {
-                idp_slug: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            307: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": unknown;
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    exchange_tokens_for_session_api_v1_public_idp_session__session_id__tokens_post: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                session_id: string;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["TokenExchangeRequest"];
-            };
-        };
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["TokenExchangeResponse"];
                 };
             };
             /** @description Validation Error */

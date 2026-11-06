@@ -32,10 +32,9 @@ export const queryKeys = {
   /** The authenticated user's profile (seeded by the auth store on login). */
   currentUser: () => ['current-user'] as const,
 
-  /** Unauthenticated settings consumed by the login / sign-up screens. */
+  /** Unauthenticated settings consumed by the login screen. */
   public: {
     serverSettings: () => ['public-server-settings'] as const,
-    identityProviders: () => ['public-identity-providers'] as const,
   },
 
   /**
@@ -150,20 +149,6 @@ export const queryKeys = {
   },
 
   /**
-   * Identity providers domain (admin SSO config). `all()` is the broad prefix
-   * the create/update/delete mutations invalidate on settle so the list (and
-   * any derived view) refetches the server-authoritative state.
-   */
-  identityProviders: {
-    /** Broad prefix; invalidating this cascades to every IdP query. */
-    all: () => ['identity-providers'] as const,
-    /** The admin list of all configured providers. */
-    list: () => ['identity-providers', 'list'] as const,
-    /** The static catalogue of provider presets. */
-    templates: () => ['identity-providers', 'templates'] as const,
-  },
-
-  /**
    * The authenticated user's own settings profile (identity + privacy). Kept
    * separate from {@link queryKeys.currentUser} (the narrow shell model): the
    * profile zone needs the full field set, and its edits invalidate both keys.
@@ -230,8 +215,6 @@ export const queryKeys = {
     backupCodeStatus: () => ['security', 'backup-code-status'] as const,
     /** The user's active sessions. */
     sessions: () => ['security', 'sessions'] as const,
-    /** The user's linked identity providers. */
-    linkedProviders: () => ['security', 'linked-providers'] as const,
     /** The user's API keys. */
     apiKeys: () => ['security', 'api-keys'] as const,
   },

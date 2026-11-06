@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
-import { getSafeRedirect, isCustomSchemeRedirect } from '@/composables/useSafeRedirect'
+import { getSafeRedirect } from '@/composables/useSafeRedirect'
 
 describe('getSafeRedirect', () => {
   it('allows internal absolute paths', () => {
@@ -23,8 +23,8 @@ describe('getSafeRedirect', () => {
     expect(getSafeRedirect('/redirect://evil.example')).toBe('/')
   })
 
-  it('allows native-app custom-scheme deep links', () => {
-    expect(getSafeRedirect('endurain://callback')).toBe('endurain://callback')
+  it('blocks custom-scheme deep links', () => {
+    expect(getSafeRedirect('endurain://callback')).toBe('/')
   })
 
   it('blocks script-bearing pseudo-scheme redirects', () => {
@@ -41,20 +41,5 @@ describe('getSafeRedirect', () => {
   it('falls back to root for empty or non-string values', () => {
     expect(getSafeRedirect(undefined)).toBe('/')
     expect(getSafeRedirect(123)).toBe('/')
-  })
-})
-
-describe('isCustomSchemeRedirect', () => {
-  it('recognises the allowed app scheme but not http(s)', () => {
-    expect(isCustomSchemeRedirect('endurain://x')).toBe(true)
-    expect(isCustomSchemeRedirect('https://x')).toBe(false)
-    expect(isCustomSchemeRedirect('/x')).toBe(false)
-  })
-
-  it('rejects dangerous pseudo-schemes', () => {
-    expect(isCustomSchemeRedirect('javascript://%0aalert(1)')).toBe(false)
-    expect(isCustomSchemeRedirect('data://text/html,x')).toBe(false)
-    expect(isCustomSchemeRedirect('vbscript://x')).toBe(false)
-    expect(isCustomSchemeRedirect('file://x')).toBe(false)
   })
 })

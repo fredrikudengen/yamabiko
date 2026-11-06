@@ -1,12 +1,4 @@
-import {
-  FolderInput,
-  KeyRound,
-  Plug,
-  ServerCog,
-  ShieldCheck,
-  User,
-  type LucideIcon,
-} from '@lucide/vue'
+import { FolderInput, Plug, ServerCog, ShieldCheck, User, type LucideIcon } from '@lucide/vue'
 
 /**
  * One entry in the settings sidebar. Each zone is a nested child route under
@@ -31,7 +23,6 @@ export interface SettingsZone {
  * up automatically.
  */
 export const SETTINGS_ZONES: readonly SettingsZone[] = [
-  { name: 'settings-idp', labelKey: 'settings.nav.idp', icon: KeyRound, adminOnly: true },
   { name: 'settings-server', labelKey: 'settings.nav.server', icon: ServerCog, adminOnly: true },
   { name: 'settings-profile', labelKey: 'settings.nav.profile', icon: User, adminOnly: false },
   {

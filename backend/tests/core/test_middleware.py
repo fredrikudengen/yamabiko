@@ -227,18 +227,6 @@ class TestCSRFMiddlewareExemptPaths:
         assert response.status_code == 200
         assert response.json() == {"message": "Login success"}
 
-    def test_public_idp_route_exempt(self, client):
-        """
-        Test that public IdP routes are exempt from CSRF checks.
-
-        Verifies:
-            - Routes starting with /api/v1/public/idp/session/ are exempt
-            - Dynamic route segments work correctly
-        """
-        response = client.post("/api/v1/public/idp/session/test/callback", headers={"X-Client-Type": "web"})
-        assert response.status_code == 200
-        assert response.json() == {"message": "Public success"}
-
 
 class TestCSRFMiddlewareInMemoryModel:
     """

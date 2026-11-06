@@ -13,7 +13,6 @@ import activities.activity_streams.router as activity_streams_router
 import activities.activity_summaries.router as activity_summaries_router
 import auth.api_keys.router as auth_api_keys_router
 import auth.dependencies as auth_dependencies
-import auth.identity_providers.router as identity_providers_router
 import auth.password_reset_tokens.router as password_reset_tokens_router
 import auth.router as auth_router
 import auth.sessions.router as auth_sessions_router
@@ -27,7 +26,6 @@ import server_settings.router as server_settings_router
 import strava.router as strava_router
 import users.users.public_router as users_public_router
 import users.users.router as users_router
-import users.users_profile.browser_redirect_router as profile_browser_redirect_router
 import users.users_profile.router as profile_router
 import websocket.router as websocket_router
 from activities.activity_exercise_titles import (
@@ -44,9 +42,6 @@ from activities.activity_workout_steps import (
 )
 from activities.activity_workout_steps import (
     router as activity_workout_steps_router,
-)
-from auth.identity_providers import (
-    public_router as identity_providers_public_router,
 )
 
 router = APIRouter()
@@ -106,21 +101,9 @@ router.include_router(
     tags=["auth"],
 )
 router.include_router(
-    identity_providers_router.router,
-    prefix=core_config.ROOT_PATH + "/idp",
-    tags=["identity_providers"],
-    dependencies=[Depends(auth_dependencies.validate_access_token)],
-)
-router.include_router(
     password_reset_tokens_router.router,
     prefix=core_config.ROOT_PATH,
     tags=["password_reset_tokens"],
-)
-router.include_router(
-    profile_browser_redirect_router.router,
-    prefix=core_config.ROOT_PATH + "/profile",
-    tags=["profile"],
-    # No authentication required - endpoints validate via link_token parameter
 )
 router.include_router(
     profile_router.router,
@@ -209,11 +192,6 @@ router.include_router(
     activity_workout_steps_public_router.router,
     prefix=core_config.ROOT_PATH + "/public/activities_workout_steps",
     tags=["public_activity_workout_steps"],
-)
-router.include_router(
-    identity_providers_public_router.router,
-    prefix=core_config.ROOT_PATH + "/public/idp",
-    tags=["identity_providers_public"],
 )
 router.include_router(
     server_settings_public_router.router,

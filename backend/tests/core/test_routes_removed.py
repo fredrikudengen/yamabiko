@@ -84,3 +84,13 @@ def test_public_sharing_stays():
 
 def test_the_followed_activities_feed_is_gone():
     assert not [path for path in PATHS if "/followed" in path]
+
+
+def test_sso_is_gone():
+    assert not [path for path in PATHS if path.startswith((f"{ROOT}/idp", f"{ROOT}/public/idp"))]
+    assert not [path for path in PATHS if path.startswith(f"{ROOT}/profile/idp")]
+
+
+def test_password_login_stays():
+    assert f"{ROOT}/auth/login" in PATHS
+    assert f"{ROOT}/auth/mfa/verify" in PATHS

@@ -3,7 +3,6 @@ import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 
 import ChangePasswordCard from '@/features/security/components/ChangePasswordCard.vue'
-import LinkedAccountsCard from '@/features/security/components/LinkedAccountsCard.vue'
 import MfaCard from '@/features/security/components/MfaCard.vue'
 import SessionsCard from '@/features/security/components/SessionsCard.vue'
 import ApiKeysCard from '@/features/security/components/ApiKeysCard.vue'
@@ -87,10 +86,6 @@ const mfaEnabled = computed(() => mfaStatusQuery.data.value?.enabled ?? false)
         :access-type="profile.accessType"
       />
       <MfaCard :has-local-password="profile.hasLocalPassword" />
-      <LinkedAccountsCard
-        :has-local-password="profile.hasLocalPassword"
-        :mfa-enabled="mfaEnabled"
-      />
       <SessionsCard />
       <ApiKeysCard :has-local-password="profile.hasLocalPassword" :mfa-enabled="mfaEnabled" />
     </template>

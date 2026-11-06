@@ -6,9 +6,6 @@ import { apiFetch } from '@/services/http'
 export const DEFAULT_PUBLIC_SERVER_SETTINGS: PublicServerSettings = {
   login_photo_set: false,
   signup_enabled: false,
-  sso_enabled: false,
-  local_login_enabled: true,
-  sso_auto_redirect: false,
   units: 'metric',
   currency: 'euro',
   password_type: 'strict',

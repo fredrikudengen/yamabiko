@@ -80,23 +80,6 @@ describe('authGuard', () => {
     expect(result).toEqual({ name: 'home' })
   })
 
-  it('lets an in-progress SSO mobile-app handoff reach the login view even when already authenticated', async () => {
-    const auth = useAuthStore()
-    auth.isReady = true
-    auth.isAuthenticated = true
-
-    const result = await authGuard(
-      routeTo({ requiresAuth: false, guestOnly: true }, '/login', {
-        sso: 'success',
-        session_id: '42de30a8-8592-475b-96ba-8dc3d9406051',
-        redirect: 'endurain://auth/sso/callback',
-        external_redirect: 'true',
-      }),
-    )
-
-    expect(result).toBe(true)
-  })
-
   it('blocks routes whose feature flag is disabled', async () => {
     isEnabled.mockReturnValue(false)
     const auth = useAuthStore()

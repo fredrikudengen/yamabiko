@@ -18,45 +18,27 @@ import {
 import { usePublicServerSettings } from '@/features/config/composables/usePublicServerSettings'
 import PasswordInput from '@/features/security/components/PasswordInput.vue'
 import { useSafeRedirect } from '@/composables/useSafeRedirect'
-import { useSsoLogin } from '@/features/auth/composables/useSsoLogin'
 import { useToasts } from '@/composables/useToasts'
-import { PROVIDER_CUSTOM_LOGO_MAP } from '@/constants/ssoLogos'
 import { HttpError } from '@/services/http'
 import { useAuthStore } from '@/features/auth/stores/auth'
 
 const auth = useAuthStore()
 const { t } = useI18n()
 const { config } = useAppConfig()
-const { serverSettings, ssoProviders, isSettingsLoading, isSsoLoading, loginImageUrl, load } =
-  usePublicServerSettings()
-const { startSsoLogin, processSsoCallback, maybeAutoRedirect } = useSsoLogin()
+const { loginImageUrl, load } = usePublicServerSettings()
 const { navigateAfterLogin } = useSafeRedirect()
-const { resolveInitialAlert, shouldForceLocalLogin } = useLoginRouteMessages()
+const { resolveInitialAlert } = useLoginRouteMessages()
 const toasts = useToasts()
 
 const username = ref('')
 const password = ref('')
 const mfaCode = ref('')
 const pendingUsername = ref('')
-const forceLocalLogin = ref(false)
 const isLoading = ref(false)
 const isForgotPasswordOpen = ref(false)
 const alert = ref<AlertState | null>(null)
 
 const isMfaStep = computed(() => pendingUsername.value.length > 0)
-const showLocalLogin = computed(
-  () => serverSettings.value.local_login_enabled || isMfaStep.value || forceLocalLogin.value,
-)
-const showSsoProviders = computed(
-  () =>
-    !isSsoLoading.value &&
-    !isMfaStep.value &&
-    serverSettings.value.sso_enabled &&
-    ssoProviders.value.length > 0,
-)
-const noLoginMethods = computed(
-  () => !isSettingsLoading.value && !showLocalLogin.value && !showSsoProviders.value,
-)
 const canSubmit = computed(() =>
   isMfaStep.value
     ? mfaCode.value.trim().length > 0
@@ -137,31 +119,6 @@ async function submitForm(): Promise<void> {
 }
 
 /**
- * Gets a bundled logo for a known SSO provider icon.
- *
- * @param iconName - Provider icon key.
- * @returns Logo asset URL, or `null` when unknown.
- */
-function getProviderCustomLogo(iconName?: string | null): string | null {
-  if (!iconName) {
-    return null
-  }
-  return PROVIDER_CUSTOM_LOGO_MAP[iconName.toLowerCase()] ?? null
-}
-
-/**
- * Starts an SSO login, surfacing an inline error when initiation fails.
- *
- * @param slug - Provider slug.
- */
-async function handleSsoLogin(slug: string): Promise<void> {
-  const result = await startSsoLogin(slug)
-  if (result.status === 'error') {
-    alert.value = { kind: 'error', message: t('login.ssoInitiationError') }
-  }
-}
-
-/**
  * Surfaces a successful password reset request as a toast.
  *
  * @param message - Localised success message.
@@ -181,32 +138,14 @@ function onForgotPasswordError(message: string): void {
 }
 
 onMounted(async () => {
-  forceLocalLogin.value = shouldForceLocalLogin()
   await load()
 
   // Navigation/status messages are shown as toasts (out of layout flow) so the
   // card never grows on load; credential errors stay inline (see submitForm).
-  // The force-local-login notice is an instruction for the current attempt
-  // (not a past event), so it stays inline where the user can keep reading it.
   const initialAlert = resolveInitialAlert()
   if (initialAlert) {
-    if (forceLocalLogin.value) {
-      alert.value = initialAlert
-    } else {
-      toasts.notify(initialAlert.kind, initialAlert.message)
-    }
+    toasts.notify(initialAlert.kind, initialAlert.message)
   }
-
-  const callback = await processSsoCallback()
-  if (callback.status === 'completed') {
-    return
-  }
-  if (callback.status === 'error') {
-    toasts.error(t(callback.messageKey))
-    return
-  }
-
-  maybeAutoRedirect(serverSettings.value, ssoProviders.value, forceLocalLogin.value)
 })
 </script>
 
@@ -227,7 +166,7 @@ onMounted(async () => {
         {{ alert.message }}
       </Alert>
 
-      <div v-if="showLocalLogin" class="mt-5 flex flex-col gap-3">
+      <div class="mt-5 flex flex-col gap-3">
         <template v-if="!isMfaStep">
           <div class="flex flex-col gap-1.5">
             <Label for="login-username">
@@ -290,48 +229,6 @@ onMounted(async () => {
           {{ t('login.forgotPassword') }}
         </button>
       </div>
-
-      <div
-        v-if="isSsoLoading"
-        class="mt-5 flex items-center justify-center text-meta text-muted-foreground"
-      >
-        <LoaderCircle class="me-2 size-4 animate-spin" aria-hidden="true" />
-        <span>{{ t('login.loadingSsoProviders') }}</span>
-      </div>
-
-      <div v-else-if="showSsoProviders" class="mt-5 flex flex-col gap-3">
-        <div class="flex items-center gap-3 text-caption">
-          <hr class="flex-1 border-border" />
-          <span>{{ t('login.ssoSection') }}</span>
-          <hr class="flex-1 border-border" />
-        </div>
-
-        <Button
-          v-for="provider in ssoProviders"
-          :key="provider.slug"
-          type="button"
-          variant="outline"
-          class="w-full"
-          :aria-label="t('login.ssoButton', { provider: provider.name })"
-          @click="handleSsoLogin(provider.slug)"
-        >
-          <img
-            v-if="getProviderCustomLogo(provider.icon)"
-            :src="getProviderCustomLogo(provider.icon)!"
-            :alt="t('login.ssoLogoAlt', { provider: provider.name })"
-            class="h-5 w-auto"
-          />
-          <span>{{ t('login.ssoButton', { provider: provider.name }) }}</span>
-        </Button>
-      </div>
-
-      <p
-        v-if="noLoginMethods"
-        class="mt-5 text-center text-meta text-muted-foreground"
-        role="status"
-      >
-        {{ t('login.noLoginMethods') }}
-      </p>
     </form>
   </AuthScreenLayout>
 

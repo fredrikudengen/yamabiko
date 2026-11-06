@@ -1,7 +1,6 @@
 """Network helpers shared across the application.
 
-Currently provides proxy-aware client IP extraction
-and SSRF guards for outbound HTTP calls. Lives in
+Provides proxy-aware client IP extraction. Lives in
 ``core/`` so any module — including other ``core/``
 modules such as rate limiting — can use it without
 creating a dependency on the ``users`` package.
@@ -12,9 +11,8 @@ import re
 import socket
 import threading
 import time
-from urllib.parse import urlparse
 
-from fastapi import HTTPException, Request, status
+from fastapi import Request
 
 import core.config as core_config
 import core.logger as core_logger
@@ -256,175 +254,3 @@ def get_ip_address(request: Request) -> str:
 
     # Untrusted peer or no peer info — use the raw socket IP
     return peer_ip or "unknown"
-
-
-# Schemes the application is willing to dial. Anything
-# else (file://, gopher://, ftp://, data://, javascript:)
-# is rejected outright.
-_ALLOWED_OUTBOUND_SCHEMES: frozenset[str] = frozenset({"http", "https"})
-
-
-def _is_private_or_reserved(
-    addr: ipaddress.IPv4Address | ipaddress.IPv6Address,
-) -> bool:
-    """Return True if ``addr`` belongs to any non-routable range.
-
-    Combines every "do not dial" predicate Python's
-    ``ipaddress`` module exposes: private (RFC1918,
-    fc00::/7), loopback, link-local, multicast,
-    unspecified (0.0.0.0, ::), and reserved blocks. Any
-    of these would let an attacker pivot to internal
-    infrastructure or cloud metadata services.
-    """
-    return (
-        addr.is_private
-        or addr.is_loopback
-        or addr.is_link_local
-        or addr.is_multicast
-        or addr.is_unspecified
-        or addr.is_reserved
-    )
-
-
-def _load_ssrf_allowlist() -> tuple[
-    frozenset[str],
-    tuple[ipaddress.IPv4Network | ipaddress.IPv6Network, ...],
-]:
-    """Split the configured allowlist into hostnames and IP networks.
-
-    Entries have already been validated by the
-    ``SSRF_ALLOWED_HOSTS`` field validator in
-    :mod:`core.config`. This helper just classifies them
-    for the lookup below.
-    """
-    hosts: set[str] = set()
-    networks: list[ipaddress.IPv4Network | ipaddress.IPv6Network] = []
-    for entry in core_config.settings.SSRF_ALLOWED_HOSTS:
-        try:
-            networks.append(ipaddress.ip_network(entry, strict=False))
-        except ValueError:
-            hosts.add(entry.lower())
-    return frozenset(hosts), tuple(networks)
-
-
-def _is_ssrf_allowlisted(
-    hostname: str,
-    addr: ipaddress.IPv4Address | ipaddress.IPv6Address,
-) -> bool:
-    """Return True if ``hostname`` or ``addr`` is allowlisted.
-
-    The allowlist is only consulted when the resolved
-    address would otherwise be rejected by
-    :func:`_is_private_or_reserved`. Both the hostname
-    (exact, case-insensitive) and the resolved IP (CIDR
-    membership) are checked so administrators can opt
-    in by either dimension.
-    """
-    hosts, networks = _load_ssrf_allowlist()
-    if hostname.lower() in hosts:
-        return True
-    return any(addr in network for network in networks)
-
-
-def reject_private_url(url: str, *, purpose: str | None = None) -> None:
-    """Refuse to dial URLs that resolve to private/internal hosts.
-
-    Mitigates Server-Side Request Forgery (SSRF) by
-    enforcing two checks before any outbound HTTP call:
-
-    1. The scheme must be ``http`` or ``https``.
-    2. Every address the hostname resolves to (both A
-       and AAAA records) must be a public unicast
-       address. A single private/loopback/link-local
-       answer aborts the request — this defends against
-       DNS rebinding where an attacker-controlled host
-       returns a public IP on the first lookup and a
-       private IP on the next.
-
-    Note: this is a *time-of-check* guard. Callers that
-    want full TOCTOU safety should also pin the resolved
-    public IP and dial it directly with the original
-    Host header. For our current use cases (admin-set
-    OIDC discovery / JWKS endpoints) the time-of-check
-    guard is sufficient hardening.
-
-    Args:
-        url: The fully-qualified URL the caller intends
-            to fetch.
-        purpose: Optional short tag identifying the
-            outbound call (e.g. ``"oidc_discovery"``).
-            Used only for audit logging when a private
-            destination is allowed via
-            ``SSRF_ALLOWED_HOSTS``; never trusted as a
-            security boundary.
-
-    Raises:
-        HTTPException: 400 if the URL is malformed,
-            uses a forbidden scheme, has no hostname,
-            or resolves to any non-public address that
-            is not covered by the
-            ``SSRF_ALLOWED_HOSTS`` allowlist.
-    """
-    try:
-        parsed = urlparse(url)
-    except ValueError as err:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Malformed URL",
-        ) from err
-
-    if parsed.scheme.lower() not in _ALLOWED_OUTBOUND_SCHEMES:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="URL scheme is not permitted",
-        )
-
-    hostname = parsed.hostname
-    if not hostname:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="URL has no hostname",
-        )
-
-    # Resolve every A/AAAA record and require that all
-    # of them be public. ``getaddrinfo`` returns a list
-    # of ``(family, type, proto, canonname, sockaddr)``
-    # tuples; ``sockaddr[0]`` is the textual IP.
-    try:
-        infos = socket.getaddrinfo(hostname, None)
-    except socket.gaierror as err:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="URL hostname could not be resolved",
-        ) from err
-
-    for info in infos:
-        sockaddr = info[4]
-        ip_text = sockaddr[0]
-        try:
-            addr = ipaddress.ip_address(ip_text)
-        except ValueError as err:
-            # Defensive: if the resolver hands back
-            # something we can't parse, treat as unsafe.
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="URL resolves to an unparseable address",
-            ) from err
-        if _is_private_or_reserved(addr):
-            if _is_ssrf_allowlisted(hostname, addr):
-                # Audit trail: every allowlisted private
-                # destination is logged so operators can
-                # review what the SSRF exception is being
-                # used for.
-                core_logger.print_to_log(
-                    "SSRF allowlist hit: dialing private "
-                    f"address {ip_text} for host "
-                    f"{hostname} (purpose="
-                    f"{purpose or 'unspecified'})",
-                    "info",
-                )
-                continue
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="URL resolves to a non-public address",
-            )

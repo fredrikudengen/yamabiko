@@ -31,9 +31,6 @@ class TestReadServerSettings:
             signup_enabled=False,
             signup_require_admin_approval=True,
             signup_require_email_verification=True,
-            sso_enabled=False,
-            local_login_enabled=True,
-            sso_auto_redirect=False,
             tileserver_url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
             tileserver_attribution="&copy; OpenStreetMap",
             map_background_color="#dddddd",
@@ -138,9 +135,6 @@ class TestEditServerSettings:
         mock_updated_settings.signup_enabled = True
         mock_updated_settings.signup_require_admin_approval = False
         mock_updated_settings.signup_require_email_verification = True
-        mock_updated_settings.sso_enabled = False
-        mock_updated_settings.local_login_enabled = True
-        mock_updated_settings.sso_auto_redirect = False
         mock_updated_settings.tileserver_url = "https://tiles.example.com/{z}/{x}/{y}.png"
         mock_updated_settings.tileserver_attribution = "&copy; Example"
         mock_updated_settings.map_background_color = "#000000"
@@ -167,9 +161,6 @@ class TestEditServerSettings:
                 "signup_enabled": True,
                 "signup_require_admin_approval": False,
                 "signup_require_email_verification": True,
-                "sso_enabled": False,
-                "local_login_enabled": True,
-                "sso_auto_redirect": False,
                 "tileserver_url": "https://tiles.example.com/{z}/{x}/{y}.png",
                 "tileserver_attribution": "&copy; Example",
                 "map_background_color": "#000000",
@@ -209,9 +200,6 @@ class TestEditServerSettings:
                 "signup_enabled": True,
                 "signup_require_admin_approval": False,
                 "signup_require_email_verification": True,
-                "sso_enabled": False,
-                "local_login_enabled": True,
-                "sso_auto_redirect": False,
                 "tileserver_url": "https://tiles.example.com/{z}/{x}/{y}.png",
                 "tileserver_attribution": "&copy; Example",
                 "map_background_color": "#000000",

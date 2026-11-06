@@ -9,7 +9,6 @@ import hashlib
 from datetime import UTC, datetime, timedelta
 from fnmatch import fnmatch
 from threading import Event, Thread
-from types import SimpleNamespace
 
 import pytest
 from fastapi import HTTPException
@@ -698,67 +697,6 @@ class TestRedisAuthSecurityStores:
 
 class TestAuthRouterErrors:
     """Tests for auth router error responses."""
-
-    @pytest.mark.asyncio
-    async def test_login_rejects_partial_pkce_params(self):
-        """Test login rejects incomplete PKCE query parameters."""
-        endpoint = getattr(
-            auth_router.login_for_access_token,
-            "__wrapped__",
-            auth_router.login_for_access_token,
-        )
-
-        with pytest.raises(HTTPException) as exc_info:
-            await endpoint(
-                response=None,
-                request=None,
-                form_data=SimpleNamespace(
-                    username="testuser",
-                    password="Password1!",
-                ),
-                client_type="mobile",
-                failed_attempts=object(),
-                pending_mfa_store=object(),
-                password_hasher=object(),
-                token_manager=object(),
-                db=object(),
-                code_challenge="challenge",
-                code_challenge_method=None,
-            )
-
-        assert exc_info.value.status_code == 400
-        assert exc_info.value.detail == ("code_challenge and code_challenge_method must be provided together")
-
-    @pytest.mark.asyncio
-    async def test_mfa_verify_rejects_partial_pkce_params(self):
-        """Test MFA verify rejects incomplete PKCE parameters."""
-        endpoint = getattr(
-            auth_router.verify_mfa_and_login,
-            "__wrapped__",
-            auth_router.verify_mfa_and_login,
-        )
-
-        with pytest.raises(HTTPException) as exc_info:
-            await endpoint(
-                response=None,
-                request=None,
-                mfa_request=auth_schema.MFALoginRequest(
-                    username="testuser",
-                    mfa_code="123456",
-                ),
-                client_type="mobile",
-                failed_attempts=object(),
-                pending_mfa_store=object(),
-                identity_service=object(),
-                password_hasher=object(),
-                token_manager=object(),
-                db=object(),
-                code_challenge=None,
-                code_challenge_method="S256",
-            )
-
-        assert exc_info.value.status_code == 400
-        assert exc_info.value.detail == ("code_challenge and code_challenge_method must be provided together")
 
     @pytest.mark.asyncio
     async def test_invalid_mfa_response_hides_attempt_count(

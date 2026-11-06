@@ -29,9 +29,6 @@ class TestReadPublicServerSettings:
         mock_settings.currency = "euro"
         mock_settings.num_records_per_page = 25
         mock_settings.signup_enabled = False
-        mock_settings.sso_enabled = False
-        mock_settings.local_login_enabled = True
-        mock_settings.sso_auto_redirect = False
         mock_settings.tileserver_url = "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         mock_settings.tileserver_attribution = "&copy; OpenStreetMap"
         mock_settings.map_background_color = "#dddddd"
