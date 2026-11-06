@@ -506,37 +506,6 @@ class TestCreateSessionObject:
         assert result.ip_address == "192.168.1.1"
         assert result.token_family_id == session_id
         assert result.rotation_count == 0
-        assert result.tokens_exchanged is False
-
-    def test_create_session_object_with_oauth_state(self):
-        """
-        Test session object creation with OAuth state.
-        """
-        # Arrange
-        session_id = "test-session-id"
-        mock_user = MagicMock(spec=users_schema.UsersRead)
-        mock_user.id = 1
-
-        mock_request = MagicMock()
-        mock_request.headers.get.side_effect = lambda h, d=None: "Mozilla/5.0" if h == "user-agent" else d
-        mock_request.client.host = "192.168.1.1"
-
-        hashed_token = "hashed-refresh-token"
-        exp = datetime.now(UTC) + timedelta(days=7)
-        oauth_state_id = "oauth-state-123"
-
-        # Act
-        result = users_session_utils.create_session_object(
-            session_id,
-            mock_user,
-            mock_request,
-            hashed_token,
-            exp,
-            oauth_state_id=oauth_state_id,
-        )
-
-        # Assert
-        assert result.oauth_state_id == oauth_state_id
 
     def test_create_session_object_with_csrf_hash(self):
         """

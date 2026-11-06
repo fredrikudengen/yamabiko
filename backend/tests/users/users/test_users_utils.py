@@ -83,7 +83,7 @@ class TestCheckUserIsActive:
 class TestCreateUserDefaultData:
     """create_user_default_data: create default data for new user."""
 
-    def test_calls_all_five_crud_functions(self):
+    def test_creates_integrations_privacy_and_mfa(self):
         from users.users.utils import create_user_default_data
 
         mock_db = MagicMock(spec=Session)
@@ -92,15 +92,11 @@ class TestCreateUserDefaultData:
         with (
             patch("users.users_integrations.crud.create_user_integrations") as mock_integrations,
             patch("users.users_privacy_settings.crud.create_user_privacy_settings") as mock_privacy,
-            patch("health.health_targets.crud.create_health_targets") as mock_targets,
-            patch("users.users_default_gear.crud.create_user_default_gear") as mock_gear,
         ):
             create_user_default_data(1, mock_identity, mock_db)
 
         mock_integrations.assert_called_once_with(1, mock_db)
         mock_privacy.assert_called_once_with(1, mock_db)
-        mock_targets.assert_called_once_with(1, mock_db)
-        mock_gear.assert_called_once_with(1, mock_db)
         # MFA row is created through the auth boundary.
         mock_identity.initialize_user_mfa.assert_called_once_with(1)
 

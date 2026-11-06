@@ -293,7 +293,6 @@ def transform_schema_activity_to_model_activity(
         workout_rpe=activity.workout_rpe,
         calories=activity.calories,
         visibility=activity.visibility,
-        gear_id=activity.gear_id,
         strava_gear_id=activity.strava_gear_id,
         strava_activity_id=activity.strava_activity_id,
         garminconnect_activity_id=activity.garminconnect_activity_id,
@@ -384,7 +383,6 @@ def apply_visibility_mask(
         schema.town = None
         schema.country = None
     if schema.hide_gear:
-        schema.gear_id = None
         schema.strava_gear_id = None
         schema.garminconnect_gear_id = None
     return schema

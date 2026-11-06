@@ -139,7 +139,7 @@ class TestScopesJsonRoundTrip:
 
     def test_scopes_round_trip(self):
         """Test that serialising and deserialising scopes produces the same list."""
-        original = ["activities:read", "activities:upload", "gears:read"]
+        original = ["activities:read", "activities:upload", "activities:write"]
         serialised = auth_api_keys_utils.scopes_to_json(original)
         deserialised = auth_api_keys_utils.json_to_scopes(serialised)
         assert deserialised == original

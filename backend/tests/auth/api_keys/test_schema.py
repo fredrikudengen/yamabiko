@@ -88,7 +88,7 @@ class TestUsersApiKeyCreate:
         with pytest.raises(ValidationError) as exc_info:
             users_api_keys_schema.UsersApiKeyCreate(
                 name="Multi-scope Key",
-                scopes=["activities:read", "activities:upload", "gears:read"],
+                scopes=["activities:read", "activities:upload", "activities:write"],
             )
         assert "Unsupported API key scopes" in str(exc_info.value)
 

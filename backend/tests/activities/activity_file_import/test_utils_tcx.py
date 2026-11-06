@@ -107,7 +107,6 @@ class TestUtilsTcx:
             avg_power=None,
             max_power=None,
             norm_power=None,
-            gear_id=None,
             user_privacy_settings=_privacy_settings(),
         )
 
@@ -168,7 +167,6 @@ class TestUtilsTcx:
             avg_power=None,
             max_power=None,
             norm_power=None,
-            gear_id=None,
             user_privacy_settings=_privacy_settings(),
         )
 

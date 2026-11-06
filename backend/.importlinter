@@ -6,11 +6,7 @@ root_packages =
     activities
     core
     coverage_map
-    followers
-    gears
     google_health
-    health
-    notifications
     segments
     server_settings
     strava
@@ -25,11 +21,7 @@ source_modules =
     activities
     core
     coverage_map
-    followers
-    gears
     google_health
-    health
-    notifications
     segments
     server_settings
     strava
@@ -48,11 +40,7 @@ source_modules =
     activities
     core
     coverage_map
-    followers
-    gears
     google_health
-    health
-    notifications
     segments
     server_settings
     strava

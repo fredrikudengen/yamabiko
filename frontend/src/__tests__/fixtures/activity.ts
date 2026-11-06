@@ -32,7 +32,6 @@ export function makeActivity(overrides: Partial<Activity> = {}): Activity {
     activityType: 1,
     visibility: 0,
     isHidden: false,
-    gearId: null,
     startTime: '2024-05-01T07:00:00',
     city: 'Lisbon',
     town: null,

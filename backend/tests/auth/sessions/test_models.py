@@ -31,8 +31,6 @@ class TestUsersSessionsModel:
         assert hasattr(model, "created_at")
         assert hasattr(model, "last_activity_at")
         assert hasattr(model, "expires_at")
-        assert hasattr(model, "oauth_state_id")
-        assert hasattr(model, "tokens_exchanged")
         assert hasattr(model, "token_family_id")
         assert hasattr(model, "rotation_count")
         assert hasattr(model, "last_rotation_at")
@@ -89,7 +87,6 @@ class TestUsersSessionsModel:
         model = users_session_models.UsersSessions
 
         # Assert
-        assert model.oauth_state_id.nullable is True
         assert model.last_rotation_at.nullable is True
         assert model.csrf_token_hash.nullable is True
 
@@ -133,17 +130,6 @@ class TestUsersSessionsModel:
 
         # Assert
         assert hasattr(model, "rotated_refresh_tokens")
-
-    def test_users_sessions_model_tokens_exchanged_default(self):
-        """
-        Test UsersSessions model tokens_exchanged default value.
-        """
-        # Arrange
-        column = users_session_models.UsersSessions.tokens_exchanged
-
-        # Assert
-        assert column.default is not None
-        assert column.default.arg is False
 
     def test_users_sessions_model_rotation_count_default(self):
         """

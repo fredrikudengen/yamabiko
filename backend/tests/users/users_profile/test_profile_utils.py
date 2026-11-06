@@ -259,7 +259,7 @@ class TestInitializeOperationCounts:
         assert counts["media"] == 0
         assert counts["activities"] == 0
         assert counts["user"] == 0
-        assert len(counts) == 20
+        assert len(counts) == 13
 
     def test_with_user_count(self):
         counts = profile_utils.initialize_operation_counts(include_user_count=True)
@@ -277,15 +277,8 @@ class TestInitializeOperationCounts:
             "activity_workout_steps",
             "activity_media",
             "activity_exercise_titles",
-            "gears",
-            "gear_components",
-            "health_weight",
-            "health_targets",
             "user_images",
             "user",
-            "user_default_gear",
-            "user_goals",
-            "user_identity_providers",
             "user_integrations",
             "user_privacy_settings",
         }
