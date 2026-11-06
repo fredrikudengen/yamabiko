@@ -9,7 +9,6 @@ assignees: ''
 ## Checklist
 
 - [ ] I have searched **existing issues** to make sure this bug hasn't already been reported.
-- [ ] I have checked the **documentation** at [https://docs.endurain.com](https://docs.endurain.com) and didn't find a solution.
 
 ## Description
 

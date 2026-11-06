@@ -1,6 +1,6 @@
 # Brand & UX guidelines
 
-This page is the source of truth for Endurain's visual design, the brand
+This page is the source of truth for Yamabiko's visual design, the brand
 palette, typography, spacing, component primitives, and the UX patterns that
 keep screens consistent. Every component built or migrated for the frontend
 must follow it.
@@ -94,7 +94,7 @@ Slightly warm grays feel more organic and less "SaaS dashboard".
 ### Activity badge colors
 
 Each sport gets a consistent badge color so activities are recognizable when
-scanning a list. Endurain uses **conventional sport colors** (running red,
+scanning a list. Yamabiko uses **conventional sport colors** (running red,
 cycling green, swimming blue), apply them through the
 [`ActivityTypeBadge`](#activity-primitives) primitive rather than by hand.
 
@@ -178,7 +178,7 @@ across multiple colors:
 Build UI by composing the shared primitives in
 `frontend/src/components/ui/`, do not re-implement them. Notable building
 blocks include `button`, `card`, `input`, `label`, `select`, `switch`,
-`dialog`, `dropdown-menu`, `tabs`, `popover`, `badge`, plus the Endurain
+`dialog`, `dropdown-menu`, `tabs`, `popover`, `badge`, plus the Yamabiko
 specific primitives below.
 
 ### Activity primitives

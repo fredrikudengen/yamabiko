@@ -56,7 +56,7 @@ for dir in $REQUIRED_DIRS; do
             echo_error_log "Fix on the host - run once:"
             echo_error_log "  sudo chown -R $current_uid:$current_gid /var/opt/endurain/backend"
             echo_error_log "(Replace /var/opt/endurain with your LOCAL_PATH if set.)"
-            echo_error_log "See docs.endurain.com/getting-started#create-directory-structure"
+            echo_error_log "See the README, step 2 of Running it."
             exit 1
         fi
     fi

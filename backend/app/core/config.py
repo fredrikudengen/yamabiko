@@ -678,9 +678,8 @@ def check_deprecated_env_vars() -> None:
 
     message = (
         f"Deprecated environment variable(s) in use: {', '.join(found)}. "
-        "Remove them and restart. See "
-        "https://docs.endurain.com/getting-started/advanced-started/"
-        "#supported-environment-variables"
+        "Remove them and restart. Supported settings are listed in "
+        "backend/app/core/config.py."
     )
     raise OSError(message)
 

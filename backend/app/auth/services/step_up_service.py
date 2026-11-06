@@ -51,13 +51,10 @@ def verify_step_up_credentials(
     caller to re-prove possession of the current password and —
     when MFA is enabled — a fresh TOTP or backup code.
 
-    SSO-only accounts have no local password (no row in
-    ``users_local_credentials``). For those callers the password
-    factor is skipped because there is nothing to verify against. The
-    correct fix is to require a fresh IdP re-authentication for
-    SSO-only accounts; this is not yet implemented.
-    TODO(issue): create and link a tracker issue for fresh IdP
-    re-auth on SSO-only step-up. Documented in
+    Accounts without a local password (no row in
+    ``users_local_credentials``) skip the password factor because there
+    is nothing to verify against. Only SSO created such accounts, and
+    SSO has been removed. Documented in
     ``docs/developer-guide/auth-boundary.md``.
 
     Failed verifications are tracked per-user with progressive
@@ -69,8 +66,8 @@ def verify_step_up_credentials(
     Args:
         user_id: ID of the authenticated user.
         current_password: The user's current password as supplied
-            in the request body. May be ``None`` for SSO-only
-            accounts.
+            in the request body. May be ``None`` for accounts
+            without a local password.
         mfa_code: TOTP or backup code, required when MFA is
             enabled. Ignored when MFA is disabled.
         identity_service: Identity service dependency.
@@ -128,7 +125,7 @@ def verify_step_up_credentials(
                 detail="Step-up verification failed",
                 headers={"WWW-Authenticate": "Bearer"},
             )
-    # else: SSO-only account; no password to verify. See docstring
+    # else: no local password to verify. See docstring
     # and docs/developer-guide/auth-boundary.md "Known Structural Debt".
 
     if mfa_service.is_mfa_enabled_for_user(user_id, db):

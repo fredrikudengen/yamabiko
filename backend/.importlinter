@@ -5,11 +5,13 @@ root_packages =
     users
     activities
     core
+    coverage_map
     followers
-    garmin
     gears
+    google_health
     health
     notifications
+    segments
     server_settings
     strava
     websocket
@@ -22,11 +24,13 @@ source_modules =
     users
     activities
     core
+    coverage_map
     followers
-    garmin
     gears
+    google_health
     health
     notifications
+    segments
     server_settings
     strava
     websocket
@@ -43,22 +47,21 @@ source_modules =
     users
     activities
     core
+    coverage_map
     followers
-    garmin
     gears
+    google_health
     health
     notifications
+    segments
     server_settings
     strava
     websocket
 forbidden_modules =
     auth.password_reset_tokens.crud
-    auth.sign_up_tokens.crud
     auth.sessions.crud
     auth.mfa.crud
     auth.mfa.backup_codes.crud
-    auth.identity_providers.links.crud
-    auth.identity_providers.link_tokens.crud
     auth.credentials.crud
     auth.security_stores
     auth.services

@@ -11,7 +11,7 @@ Non-auth modules must consume auth **only** through these public entry points:
 
 `IdentityService` exposes both credential resolution (e.g. `resolve_from_access_token`,
 `resolve_from_api_key`) and the higher-level account-security workflows (sessions,
-password change, MFA lifecycle, IdP linking). Non-auth modules call these methods on
+password change, MFA lifecycle). Non-auth modules call these methods on
 the injected `IdentityService`; they do **not** import the implementations.
 
 The workflow implementations live in `auth.services.*` (see *Auth Service Modules*
@@ -55,14 +55,10 @@ Auth-owned modules include:
 - Sessions and rotated refresh tokens (`auth.sessions`)
 - API keys (`auth.api_keys`)
 - MFA setup state, TOTP logic, and backup-code lifecycle (`auth.mfa`, `auth.mfa.backup_codes`)
-- OAuth state and IdP link tokens (`auth.oauth_state`, `auth.identity_providers.link_tokens`)
-- Identity-provider config, links, and link tokens (`auth.identity_providers`, `auth.identity_providers.links`, `auth.identity_providers.link_tokens`)
 - Password reset tokens (`auth.password_reset_tokens`)
-- Sign-up verification tokens (`auth.sign_up_tokens`)
 - Step-up credential verification with lockout (`auth.services.step_up_service`)
 - Password change workflows (`auth.services.account_security_service`)
 - MFA management workflows (`auth.services.mfa_workflow`)
-- Identity-link management workflows (`auth.services.identity_link_service`)
 
 Users/profile-owned modules include:
 
@@ -84,7 +80,6 @@ the boundary.
 | ----------------- | -------------- | ----------------------------- |
 | `auth.services.account_security_service` | `change_own_password`, `change_managed_user_password`, session listing/revocation | `get_user_sessions`, `delete_user_session`, `change_own_password`, `change_managed_user_password` |
 | `auth.services.mfa_workflow` | MFA status, setup, enable, disable, backup-code status and regeneration | `get_mfa_status`, `setup_mfa`, `enable_mfa`, `disable_mfa`, `verify_mfa`, `get_backup_code_status`, `generate_backup_codes` |
-| `auth.services.identity_link_service` | IdP link listing, token generation, link removal, browser-redirect claiming, link counts | `get_user_identity_provider_links`, `generate_link_token`, `delete_identity_provider_link`, `validate_and_claim_browser_link_token`, `get_identity_link_counts_for_users` |
 | `auth.services.step_up_service` | `verify_step_up_credentials` with progressive lockout (5/5 min, 10/30 min, 15/2 hr) | used internally by the workflow modules above |
 
 ## Service Placement Rule
@@ -109,12 +104,9 @@ The backend import-linter enforces two key constraints:
 2. Non-auth modules cannot import low-level ownership modules or the internal
    workflow layer directly:
    - `auth.password_reset_tokens.crud`
-   - `auth.sign_up_tokens.crud`
    - `auth.sessions.crud`
    - `auth.mfa.crud`
    - `auth.mfa.backup_codes.crud`
-   - `auth.identity_providers.links.crud`
-   - `auth.identity_providers.link_tokens.crud`
    - `auth.credentials.crud`
    - `auth.security_stores`
    - `auth.services`
@@ -127,27 +119,12 @@ allow-listed in `backend/.importlinter`.
 
 `IdentityService` does not own transaction policy. It delegates DB operations to auth CRUD helpers, and those helpers own commit/refresh behavior. When callers need multi-step atomic workflows, use dedicated CRUD/service helpers designed for that workflow.
 
-## Identity-Link Database Constraints
-
-The `auth.identity_providers.links` table enforces uniqueness at the database level via two named constraints:
-
-| Constraint | Columns | Purpose |
-| ---------- | ------- | ------- |
-| `uq_identity_links_user_idp` | `(user_id, idp_id)` | Prevents a user from linking the same provider more than once |
-| `uq_identity_links_idp_subject` | `(idp_id, idp_subject)` | Prevents the same external identity from being linked to more than one Endurain account |
-
-Duplicate link attempts return HTTP 409. These constraints were added in migration `v0_18_1` (revision `a1b2c3d4e5f6`).
-
 ## Known Structural Debt
 
-These items are intentionally deferred and tracked here for contributor awareness.
+### Step-up for accounts without a local password
 
-### Step-up verification gap for SSO-only accounts
-
-SSO-only accounts (no local password) skip the password factor in
-`auth.services.step_up_service.verify_step_up_credentials`. MFA still gates if
-enabled, but an SSO-only user with no MFA configured receives no step-up challenge.
-
-The correct fix is to require a fresh IdP re-authentication for SSO-only accounts
-on the same sensitive-endpoint set. This is not yet implemented.
-TODO(issue): create and link a tracker issue for fresh IdP re-auth on SSO-only step-up.
+`auth.services.step_up_service.verify_step_up_credentials` skips the password
+factor when the account has no local password (no row in
+`users_local_credentials`). Such accounts came from SSO, which Yamabiko has
+removed, and they can no longer sign in, so the gap is theoretical. MFA still
+gates if enabled.
