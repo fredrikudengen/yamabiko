@@ -6,7 +6,6 @@ from unittest.mock import MagicMock, patch
 import pytest
 from fastapi import HTTPException, Response
 
-import auth.schema as auth_schema
 import auth.utils as auth_utils
 
 
@@ -515,46 +514,3 @@ class TestClearRefreshTokenCookies:
             lower = header.lower()
             assert "httponly" in lower
             assert "samesite=strict" in lower
-
-
-class TestCreateMobilePkceSessionResponse:
-    """Tests for create_mobile_pkce_session_response."""
-
-    def test_invalid_code_challenge_method_raises_400(self, password_hasher, mock_db):
-        with pytest.raises(HTTPException) as exc_info:
-            auth_utils.create_mobile_pkce_session_response(
-                response=Response(),
-                request=MagicMock(),
-                user=MagicMock(),
-                code_challenge="abc",
-                code_challenge_method="plain",
-                password_hasher=password_hasher,
-                db=mock_db,
-            )
-        assert exc_info.value.status_code == 400
-
-    def test_valid_code_challenge_creates_session(self, password_hasher, mock_db):
-        response = Response()
-        mock_request = MagicMock()
-        mock_request.client.host = "127.0.0.1"
-        mock_user = MagicMock()
-        mock_user.id = 1
-
-        with (
-            patch("auth.utils.idp_utils.validate_pkce_challenge"),
-            patch("auth.utils.oauth_state_crud.create_oauth_state"),
-            patch("auth.utils.auth_sessions_utils.create_session"),
-        ):
-            result = auth_utils.create_mobile_pkce_session_response(
-                response=response,
-                request=mock_request,
-                user=mock_user,
-                code_challenge="E9Melhoa2OwvFrEMTJguCHaoeK1t8URWbuGJSstw-cM",
-                code_challenge_method="S256",
-                password_hasher=password_hasher,
-                db=mock_db,
-            )
-
-        assert isinstance(result, auth_schema.MobileSessionResponse)
-        assert result.session_id is not None
-        assert result.mfa_required is False

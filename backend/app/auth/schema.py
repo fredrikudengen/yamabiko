@@ -62,23 +62,6 @@ class MFARequiredResponse(BaseModel):
     message: StrictStr = "MFA verification required"
 
 
-class MobileSessionResponse(BaseModel):
-    """
-    Response for mobile password login with PKCE exchange flow.
-
-    Attributes:
-        session_id: Session identifier for token exchange.
-        mfa_required: Whether MFA is required.
-        message: Instructions for the client on next steps.
-    """
-
-    model_config = ConfigDict(extra="forbid")
-
-    session_id: StrictStr
-    mfa_required: StrictBool = False
-    message: StrictStr = "Complete authentication by exchanging tokens at /public/idp/session/{session_id}/tokens"
-
-
 class TokenResponseWeb(BaseModel):
     """
     Token response payload for web clients.

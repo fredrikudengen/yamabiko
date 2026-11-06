@@ -4,8 +4,8 @@ Provides the FastAPI router, JWT token issuance and validation,
 password hashing, scope enforcement, API-key validation, and the
 progressive-lockout stores used during login and MFA verification.
 
-Persistence-bearing concerns (identity providers, IdP link tokens,
-MFA backup codes, OAuth state) live in dedicated sub-packages and
+Persistence-bearing concerns (MFA backup codes, sessions, API keys)
+live in dedicated sub-packages and
 expose their own models, schemas, and CRUD modules.
 
 Exports:
@@ -23,7 +23,7 @@ Exports:
       Scope enforcement (``check_scopes``) is provided by
       :mod:`auth.dependencies`, which resolves the full principal.
     - Schemas: ``LoginRequest``, ``MFALoginRequest``,
-      ``MFARequiredResponse``, ``MobileSessionResponse``,
+      ``MFARequiredResponse``,
       ``TokenResponseWeb``, ``TokenResponseMobile``,
       ``LogoutResponse``
     - Stores: ``PendingMFALogin``, ``RedisPendingMFALogin``,
@@ -32,7 +32,6 @@ Exports:
       ``cleanup_expired_pending_mfa_logins``,
       ``clear_pending_mfa_for_user``
     - Helpers: ``authenticate_user``, ``complete_login``,
-      ``create_tokens``, ``create_mobile_pkce_session_response``
 """
 
 # Ensure the auth-owned credential ORM model is registered with SQLAlchemy's
@@ -63,7 +62,6 @@ from .schema import (
     LogoutResponse,
     MFALoginRequest,
     MFARequiredResponse,
-    MobileSessionResponse,
     TokenResponseMobile,
     TokenResponseWeb,
 )
@@ -86,7 +84,6 @@ from .token_manager import TokenManager, TokenType, get_token_manager
 from .utils import (
     authenticate_user,
     complete_login,
-    create_mobile_pkce_session_response,
     create_tokens,
 )
 
@@ -99,7 +96,6 @@ __all__ = [
     "LogoutResponse",
     "MFALoginRequest",
     "MFARequiredResponse",
-    "MobileSessionResponse",
     # Password hashing
     "PasswordHasher",
     "PasswordPolicyError",
@@ -122,7 +118,6 @@ __all__ = [
     "clear_pending_mfa_for_user",
     "complete_login",
     "create_auth_security_stores",
-    "create_mobile_pkce_session_response",
     "create_tokens",
     "get_failed_login_attempts",
     "get_password_hasher",

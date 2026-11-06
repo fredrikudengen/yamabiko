@@ -9,7 +9,6 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from core.database import Base
 
 if TYPE_CHECKING:
-    from auth.oauth_state.models import OAuthState
     from auth.sessions.rotated_refresh_tokens.models import (
         RotatedRefreshToken,
     )
@@ -33,7 +32,7 @@ class UsersSessions(Base):
         last_activity_at: Last activity timestamp for idle
             timeout.
         expires_at: Session expiration timestamp.
-        oauth_state_id: Link to OAuth state for PKCE validation.
+        oauth_state_id: Unused since SSO was removed; kept until the table is dropped.
         tokens_exchanged: Prevents duplicate token exchange for
             mobile.
         token_family_id: UUID identifying token family for reuse
@@ -43,7 +42,6 @@ class UsersSessions(Base):
         last_rotation_at: Timestamp of last token rotation.
         csrf_token_hash: Hashed CSRF token for refresh
             validation.
-        oauth_state: Relationship to OAuthState model.
         rotated_refresh_tokens: Relationship to
             RotatedRefreshToken model.
     """
@@ -145,9 +143,6 @@ class UsersSessions(Base):
         nullable=True,
         comment="Hashed CSRF token for refresh validation",
     )
-
-    # Relationship to OAuthState model
-    oauth_state: Mapped["OAuthState | None"] = relationship(back_populates="users_sessions")
 
     # Relationship to RotatedRefreshToken model
     rotated_refresh_tokens: Mapped[list["RotatedRefreshToken"]] = relationship(

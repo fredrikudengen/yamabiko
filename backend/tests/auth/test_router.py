@@ -310,53 +310,6 @@ class TestLoginEndpoint:
         assert data["mfa_required"] is True
         assert data["username"] == "mfauser"
 
-    def test_login_partial_pkce_returns_400(self, auth_client, auth_app):
-        """Partial PKCE params on mobile returns 400."""
-        auth_app.state._client_type = "mobile"
-
-        response = auth_client.post(
-            "/auth/login?code_challenge=abc",
-            data={"username": "user", "password": "Password1!"},
-        )
-
-        assert response.status_code == 400
-        assert "together" in response.json()["detail"]
-
-    @patch("auth.router.auth_utils.create_mobile_pkce_session_response")
-    @patch("auth.router.mfa_service.is_mfa_enabled_for_user")
-    @patch("auth.router.users_utils.check_user_is_active")
-    @patch("auth.router.auth_utils.authenticate_user")
-    def test_login_mobile_pkce_returns_session_response(
-        self,
-        mock_auth,
-        mock_check_active,
-        mock_mfa_check,
-        mock_pkce,
-        auth_client,
-        auth_app,
-    ):
-        """Mobile with PKCE returns session_id for exchange."""
-        auth_app.state._client_type = "mobile"
-        mock_user = MagicMock()
-        mock_user.id = 1
-        mock_auth.return_value = mock_user
-        mock_check_active.return_value = None
-        mock_mfa_check.return_value = False
-        mock_pkce.return_value = {
-            "session_id": "pkce-sid",
-            "mfa_required": False,
-            "message": "Complete authentication...",
-        }
-
-        challenge = "E9Melhoa2OwvFrEMTJguCHaoeK1t8URWbuGJSstw-cM"
-        response = auth_client.post(
-            f"/auth/login?code_challenge={challenge}&code_challenge_method=S256",
-            data={"username": "user", "password": "Password1!"},
-        )
-
-        assert response.status_code == 200
-        assert response.json()["session_id"] == "pkce-sid"
-
     def test_login_store_unavailable_on_is_locked_out_returns_503(
         self,
         auth_client,
@@ -815,51 +768,10 @@ class TestMFAVerifyEndpoint:
         assert response.status_code == 503
         assert "unavailable" in response.json()["detail"].lower()
 
-    @patch("auth.router.auth_utils.create_mobile_pkce_session_response")
-    @patch("auth.router.users_utils.check_user_is_active")
-    @patch("auth.router.users_crud.get_user_by_id")
-    @patch("auth.router.mfa_service.verify_user_mfa")
-    def test_mfa_verify_mobile_pkce_returns_session_response(
-        self,
-        mock_verify_mfa,
-        mock_get_user,
-        mock_check_active,
-        mock_pkce,
-        auth_client,
-        auth_app,
-        fake_pending_mfa_store,
-    ):
-        """Mobile PKCE flow after MFA returns session response."""
-        auth_app.state._client_type = "mobile"
-        fake_pending_mfa_store.add_pending_login("testuser", 1)
-        mock_verify_mfa.return_value = True
-        mock_user = MagicMock()
-        mock_user.id = 1
-        mock_get_user.return_value = mock_user
-        mock_check_active.return_value = None
-        mock_pkce.return_value = {
-            "session_id": "pkce-sid-mfa",
-            "mfa_required": False,
-            "message": "Complete authentication...",
-        }
-        challenge = "E9Melhoa2OwvFrEMTJguCHaoeK1t8URWbuGJSstw-cM"
-        response = auth_client.post(
-            f"/auth/mfa/verify?code_challenge={challenge}&code_challenge_method=S256",
-            json={"username": "testuser", "mfa_code": "123456"},
-        )
-        assert response.status_code == 200
-        assert response.json()["session_id"] == "pkce-sid-mfa"
-
-
-# ------------------------------------------------------------------
-# POST /auth/refresh
-# ------------------------------------------------------------------
-
 
 class TestRefreshEndpoint:
     """Tests for POST /auth/refresh endpoint."""
 
-    @patch("auth.router.idp_utils.refresh_idp_tokens_if_needed")
     @patch("auth.router.auth_sessions_utils.edit_session")
     @patch("auth.router.auth_utils.create_tokens")
     @patch("auth.router.auth_utils.set_refresh_token_cookie")
@@ -880,7 +792,6 @@ class TestRefreshEndpoint:
         mock_set_cookie,
         mock_create_tokens,
         mock_edit_session,
-        mock_idp_refresh,
         auth_client,
         auth_app,
         password_hasher,
@@ -914,7 +825,6 @@ class TestRefreshEndpoint:
             "new-csrf",
         )
         mock_edit_session.return_value = None
-        mock_idp_refresh.return_value = None
 
         # Need to override refresh-specific dependencies
         app = auth_app
@@ -1016,7 +926,6 @@ class TestRefreshEndpoint:
         assert "reuse" in response.json()["detail"].lower()
         mock_invalidate.assert_called_once()
 
-    @patch("auth.router.idp_utils.refresh_idp_tokens_if_needed")
     @patch("auth.router.auth_sessions_utils.edit_session")
     @patch("auth.router.auth_utils.create_tokens")
     @patch("auth.router.auth_utils.set_refresh_token_cookie")
@@ -1039,7 +948,6 @@ class TestRefreshEndpoint:
         mock_set_cookie,
         mock_create_tokens,
         mock_edit_session,
-        mock_idp_refresh,
         auth_client,
         auth_app,
         password_hasher,
@@ -1058,7 +966,6 @@ class TestRefreshEndpoint:
             mock_set_cookie: Mock for set_refresh_token_cookie.
             mock_create_tokens: Mock for create_tokens.
             mock_edit_session: Mock for edit_session.
-            mock_idp_refresh: Mock for refresh_idp_tokens_if_needed.
             auth_client: TestClient for the auth app.
             auth_app: FastAPI test application.
             password_hasher: Real password hasher fixture.
@@ -1094,7 +1001,6 @@ class TestRefreshEndpoint:
             "new-csrf",
         )
         mock_edit_session.return_value = None
-        mock_idp_refresh.return_value = None
 
         app = auth_app
         app.dependency_overrides[auth_security.validate_refresh_token] = lambda: None
@@ -1164,7 +1070,6 @@ class TestRefreshEndpoint:
         mock_store_rotated.assert_not_called()
         mock_edit_session.assert_not_called()
 
-    @patch("auth.router.idp_utils.refresh_idp_tokens_if_needed")
     @patch("auth.router.auth_sessions_utils.edit_session")
     @patch("auth.router.auth_utils.create_tokens")
     @patch("auth.router.auth_utils.set_refresh_token_cookie")
@@ -1185,7 +1090,6 @@ class TestRefreshEndpoint:
         mock_set_cookie,
         mock_create_tokens,
         mock_edit_session,
-        mock_idp_refresh,
         auth_client,
         auth_app,
         password_hasher,
@@ -1203,7 +1107,6 @@ class TestRefreshEndpoint:
             mock_set_cookie: Mock for set_refresh_token_cookie.
             mock_create_tokens: Mock for create_tokens.
             mock_edit_session: Mock for edit_session.
-            mock_idp_refresh: Mock for refresh_idp_tokens_if_needed.
             auth_client: TestClient for the auth app.
             auth_app: FastAPI test application.
             password_hasher: Real password hasher fixture.
@@ -1238,7 +1141,6 @@ class TestRefreshEndpoint:
             "new-csrf",
         )
         mock_edit_session.return_value = None
-        mock_idp_refresh.return_value = None
 
         app = auth_app
         app.dependency_overrides[auth_security.validate_refresh_token] = lambda: None
@@ -1254,7 +1156,6 @@ class TestRefreshEndpoint:
         assert response.json()["access_token"] == "new-at"
 
     @patch("auth.router.auth_sessions_utils.verify_csrf_token")
-    @patch("auth.router.idp_utils.refresh_idp_tokens_if_needed")
     @patch("auth.router.auth_sessions_utils.edit_session")
     @patch("auth.router.auth_utils.create_tokens")
     @patch("auth.router.auth_utils.set_refresh_token_cookie")
@@ -1275,7 +1176,6 @@ class TestRefreshEndpoint:
         mock_set_cookie,
         mock_create_tokens,
         mock_edit_session,
-        mock_idp_refresh,
         mock_verify_csrf,
         auth_client,
         auth_app,
@@ -1294,7 +1194,6 @@ class TestRefreshEndpoint:
             mock_set_cookie: Mock for set_refresh_token_cookie.
             mock_create_tokens: Mock for create_tokens.
             mock_edit_session: Mock for edit_session.
-            mock_idp_refresh: Mock for refresh_idp_tokens_if_needed.
             mock_verify_csrf: Mock for verify_csrf_token.
             auth_client: TestClient for the auth app.
             auth_app: FastAPI test application.
@@ -1331,7 +1230,6 @@ class TestRefreshEndpoint:
             None,
         )
         mock_edit_session.return_value = None
-        mock_idp_refresh.return_value = None
 
         app = auth_app
         app.dependency_overrides[auth_security.validate_refresh_token] = lambda: None
@@ -1346,50 +1244,6 @@ class TestRefreshEndpoint:
         mock_verify_csrf.assert_not_called()
         mock_set_cookie.assert_not_called()
         assert "refresh_token" in response.json()
-
-    @patch("auth.router.auth_sessions_utils.validate_session_timeout")
-    @patch("auth.router.auth_sessions_crud.get_session_by_id_not_expired")
-    def test_refresh_pending_pkce_no_refresh_token_returns_401(
-        self,
-        mock_get_session,
-        mock_validate_timeout,
-        auth_client,
-        auth_app,
-    ):
-        """
-        Session without refresh_token (pending PKCE) returns 401.
-
-        Args:
-            mock_get_session: Mock for get_session_by_id_not_expired.
-            mock_validate_timeout: Mock for validate_session_timeout.
-            auth_client: TestClient for the auth app.
-            auth_app: FastAPI test application.
-
-        Returns:
-            None.
-
-        Raises:
-            AssertionError: If response status is not 401.
-        """
-        mock_session = MagicMock()
-        mock_session.id = "sid-pkce"
-        mock_session.user_id = 1
-        mock_session.refresh_token = None
-        mock_session.csrf_token_hash = None
-        mock_get_session.return_value = mock_session
-        mock_validate_timeout.return_value = None
-
-        app = auth_app
-        app.dependency_overrides[auth_security.validate_refresh_token] = lambda: None
-        app.dependency_overrides[auth_security.get_sub_from_refresh_token] = lambda: 1
-        app.dependency_overrides[auth_security.get_sid_from_refresh_token] = lambda: "sid-pkce"
-        app.dependency_overrides[auth_security.get_and_return_refresh_token] = lambda: "rt"
-        app.dependency_overrides[auth_security.header_csrf_token_scheme] = lambda: None
-
-        response = auth_client.post("/auth/refresh")
-
-        assert response.status_code == 401
-        assert "PKCE" in response.json()["detail"]
 
     @patch("auth.router.auth_sessions_rotated_tokens_utils.store_rotated_token")
     @patch("auth.router.auth_sessions_utils.edit_session")
@@ -1516,7 +1370,6 @@ class TestRefreshEndpoint:
         assert response.status_code == 401
         assert "authenticate" in response.json()["detail"].lower()
 
-    @patch("auth.router.idp_utils.refresh_idp_tokens_if_needed")
     @patch("auth.router.auth_sessions_utils.edit_session")
     @patch("auth.router.auth_utils.create_tokens")
     @patch("auth.router.auth_utils.set_refresh_token_cookie")
@@ -1537,7 +1390,6 @@ class TestRefreshEndpoint:
         mock_set_cookie,
         mock_create_tokens,
         mock_edit_session,
-        mock_idp_refresh,
         auth_client,
         auth_app,
         password_hasher,
@@ -1555,7 +1407,6 @@ class TestRefreshEndpoint:
             mock_set_cookie: Mock for set_refresh_token_cookie.
             mock_create_tokens: Mock for create_tokens.
             mock_edit_session: Mock for edit_session.
-            mock_idp_refresh: Mock for refresh_idp_tokens_if_needed.
             auth_client: TestClient for the auth app.
             auth_app: FastAPI test application.
             password_hasher: Real password hasher fixture.
@@ -1591,7 +1442,6 @@ class TestRefreshEndpoint:
             None,
         )
         mock_edit_session.return_value = None
-        mock_idp_refresh.return_value = None
 
         app = auth_app
         app.dependency_overrides[auth_security.validate_refresh_token] = lambda: None
@@ -1802,14 +1652,12 @@ class TestRefreshEndpoint:
 class TestLogoutEndpoint:
     """Tests for POST /auth/logout endpoint."""
 
-    @patch("auth.router.idp_utils.clear_all_idp_tokens")
     @patch("auth.router.auth_sessions_crud.delete_session")
     @patch("auth.router.auth_sessions_crud.get_session_by_id_not_expired")
     def test_logout_success(
         self,
         mock_get_session,
         mock_delete_session,
-        mock_clear_idp,
         auth_client,
         auth_app,
         password_hasher,
@@ -1820,7 +1668,6 @@ class TestLogoutEndpoint:
         mock_session.refresh_token = password_hasher.hash_password("mock_refresh_token")
         mock_get_session.return_value = mock_session
         mock_delete_session.return_value = None
-        mock_clear_idp.return_value = None
 
         app = auth_app
         app.dependency_overrides[auth_security.validate_refresh_token] = lambda: None
@@ -1900,52 +1747,13 @@ class TestLogoutEndpoint:
         assert response.status_code == 200
         mock_delete_session.assert_not_called()
 
-    @patch("auth.router.auth_sessions_crud.get_session_by_id_not_expired")
-    def test_logout_pending_pkce_no_refresh_token_returns_401(
-        self,
-        mock_get_session,
-        auth_client,
-        auth_app,
-    ):
-        """
-        Session without refresh_token (pending PKCE) returns 401.
-
-        Args:
-            mock_get_session: Mock for get_session_by_id_not_expired.
-            auth_client: TestClient for the auth app.
-            auth_app: FastAPI test application.
-
-        Returns:
-            None.
-
-        Raises:
-            AssertionError: If response status is not 401.
-        """
-        mock_session = MagicMock()
-        mock_session.id = "sid-pkce"
-        mock_session.refresh_token = None
-        mock_get_session.return_value = mock_session
-
-        app = auth_app
-        app.dependency_overrides[auth_security.validate_refresh_token] = lambda: None
-        app.dependency_overrides[auth_security.get_sub_from_refresh_token] = lambda: 1
-        app.dependency_overrides[auth_security.get_sid_from_refresh_token] = lambda: "sid-pkce"
-        app.dependency_overrides[auth_security.get_and_return_refresh_token] = lambda: "rt"
-
-        response = auth_client.post("/auth/logout")
-
-        assert response.status_code == 401
-        assert "PKCE" in response.json()["detail"]
-
     @patch("auth.router.auth_utils.clear_refresh_token_cookies")
-    @patch("auth.router.idp_utils.clear_all_idp_tokens")
     @patch("auth.router.auth_sessions_crud.delete_session")
     @patch("auth.router.auth_sessions_crud.get_session_by_id_not_expired")
     def test_logout_web_clears_refresh_cookies(
         self,
         mock_get_session,
         mock_delete_session,
-        mock_clear_idp,
         mock_clear_cookies,
         auth_client,
         auth_app,
@@ -1957,7 +1765,6 @@ class TestLogoutEndpoint:
         Args:
             mock_get_session: Mock for get_session_by_id_not_expired.
             mock_delete_session: Mock for delete_session.
-            mock_clear_idp: Mock for clear_all_idp_tokens.
             mock_clear_cookies: Mock for clear_refresh_token_cookies.
             auth_client: TestClient for the auth app.
             auth_app: FastAPI test application.
@@ -1974,7 +1781,6 @@ class TestLogoutEndpoint:
         mock_session.refresh_token = password_hasher.hash_password("mock_rt")
         mock_get_session.return_value = mock_session
         mock_delete_session.return_value = None
-        mock_clear_idp.return_value = None
 
         app = auth_app
         app.dependency_overrides[auth_security.validate_refresh_token] = lambda: None
@@ -1988,14 +1794,12 @@ class TestLogoutEndpoint:
         mock_clear_cookies.assert_called_once()
 
     @patch("auth.router.auth_utils.clear_refresh_token_cookies")
-    @patch("auth.router.idp_utils.clear_all_idp_tokens")
     @patch("auth.router.auth_sessions_crud.delete_session")
     @patch("auth.router.auth_sessions_crud.get_session_by_id_not_expired")
     def test_logout_mobile_succeeds_without_cookie_clearing(
         self,
         mock_get_session,
         mock_delete_session,
-        mock_clear_idp,
         mock_clear_cookies,
         auth_client,
         auth_app,
@@ -2007,7 +1811,6 @@ class TestLogoutEndpoint:
         Args:
             mock_get_session: Mock for get_session_by_id_not_expired.
             mock_delete_session: Mock for delete_session.
-            mock_clear_idp: Mock for clear_all_idp_tokens.
             mock_clear_cookies: Mock for clear_refresh_token_cookies.
             auth_client: TestClient for the auth app.
             auth_app: FastAPI test application.
@@ -2025,7 +1828,6 @@ class TestLogoutEndpoint:
         mock_session.refresh_token = password_hasher.hash_password("mock_rt")
         mock_get_session.return_value = mock_session
         mock_delete_session.return_value = None
-        mock_clear_idp.return_value = None
 
         app = auth_app
         app.dependency_overrides[auth_security.validate_refresh_token] = lambda: None

@@ -19,7 +19,7 @@ describe('accessibleSettingsZones', () => {
     expect(zones.some((zone) => zone.name === 'settings-goals')).toBe(false)
     expect(zones.some((zone) => zone.name === 'settings-security')).toBe(true)
     expect(zones.some((zone) => zone.name === 'settings-users')).toBe(false)
-    expect(zones.some((zone) => zone.name === 'settings-idp')).toBe(true)
+    expect(zones.some((zone) => zone.name === 'settings-idp')).toBe(false)
     expect(zones.some((zone) => zone.name === 'settings-server')).toBe(true)
   })
 

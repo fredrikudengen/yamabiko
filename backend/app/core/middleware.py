@@ -116,9 +116,7 @@ class CSRFMiddleware(BaseHTTPMiddleware):
             "/api/v1/sign-up/request",
             "/api/v1/sign-up/confirm",
         ]
-        self.exempt_path_prefixes = [
-            "/api/v1/public/idp/session/",
-        ]
+        self.exempt_path_prefixes: list[str] = []
 
     async def dispatch(
         self,

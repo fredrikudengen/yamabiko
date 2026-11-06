@@ -11,7 +11,6 @@ from core.database import Base
 
 if TYPE_CHECKING:
     from auth.identity_providers.models import IdentityProvider
-    from auth.sessions.models import UsersSessions
 
 
 class OAuthState(Base):
@@ -36,7 +35,6 @@ class OAuthState(Base):
         expires_at: Hard expiry at 10 minutes.
         used: Prevents replay attacks.
         identity_provider: Relationship to IdentityProvider model.
-        users_sessions: Relationship to UsersSessions model.
     """
 
     __tablename__ = "oauth_states"
@@ -126,4 +124,3 @@ class OAuthState(Base):
     identity_provider: Mapped["IdentityProvider | None"] = relationship(
         "IdentityProvider", back_populates="oauth_states"
     )
-    users_sessions: Mapped[list["UsersSessions"]] = relationship("UsersSessions", back_populates="oauth_state")

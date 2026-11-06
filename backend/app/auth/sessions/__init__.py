@@ -13,9 +13,7 @@ from .crud import (
     edit_session,
     get_session_by_id,
     get_session_by_id_not_expired,
-    get_session_with_oauth_state,
     get_user_sessions,
-    mark_tokens_exchanged,
 )
 from .models import UsersSessions as UsersSessionsModel
 from .schema import (
@@ -51,10 +49,8 @@ __all__ = [
     "edit_session_object",
     "get_session_by_id",
     "get_session_by_id_not_expired",
-    "get_session_with_oauth_state",
     "get_user_agent",
     "get_user_sessions",
-    "mark_tokens_exchanged",
     "parse_user_agent",
     "validate_session_timeout",
 ]

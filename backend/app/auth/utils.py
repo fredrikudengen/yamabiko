@@ -1,8 +1,7 @@
 """Authentication utilities for the auth router.
 
 Provides credential verification, JWT/CSRF token creation, and the
-``complete_login`` / ``create_mobile_pkce_session_response`` helpers used by
-both password and PKCE login flows.
+``complete_login`` helper used by the password login flow.
 """
 
 from datetime import UTC, datetime, timedelta
@@ -19,15 +18,10 @@ from sqlalchemy.orm import Session
 
 import auth.constants as auth_constants
 import auth.credentials.crud as auth_credentials_crud
-import auth.identity_providers.utils as idp_utils
-import auth.oauth_state.crud as oauth_state_crud
-import auth.oauth_state.utils as oauth_state_utils
 import auth.password_hasher as auth_password_hasher
-import auth.schema as auth_schema
 import auth.sessions.utils as auth_sessions_utils
 import auth.token_manager as auth_token_manager
 import core.config as core_config
-import core.network as core_network
 import users.users.crud as users_crud
 import users.users.schema as users_schema
 
@@ -90,7 +84,7 @@ def authenticate_user(
     credential = auth_credentials_crud.get_credential(user.id, db)
     stored_hash = credential.password_hash if credential is not None else None
 
-    # User has no local password (SSO-only account). Treat identically
+    # User has no local password. Treat identically
     # to "wrong password" so neither the response body nor the timing
     # discloses the account's auth modality. The dummy verify keeps
     # the latency consistent with a normal Argon2 verify.
@@ -192,10 +186,10 @@ def _is_secure_cookie_environment() -> bool:
     """Return ``True`` when refresh cookies must be served with ``Secure``.
 
     Single source of truth for the cookie ``Secure`` flag used by the
-    password login, refresh, and SSO token-exchange flows. Basing the
+    password login and refresh flows. Basing the
     decision on ``ENVIRONMENT`` (``production``/``demo``) keeps the
-    behaviour identical across all three flows and avoids the prior
-    bug where the SSO path used ``FRONTEND_PROTOCOL`` and could issue
+    behaviour identical across both flows and avoids the prior
+    bug where one path used ``FRONTEND_PROTOCOL`` and could issue
     a non-Secure refresh cookie when that env var was missing or
     mis-set in production.
     """
@@ -208,8 +202,8 @@ def set_refresh_token_cookie(
 ) -> None:
     """Set the canonical refresh-token cookie with consistent attributes.
 
-    All web-client refresh-cookie writes (initial login, ``/refresh``,
-    SSO token exchange) must go through this helper so that
+    All web-client refresh-cookie writes (initial login, ``/refresh``)
+    must go through this helper so that
     ``HttpOnly``, ``SameSite=Strict``, ``Path``, expiry, and the
     ``Secure`` flag stay in lockstep.
     """
@@ -260,7 +254,7 @@ def build_token_response(
     """Build the OAuth 2.1 token-response body for login and refresh.
 
     Single source of truth for token delivery, shared by the password
-    login, SSO login, and ``/refresh`` flows so they cannot drift:
+    login and ``/refresh`` flows so they cannot drift:
 
     - Web clients receive the refresh token as an ``HttpOnly`` cookie
       (set here via :func:`set_refresh_token_cookie`) and the CSRF token
@@ -299,8 +293,8 @@ def build_token_response(
     if client_type == "web":
         # Web: Refresh token as httpOnly cookie (XSS protection); CSRF
         # token in body for in-memory storage. Cookie attributes are
-        # centralised in set_refresh_token_cookie so login, /refresh, and
-        # SSO token exchange stay in lockstep.
+        # centralised in set_refresh_token_cookie so login and /refresh
+        # stay in lockstep.
         set_refresh_token_cookie(response, refresh_token)
         body["csrf_token"] = csrf_token
     else:
@@ -352,8 +346,6 @@ def complete_login(
     - Access token and CSRF token: Returned in body (for in-memory storage)
     - Refresh token: Set as httpOnly cookie with SameSite=Strict
 
-    This unified model works for both username/password and SSO login flows.
-
     Args:
         response (Response): The HTTP response object to set refresh cookie.
         request (Request): The HTTP request object containing client information.
@@ -401,8 +393,8 @@ def complete_login(
     )
 
     # Token delivery based on client type (web cookie vs mobile body) is
-    # centralised in build_token_response so login, /refresh, and SSO
-    # token exchange share one delivery contract.
+    # centralised in build_token_response so login and /refresh share
+    # one delivery contract.
     return build_token_response(
         response,
         client_type,
@@ -412,91 +404,4 @@ def complete_login(
         refresh_token,
         refresh_token_exp,
         csrf_token,
-    )
-
-
-def create_mobile_pkce_session_response(
-    response: Response,
-    request: Request,
-    user: users_schema.UsersRead,
-    code_challenge: str,
-    code_challenge_method: str,
-    password_hasher: auth_password_hasher.PasswordHasher,
-    db: Session,
-) -> auth_schema.MobileSessionResponse:
-    """
-    Create a session for mobile password login with PKCE exchange flow.
-
-    This function is exclusively for mobile clients. Web clients should use
-    complete_login() which provides secure token delivery via httpOnly cookies.
-
-    Similar to SSO flow, but for password authentication.
-    Returns session_id instead of tokens—tokens obtained via
-    POST /public/idp/session/{session_id}/tokens with code_verifier.
-
-    Args:
-        response: FastAPI response object
-        request: FastAPI request object
-        user: Authenticated user object
-        code_challenge: PKCE code challenge (base64url-encoded SHA256)
-        code_challenge_method: PKCE method (must be S256)
-        password_hasher: Password hasher instance
-        db: Database session
-
-    Returns:
-        auth_schema.MobileSessionResponse: Contains session_id and mfa_required flag
-
-    Raises:
-        HTTPException: If PKCE parameters are invalid
-
-    Notes:
-        - Mobile-only: Web clients use complete_login() with httpOnly cookies
-        - Session created without tokens (pending exchange)
-        - OAuth state record stores PKCE challenge
-        - Client must POST to /public/idp/session/{session_id}/tokens
-        - Reuses existing token exchange endpoint from SSO flow
-    """
-    # Validate PKCE challenge format
-    if code_challenge_method != "S256":
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Only S256 PKCE method is supported",
-        )
-
-    idp_utils.validate_pkce_challenge(code_challenge, code_challenge_method)
-
-    # Generate session ID
-    session_id = str(uuid4())
-
-    # Create OAuth state record for PKCE (reuse SSO infrastructure)
-    state_id, nonce = oauth_state_utils.create_state_id_and_nonce()
-    client_ip = core_network.get_ip_address(request)
-
-    oauth_state_crud.create_oauth_state(
-        db=db,
-        state_id=state_id,
-        nonce=nonce,
-        client_type="mobile",  # This function is mobile-only
-        ip_address=client_ip,
-        redirect_path=None,
-        code_challenge=code_challenge,
-        code_challenge_method=code_challenge_method,
-    )
-
-    # Create session linked to oauth_state (enables PKCE exchange)
-    auth_sessions_utils.create_session(
-        session_id,
-        user,
-        request,
-        None,  # No refresh token yet
-        password_hasher,
-        db,
-        oauth_state_id=state_id,
-    )
-
-    # Return session_id for token exchange (no tokens yet)
-    return auth_schema.MobileSessionResponse(
-        session_id=session_id,
-        mfa_required=False,
-        message=("Complete authentication by exchanging tokens at /public/idp/session/{session_id}/tokens"),
     )

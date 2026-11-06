@@ -132,7 +132,6 @@ class TestUsersSessionsModel:
         model = users_session_models.UsersSessions
 
         # Assert
-        assert hasattr(model, "oauth_state")
         assert hasattr(model, "rotated_refresh_tokens")
 
     def test_users_sessions_model_tokens_exchanged_default(self):

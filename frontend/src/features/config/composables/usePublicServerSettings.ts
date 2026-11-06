@@ -1,10 +1,7 @@
 import { computed } from 'vue'
 import { useQuery } from '@tanstack/vue-query'
 
-import type { IdentityProviderPublic } from '@/types'
-
 import { queryClient } from '@/plugins/vueQuery'
-import { fetchEnabledIdentityProviders } from '@/services/identityProviders'
 import { queryKeys } from '@/services/queryKeys'
 import { getBackendAssetUrl } from '@/services/runtime'
 import {
@@ -17,20 +14,19 @@ import defaultLoginImage from '@/assets/login.svg'
 const PUBLIC_SETTINGS_STALE_TIME = 5 * 60_000
 
 /**
- * Loads the public server settings and SSO providers needed by the
- * unauthenticated auth screens (login, sign-up, password reset). Failures
- * fall back to safe defaults so the auth screen always renders.
+ * Loads the public server settings needed by the unauthenticated auth
+ * screens (login, password reset). Failures fall back to safe defaults so the
+ * auth screen always renders.
  *
- * @returns Reactive settings/providers state, the resolved login image, and a
- *   `load` action that awaits both requests.
+ * @returns Reactive settings state, the resolved login image, and a `load`
+ *   action that awaits the request.
  */
 export function usePublicServerSettings() {
   // Use `placeholderData`, never `initialData`: `initialData` is written to the
   // query cache and, paired with a `staleTime`, is treated as a fresh fetch.
   // That suppresses the real request on mount and makes `ensureQueryData()` in
-  // `load()` return the seeded defaults (`sso_enabled: false`), so `/public/idp`
-  // is never called. `placeholderData` renders the same safe defaults while the
-  // real settings are fetched.
+  // `load()` return the seeded defaults. `placeholderData` renders the same
+  // safe defaults while the real settings are fetched.
   const settingsQuery = useQuery({
     queryKey: queryKeys.public.serverSettings(),
     queryFn: fetchPublicServerSettings,
@@ -41,27 +37,6 @@ export function usePublicServerSettings() {
 
   const serverSettings = computed(() => settingsQuery.data.value ?? DEFAULT_PUBLIC_SERVER_SETTINGS)
 
-  const ssoProvidersQuery = useQuery<IdentityProviderPublic[]>({
-    queryKey: queryKeys.public.identityProviders(),
-    queryFn: fetchEnabledIdentityProviders,
-    // Only fetch providers once settings confirm SSO is enabled; flips on
-    // reactively when the settings response arrives.
-    enabled: computed(() => serverSettings.value.sso_enabled),
-    // `placeholderData` (not `initialData`) so enabling the query actually
-    // triggers the `/public/idp` fetch instead of reusing a cached empty list.
-    placeholderData: [],
-    retry: 1,
-    staleTime: PUBLIC_SETTINGS_STALE_TIME,
-  })
-
-  const ssoProviders = computed(() =>
-    serverSettings.value.sso_enabled ? (ssoProvidersQuery.data.value ?? []) : [],
-  )
-  const isSettingsLoading = computed(() => settingsQuery.isFetching.value)
-  const isSsoLoading = computed(
-    () => serverSettings.value.sso_enabled && ssoProvidersQuery.isFetching.value,
-  )
-
   /** Instance login photo when configured, else the bundled default image. */
   const loginImageUrl = computed(() =>
     serverSettings.value.login_photo_set
@@ -70,28 +45,17 @@ export function usePublicServerSettings() {
   )
 
   /**
-   * Ensures public server settings are cached, then enabled SSO providers when
-   * SSO is on. Backed by TanStack Query's cache, so concurrent auth screens
-   * share one response, retries, and request de-duplication, and the awaited
-   * result lets callers branch on the resolved settings.
+   * Ensures public server settings are cached. Backed by TanStack Query's
+   * cache, so concurrent auth screens share one response, retries, and request
+   * de-duplication.
    */
   async function load(): Promise<void> {
-    const settings = await queryClient.ensureQueryData({
+    await queryClient.ensureQueryData({
       queryKey: queryKeys.public.serverSettings(),
       queryFn: fetchPublicServerSettings,
       staleTime: PUBLIC_SETTINGS_STALE_TIME,
     })
-
-    if (!settings.sso_enabled) {
-      return
-    }
-
-    await queryClient.ensureQueryData({
-      queryKey: queryKeys.public.identityProviders(),
-      queryFn: fetchEnabledIdentityProviders,
-      staleTime: PUBLIC_SETTINGS_STALE_TIME,
-    })
   }
 
-  return { serverSettings, ssoProviders, isSettingsLoading, isSsoLoading, loginImageUrl, load }
+  return { serverSettings, loginImageUrl, load }
 }

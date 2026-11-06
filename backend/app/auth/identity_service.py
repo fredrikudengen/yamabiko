@@ -43,7 +43,6 @@ import auth.credentials.crud as auth_credentials_crud
 import auth.mfa.crud as auth_mfa_crud
 import auth.password_hasher as auth_password_hasher
 import auth.services.account_security_service as auth_account_security_service
-import auth.services.identity_link_service as auth_identity_link_service
 import auth.services.mfa_workflow as auth_mfa_workflow
 import auth.sessions.crud as auth_sessions_crud
 import auth.token_manager as auth_token_manager
@@ -63,8 +62,6 @@ from auth.principal import (
 )
 
 if TYPE_CHECKING:
-    import auth.identity_providers.link_tokens.schema as auth_idp_link_tokens_schema
-    import auth.identity_providers.links.schema as auth_identity_links_schema
     import auth.mfa.backup_codes.schema as auth_mfa_backup_codes_schema
     import auth.mfa.schema as auth_mfa_schema
     import auth.mfa.setup_store as auth_mfa_setup_store
@@ -352,7 +349,7 @@ class IdentityService(Protocol):
     # Account-security workflows
     #
     # These are higher-level, route-facing workflows (sessions, password
-    # change, MFA lifecycle, IdP linking) consumed by non-auth routers
+    # change, MFA lifecycle) consumed by non-auth routers
     # (e.g. ``users.users_profile``). They are part of the public auth
     # boundary: implementations live in ``auth.services.*`` and are reached
     # only through this contract, never imported directly by non-auth code.
@@ -554,121 +551,6 @@ class IdentityService(Protocol):
 
         Raises:
             HTTPException: If MFA is disabled or step-up fails.
-        """
-        ...
-
-    def generate_link_token(
-        self,
-        idp_id: int,
-        link_request: auth_idp_link_tokens_schema.IdpLinkTokenRequest,
-        request: Request,
-        user_id: int,
-        step_up_store: auth_security_stores.StepUpStore,
-    ) -> auth_idp_link_tokens_schema.IdpLinkTokenResponse:
-        """Generate a one-time IdP link token after step-up verification.
-
-        Args:
-            idp_id: ID of the identity provider to link.
-            link_request: Link-token request payload (credentials).
-            request: Current HTTP request (for client IP).
-            user_id: ID of the authenticated user.
-            step_up_store: Step-up lockout store.
-
-        Returns:
-            The generated one-time link token.
-
-        Raises:
-            HTTPException: If step-up fails, the IdP is missing/disabled, or
-                already linked.
-        """
-        ...
-
-    def delete_identity_provider_link(
-        self,
-        idp_id: int,
-        step_up: users_schema.StepUpVerification,
-        user_id: int,
-        step_up_store: auth_security_stores.StepUpStore,
-    ) -> None:
-        """Unlink an IdP while enforcing anti-lockout checks.
-
-        Args:
-            idp_id: ID of the identity provider to unlink.
-            step_up: Step-up verification payload.
-            user_id: ID of the authenticated user.
-            step_up_store: Step-up lockout store.
-
-        Returns:
-            None.
-
-        Raises:
-            HTTPException: If step-up fails, the link is missing, or unlinking
-                would remove the last authentication method.
-        """
-        ...
-
-    def get_user_identity_provider_links(
-        self,
-        user_id: int,
-    ) -> list[auth_identity_links_schema.UsersIdentityProviderResponse]:
-        """Return enriched identity-provider links for the user.
-
-        Args:
-            user_id: ID of the authenticated user.
-
-        Returns:
-            List of enriched identity-provider link responses.
-        """
-        ...
-
-    def admin_delete_identity_provider_link(
-        self,
-        user_id: int,
-        idp_id: int,
-    ) -> None:
-        """Unlink an IdP from a user as an administrator (no step-up).
-
-        Args:
-            user_id: ID of the user to unlink the IdP from.
-            idp_id: ID of the identity provider to unlink.
-
-        Returns:
-            None.
-
-        Raises:
-            HTTPException: If the IdP or the link is missing.
-        """
-        ...
-
-    def validate_and_claim_browser_link_token(
-        self,
-        link_token: str,
-        idp_id: int,
-        client_ip: str | None,
-    ) -> int:
-        """Validate, IP-check, and atomically claim a browser-redirect link token.
-
-        Args:
-            link_token: Plaintext one-time link token from the query string.
-            idp_id: The identity provider ID expected in the token.
-            client_ip: Caller IP address for the soft IP-match check.
-
-        Returns:
-            The user ID encoded in the token.
-
-        Raises:
-            HTTPException: 401/400/409 on invalid, replayed, or conflicting tokens.
-        """
-        ...
-
-    def get_identity_link_counts_for_users(self, user_ids: list[int]) -> dict[int, int]:
-        """Return identity-link count per user ID in a single grouped query.
-
-        Args:
-            user_ids: List of user IDs to query.
-
-        Returns:
-            Mapping of user_id to link count (users with no links are absent).
         """
         ...
 
@@ -1257,79 +1139,6 @@ class DefaultIdentityService:
     ) -> auth_mfa_backup_codes_schema.MFABackupCodesResponse:
         """Generate new backup codes for an MFA-enabled account."""
         return auth_mfa_workflow.generate_backup_codes(step_up, user_id, self, step_up_store, self._db)
-
-    def generate_link_token(
-        self,
-        idp_id: int,
-        link_request: auth_idp_link_tokens_schema.IdpLinkTokenRequest,
-        request: Request,
-        user_id: int,
-        step_up_store: auth_security_stores.StepUpStore,
-    ) -> auth_idp_link_tokens_schema.IdpLinkTokenResponse:
-        """Generate a one-time IdP link token after step-up verification."""
-        return auth_identity_link_service.generate_link_token(
-            idp_id,
-            link_request,
-            request,
-            user_id,
-            self,
-            step_up_store,
-            self._db,
-        )
-
-    def delete_identity_provider_link(
-        self,
-        idp_id: int,
-        step_up: users_schema.StepUpVerification,
-        user_id: int,
-        step_up_store: auth_security_stores.StepUpStore,
-    ) -> None:
-        """Unlink an IdP while enforcing anti-lockout checks."""
-        auth_identity_link_service.delete_identity_provider_link(
-            idp_id,
-            step_up,
-            user_id,
-            self,
-            step_up_store,
-            self._db,
-        )
-
-    def get_user_identity_provider_links(
-        self,
-        user_id: int,
-    ) -> list[auth_identity_links_schema.UsersIdentityProviderResponse]:
-        """Return enriched identity-provider links for the user."""
-        return auth_identity_link_service.get_user_identity_provider_links(user_id, self._db)
-
-    def admin_delete_identity_provider_link(
-        self,
-        user_id: int,
-        idp_id: int,
-    ) -> None:
-        """Unlink an IdP from a user as an administrator (no step-up)."""
-        auth_identity_link_service.admin_delete_identity_provider_link(
-            user_id,
-            idp_id,
-            self._db,
-        )
-
-    def validate_and_claim_browser_link_token(
-        self,
-        link_token: str,
-        idp_id: int,
-        client_ip: str | None,
-    ) -> int:
-        """Validate, IP-check, and atomically claim a browser-redirect link token."""
-        return auth_identity_link_service.validate_and_claim_browser_link_token(
-            link_token,
-            idp_id,
-            client_ip,
-            self._db,
-        )
-
-    def get_identity_link_counts_for_users(self, user_ids: list[int]) -> dict[int, int]:
-        """Return identity-link count per user ID in a single grouped query."""
-        return auth_identity_link_service.get_identity_link_counts_for_users(user_ids, self._db)
 
     def get_mfa_enabled_for_users(self, user_ids: list[int]) -> dict[int, bool]:
         """Return MFA-enabled state per user ID in a single query."""

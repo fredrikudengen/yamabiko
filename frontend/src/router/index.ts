@@ -144,13 +144,6 @@ const router = createRouter({
           component: () => import('@/features/import/views/ImportSettingsView.vue'),
         },
         {
-          path: 'identity-providers',
-          name: 'settings-idp',
-          component: () =>
-            import('@/features/identityProviders/views/IdentityProvidersSettingsView.vue'),
-          meta: { requiresAdmin: true },
-        },
-        {
           path: 'server',
           name: 'settings-server',
           component: () => import('@/features/serverSettings/views/ServerSettingsView.vue'),
@@ -194,14 +187,7 @@ export async function authGuard(to: RouteLocationNormalized) {
 
   const requiresAuth = to.meta.requiresAuth !== false
   if (requiresAuth && !auth.isAuthenticated) {
-    const query: Record<string, string> = { redirect: to.fullPath }
-    // Preserve the local-login override so an operator can bypass SSO
-    // auto-redirect even when landing on an auth-protected route (the flag
-    // would otherwise be lost inside the encoded `redirect` param).
-    if (to.query.forceLocalLogin === 'true') {
-      query.forceLocalLogin = 'true'
-    }
-    return { name: 'login', query }
+    return { name: 'login', query: { redirect: to.fullPath } }
   }
 
   // Admin-only routes: the user is authenticated by here, so the profile is in
@@ -213,14 +199,7 @@ export async function authGuard(to: RouteLocationNormalized) {
     return { name: 'home' }
   }
 
-  // An in-progress SSO handoff to the mobile app must be allowed to finish
-  // even when the browser already has an authenticated session: this callback
-  // only forwards the session_id to the native app's custom scheme redirect,
-  // it never touches the browser session, so it shouldn't be treated as a
-  // "guest-only" login attempt.
-  const isExternalSsoHandoff = to.query.sso === 'success' && to.query.external_redirect === 'true'
-
-  if (to.meta.guestOnly && auth.isAuthenticated && !isExternalSsoHandoff) {
+  if (to.meta.guestOnly && auth.isAuthenticated) {
     return { name: 'home' }
   }
 

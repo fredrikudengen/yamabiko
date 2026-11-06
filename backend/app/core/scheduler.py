@@ -46,22 +46,6 @@ def start_scheduler() -> None:
     )
 
     add_scheduler_job(
-        auth_maintenance.delete_expired_oauth_states_from_db,
-        "interval",
-        5,
-        [],
-        "delete expired OAuth states from the database",
-    )
-
-    add_scheduler_job(
-        auth_maintenance.delete_idp_link_expired_tokens_from_db,
-        "interval",
-        5,
-        [],
-        "delete expired IdP link tokens from the database",
-    )
-
-    add_scheduler_job(
         auth_maintenance.cleanup_idle_sessions,
         "interval",
         15,

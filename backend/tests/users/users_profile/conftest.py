@@ -12,7 +12,6 @@ import auth.identity_service as auth_identity_service
 import auth.mfa.setup_store as auth_mfa_setup_store
 import core.config as core_config
 import core.database as core_database
-import users.users_profile.browser_redirect_router as profile_browser_redirect_router
 import users.users_profile.router as profile_router
 import websocket.manager as websocket_manager
 
@@ -51,25 +50,6 @@ def mock_identity_service() -> MagicMock:
 @pytest.fixture
 def mock_ws_manager() -> MagicMock:
     return MagicMock()
-
-
-@pytest.fixture
-def redirect_app(local_mock_db) -> FastAPI:
-    app = FastAPI()
-
-    app.include_router(
-        profile_browser_redirect_router.router,
-        prefix=core_config.ROOT_PATH + "/profile",
-    )
-
-    app.dependency_overrides[core_database.get_db] = lambda: local_mock_db
-
-    return app
-
-
-@pytest.fixture
-def redirect_client(redirect_app: FastAPI) -> TestClient:
-    return TestClient(redirect_app)
 
 
 @pytest.fixture

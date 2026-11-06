@@ -2,7 +2,7 @@
 Server settings module for configuration and database management.
 
 This module provides server-wide configuration management, including
-measurement units, currency settings, signup policies, SSO configuration,
+measurement units, currency settings, signup policies,
 and map tile server settings.
 
 Exports:

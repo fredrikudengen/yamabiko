@@ -24,25 +24,6 @@ export type Schemas = components['schemas']
 export type AuthTokenResponse = Schemas['TokenResponseWeb']
 
 /**
- * Token exchange response returned by the SSO PKCE endpoint. Derived from the
- * backend's generated `TokenExchangeResponse` schema.
- *
- * Lives in shared types because the shared `@/services/identityProviders` SSO
- * service returns it; both the auth and config features consume that service.
- */
-export type SsoTokenExchangeResponse = Schemas['TokenExchangeResponse']
-
-/**
- * Public identity-provider summary returned for login screens. Derived from
- * the backend's generated `IdentityProviderPublic` schema.
- *
- * Lives in shared types because the shared `@/services/identityProviders`
- * service produces it for both the auth (SSO login) and config (public server
- * settings) features.
- */
-export type IdentityProviderPublic = Schemas['IdentityProviderPublic']
-
-/**
  * Content visibility level, mirrored from the backend. Drives the
  * `<VisibilityGate>` primitive so private/followers/unlisted/public/federated
  * rendering decisions live in one enum-driven place rather than ad-hoc `v-if`s.

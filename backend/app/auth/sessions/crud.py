@@ -5,16 +5,12 @@ from typing import Any
 
 from fastapi import HTTPException, status
 from sqlalchemy import CursorResult, delete, select
-from sqlalchemy import update as sa_update
 from sqlalchemy.orm import Session
 
-import auth.oauth_state.crud as oauth_state_crud
-import auth.oauth_state.models as oauth_state_models
 import auth.sessions.models as auth_sessions_models
 import auth.sessions.rotated_refresh_tokens.crud as auth_sessions_rotated_tokens_crud
 import auth.sessions.schema as auth_sessions_schema
 import core.decorators as core_decorators
-import core.logger as core_logger
 
 
 @core_decorators.handle_db_errors
@@ -92,54 +88,6 @@ def get_session_by_id_not_expired(
 
 
 @core_decorators.handle_db_errors
-def get_session_with_oauth_state(
-    session_id: str,
-    db: Session,
-) -> (
-    tuple[
-        auth_sessions_models.UsersSessions,
-        oauth_state_models.OAuthState | None,
-    ]
-    | None
-):
-    """
-    Retrieve a session with its OAuth state for token exchange.
-
-    Performs a query to retrieve a session with its linked OAuth
-    state record (if any). Used during mobile token exchange to
-    validate PKCE and ensure the session is valid.
-
-    Args:
-        session_id: The unique identifier of the session.
-        db: SQLAlchemy database session.
-
-    Returns:
-        Tuple of (session, oauth_state) where oauth_state may be
-        None if not linked. Returns None if session not found.
-
-    Raises:
-        HTTPException: If database error occurs.
-    """
-    # Query session
-    stmt = (
-        select(auth_sessions_models.UsersSessions)
-        .where(auth_sessions_models.UsersSessions.id == session_id)
-        .where(auth_sessions_models.UsersSessions.expires_at > datetime.now(UTC))
-    )
-    db_session = db.execute(stmt).scalar_one_or_none()
-
-    if not db_session:
-        return None
-
-    # Get OAuth state if linked
-    oauth_state = None
-    if db_session.oauth_state_id:
-        oauth_state = oauth_state_crud.get_oauth_state_by_id_not_expired(db_session.oauth_state_id, db)
-
-    return (db_session, oauth_state)
-
-
-@core_decorators.handle_db_errors
 def create_session(
     session: auth_sessions_schema.UsersSessionsInternal,
     db: Session,
@@ -162,170 +110,6 @@ def create_session(
     db.commit()
     db.refresh(db_session)
     return db_session
-
-
-@core_decorators.handle_db_errors
-def set_session_refresh_token_hash(
-    session_id: str, hashed_refresh_token: str, db: Session
-) -> auth_sessions_models.UsersSessions:
-    """
-    Persist a hashed refresh token on a session.
-
-    Used by the SSO token-exchange flow to record the freshly minted
-    refresh token (already hashed) on the session row.
-
-    Args:
-        session_id: The unique identifier of the session.
-        hashed_refresh_token: The hashed refresh token to store.
-        db: SQLAlchemy database session.
-
-    Returns:
-        The updated session object.
-
-    Raises:
-        HTTPException: If session not found (404) or database error
-            occurs (500).
-    """
-    db_session = get_session_by_id(session_id, db)
-
-    if not db_session:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Session {session_id} not found",
-        )
-
-    db_session.refresh_token = hashed_refresh_token
-    db.commit()
-    db.refresh(db_session)
-
-    return db_session
-
-
-@core_decorators.handle_db_errors
-def mark_tokens_exchanged(session_id: str, db: Session) -> None:
-    """
-    Mark tokens as exchanged and clear OAuth state.
-
-    Sets tokens_exchanged flag to prevent duplicate mobile token
-    exchanges. Deletes the associated OAuth state per OAuth 2.1
-    best practices (state is ephemeral).
-
-    Args:
-        session_id: The unique identifier of the session.
-        db: SQLAlchemy database session.
-
-    Raises:
-        HTTPException: If session not found (404) or database
-            error occurs (500).
-    """
-    # Get the session from the database
-    db_session = get_session_by_id(session_id, db)
-
-    # Check if the session exists
-    if not db_session:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Session {session_id} not found",
-        )
-
-    # Store oauth_state_id before clearing (for cleanup)
-    oauth_state_id_to_delete = db_session.oauth_state_id
-
-    # Mark tokens as exchanged and clear OAuth state reference
-    db_session.tokens_exchanged = True
-    db_session.oauth_state_id = None
-    db.commit()
-
-    # Delete the OAuth state now that tokens are exchanged
-    if oauth_state_id_to_delete:
-        try:
-            oauth_state_crud.delete_oauth_state(oauth_state_id_to_delete, db)
-            core_logger.print_to_log(
-                f"Deleted OAuth state {oauth_state_id_to_delete[:8]}... after token exchange",
-                "debug",
-            )
-        except Exception as err:
-            # Log but don't fail - cleanup job handles orphaned
-            # states
-            core_logger.print_to_log(
-                f"Failed to delete OAuth state {oauth_state_id_to_delete[:8]}... after token exchange: {err}",
-                "warning",
-                exc=err,
-            )
-
-
-@core_decorators.handle_db_errors
-def claim_session_for_token_exchange(
-    session_id: str,
-    hashed_refresh_token: str,
-    db: Session,
-) -> bool:
-    """
-    Atomically claim a session for one-shot PKCE token exchange.
-
-    Performs a single conditional UPDATE that simultaneously
-    flips ``tokens_exchanged`` to ``True`` and stores the freshly
-    minted, hashed refresh token — but only if the session is
-    still in the ``tokens_exchanged = False`` state. This closes
-    the check-then-act race that the previous read-then-write
-    sequence allowed: two concurrent exchanges with the same
-    ``code_verifier`` could both pass an ``if not
-    tokens_exchanged`` guard and both write a refresh token,
-    handing one caller a working token while invalidating the
-    other.
-
-    Args:
-        session_id: The session to claim.
-        hashed_refresh_token: The (Argon2-hashed) refresh token
-            to persist on the row.
-        db: SQLAlchemy database session.
-
-    Returns:
-        True if exactly one row was claimed (the caller owns the
-        exchange). False if the session was missing or already
-        exchanged — caller should respond with 409 Conflict.
-
-    Raises:
-        HTTPException: 500 if the database operation fails.
-    """
-    stmt = (
-        sa_update(auth_sessions_models.UsersSessions)
-        .where(
-            auth_sessions_models.UsersSessions.id == session_id,
-            auth_sessions_models.UsersSessions.tokens_exchanged.is_(False),
-        )
-        .values(
-            tokens_exchanged=True,
-            refresh_token=hashed_refresh_token,
-        )
-    )
-    result: CursorResult[Any] = db.execute(stmt)
-    db.commit()
-
-    claimed = result.rowcount == 1
-    if not claimed:
-        core_logger.print_to_log(
-            f"Token exchange claim lost race for session {session_id[:8]}... (missing or already exchanged)",
-            "warning",
-        )
-        return False
-
-    # Best-effort OAuth state cleanup mirrors mark_tokens_exchanged.
-    db_session = get_session_by_id(session_id, db)
-    if db_session and db_session.oauth_state_id:
-        oauth_state_id_to_delete = db_session.oauth_state_id
-        db_session.oauth_state_id = None
-        db.commit()
-        try:
-            oauth_state_crud.delete_oauth_state(oauth_state_id_to_delete, db)
-        except Exception as err:
-            core_logger.print_to_log(
-                f"Failed to delete OAuth state {oauth_state_id_to_delete[:8]}... after token exchange: {err}",
-                "warning",
-                exc=err,
-            )
-
-    return True
 
 
 @core_decorators.handle_db_errors
@@ -407,8 +191,8 @@ def delete_session(
     """
     Delete a user session and its associated resources.
 
-    Deletes rotated tokens, the session, and any linked OAuth
-    state. Used when user explicitly logs out a session.
+    Deletes rotated tokens and the session. Used when user
+    explicitly logs out a session.
 
     Args:
         session_id: The unique identifier of the session to
@@ -434,9 +218,6 @@ def delete_session(
             detail=(f"Session {session_id} not found for user {user_id}"),
         )
 
-    # Store oauth_state_id before deleting session (if exists)
-    oauth_state_id_to_delete = session.oauth_state_id
-
     # Delete rotated tokens for this session's family
     auth_sessions_rotated_tokens_crud.delete_by_family(session.token_family_id, db)
 
@@ -446,10 +227,6 @@ def delete_session(
         auth_sessions_models.UsersSessions.user_id == user_id,
     )
     db.execute(stmt)
-
-    # Delete OAuth state after session is deleted if exists
-    if oauth_state_id_to_delete:
-        oauth_state_crud.delete_oauth_state(oauth_state_id_to_delete, db)
 
     db.commit()
 

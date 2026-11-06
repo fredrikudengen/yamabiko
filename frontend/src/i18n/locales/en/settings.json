@@ -9,7 +9,6 @@
     "security": "Security",
     "integrations": "Integrations",
     "import": "Import",
-    "idp": "Identity providers",
     "server": "Server settings"
   },
   "server": {
@@ -42,15 +41,6 @@
       "typeLengthOnly": "Length only",
       "lengthRegular": "Minimum length regular users",
       "lengthAdmin": "Minimum length admin users"
-    },
-    "sso": {
-      "title": "Authentication",
-      "enabled": "Enable SSO / single sign-on",
-      "enabledInfo": "Identity providers are configured separately in the identity providers section",
-      "localLogin": "Allow local username and password login",
-      "localLoginWarning": "Disabling local login locks out username and password sign-in for everyone, including admins. Make sure SSO works first.",
-      "autoRedirect": "Auto-redirect to SSO",
-      "autoRedirectInfo": "When a single identity provider is configured and local login is disabled, users are sent straight to it"
     },
     "sharing": {
       "title": "Public sharing",
@@ -90,91 +80,6 @@
       "deleteError": "Couldn't remove the login photo. Please try again.",
       "cancel": "Cancel",
       "close": "Close"
-    }
-  },
-  "idp": {
-    "title": "Identity providers",
-    "subtitle": "Configure SSO providers for single sign-on",
-    "buttonAdd": "Add provider",
-    "toggleError": "Couldn't change the provider. Please try again.",
-    "enableSuccess": "Provider enabled",
-    "disableSuccess": "Provider disabled",
-    "type": {
-      "oidc": "OpenID Connect",
-      "oauth2": "OAuth 2.0"
-    },
-    "list": {
-      "disabled": "Disabled",
-      "toggle": "Enable or disable {name}",
-      "edit": "Edit {name}",
-      "delete": "Delete {name}"
-    },
-    "error": {
-      "title": "Couldn't load identity providers",
-      "description": "Something went wrong while loading the providers. You can try again.",
-      "retry": "Try again"
-    },
-    "empty": {
-      "title": "No identity providers yet",
-      "description": "Add a provider to let people sign in with single sign-on"
-    },
-    "delete": {
-      "title": "Delete provider",
-      "body": "Are you sure you want to delete \"{name}\"? This can't be undone.",
-      "confirm": "Delete",
-      "cancel": "Cancel",
-      "close": "Close",
-      "success": "Provider deleted",
-      "error": "Couldn't delete the provider. It may still have linked users."
-    },
-    "form": {
-      "addTitle": "Add identity provider",
-      "editTitle": "Edit identity provider",
-      "description": "Configure an external provider for single sign-on",
-      "create": "Add provider",
-      "save": "Save changes",
-      "cancel": "Cancel",
-      "close": "Close",
-      "template": "Start from a preset",
-      "templateCustom": "Custom (no preset)",
-      "name": "Name",
-      "nameRequired": "Name is required",
-      "nameTooLong": "Name must be 100 characters or fewer",
-      "slug": "Slug",
-      "slugHint": "Used in the login URL. Lowercase letters, numbers and hyphens only; can't be changed later.",
-      "slugRequired": "Slug is required",
-      "slugTooLong": "Slug must be 50 characters or fewer",
-      "slugInvalid": "Use only lowercase letters, numbers and hyphens",
-      "providerType": "Provider type",
-      "typeOidc": "OpenID Connect (OIDC)",
-      "typeOauth2": "OAuth 2.0",
-      "issuerUrl": "Issuer URL",
-      "issuerUrlHint": "The provider's OIDC issuer or discovery URL",
-      "issuerUrlRequired": "Issuer URL is required",
-      "issuerUrlTooLong": "Issuer URL must be 500 characters or fewer",
-      "clientId": "Client ID",
-      "clientIdRequired": "Client ID is required",
-      "clientIdTooLong": "Client ID must be 512 characters or fewer",
-      "clientSecret": "Client secret",
-      "clientSecretRequired": "Client secret is required",
-      "clientSecretTooLong": "Client secret must be 512 characters or fewer",
-      "clientSecretHintEdit": "Leave blank to keep the current secret",
-      "clientSecretPlaceholderEdit": "Unchanged",
-      "scopes": "Scopes",
-      "scopesHint": "Space-separated OAuth scopes",
-      "scopesTooLong": "Scopes must be 500 characters or fewer",
-      "icon": "Icon",
-      "iconNone": "None",
-      "iconCustom": "Custom URL",
-      "customIconUrl": "Custom icon URL",
-      "customIconUrlHint": "Link to an image shown on the login button",
-      "enabled": "Enabled",
-      "autoCreateUsers": "Auto-create users on first login",
-      "syncUserInfo": "Sync profile info on each login",
-      "createSuccess": "Provider added",
-      "updateSuccess": "Provider updated",
-      "slugConflict": "That slug is already in use",
-      "saveError": "Couldn't save the provider. Please try again."
     }
   },
   "security": {
@@ -266,28 +171,6 @@
       "revokeOthersConfirm": "Sign out others",
       "revokeOthersSuccess": "Other sessions signed out",
       "revokeOthersError": "Couldn't sign out the other sessions. Please try again."
-    },
-    "linked": {
-      "title": "Linked accounts",
-      "subtitle": "Sign in to your account with an external provider",
-      "error": "Couldn't load your linked accounts.",
-      "empty": "No accounts are linked yet.",
-      "available": "Link an account",
-      "link": "Link",
-      "unlink": "Unlink",
-      "unlinkAria": "Unlink {name}",
-      "linkTitle": "Link account",
-      "linkDescription": "Confirm your identity to link {name}.",
-      "unlinkTitle": "Unlink account",
-      "unlinkDescription": "Confirm your identity to unlink {name}.",
-      "linkSuccess": "Linked {name}",
-      "linkSuccessGeneric": "Account linked",
-      "linkError": "Couldn't link the account. Please try again.",
-      "unlinkSuccess": "Account unlinked",
-      "unlinkError": "Couldn't unlink the account. Please try again.",
-      "invalidCredentials": "Your password or code is incorrect.",
-      "alreadyLinked": "That account is already linked.",
-      "lastMethodError": "You can't unlink your only sign-in method. Set a password first."
     },
     "apiKeys": {
       "title": "API keys",

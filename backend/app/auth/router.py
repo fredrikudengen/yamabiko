@@ -6,7 +6,6 @@ from fastapi import (
     APIRouter,
     Depends,
     HTTPException,
-    Query,
     Request,
     Response,
     status,
@@ -14,7 +13,6 @@ from fastapi import (
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 
-import auth.identity_providers.utils as idp_utils
 import auth.identity_service as auth_identity_service
 import auth.internal_dependencies as auth_internal_dependencies
 import auth.mfa.service as mfa_service
@@ -34,38 +32,6 @@ import users.users.utils as users_utils
 
 # Define the API router
 router = APIRouter()
-
-
-def _validate_pkce_query_params(
-    client_type: str,
-    code_challenge: str | None,
-    code_challenge_method: str | None,
-) -> None:
-    """
-    Reject malformed PKCE query-parameter combinations.
-
-    Args:
-        client_type: Client type supplied by the caller.
-        code_challenge: Optional PKCE code challenge.
-        code_challenge_method: Optional PKCE challenge method.
-
-    Returns:
-        None.
-
-    Raises:
-        HTTPException: If PKCE parameters are supplied partially.
-    """
-    if client_type != "mobile":
-        return
-
-    has_any_pkce_param = code_challenge is not None or code_challenge_method is not None
-    has_complete_pkce_params = bool(code_challenge and code_challenge_method)
-
-    if has_any_pkce_param and not has_complete_pkce_params:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=("code_challenge and code_challenge_method must be provided together"),
-        )
 
 
 def _raise_auth_security_store_unavailable(
@@ -96,12 +62,7 @@ def _raise_auth_security_store_unavailable(
 
 @router.post(
     "/login",
-    response_model=(
-        auth_schema.MFARequiredResponse
-        | auth_schema.MobileSessionResponse
-        | auth_schema.TokenResponseWeb
-        | auth_schema.TokenResponseMobile
-    ),
+    response_model=(auth_schema.MFARequiredResponse | auth_schema.TokenResponseWeb | auth_schema.TokenResponseMobile),
 )
 @core_rate_limit.limiter.limit(core_rate_limit.SENSITIVE)
 async def login_for_access_token(
@@ -129,8 +90,6 @@ async def login_for_access_token(
         Session,
         Depends(core_database.get_db),
     ],
-    code_challenge: Annotated[str | None, Query()] = None,
-    code_challenge_method: Annotated[str | None, Query()] = None,
 ):
     """
     Handles user login and access token generation, including Multi-Factor Authentication (MFA) flow.
@@ -147,12 +106,6 @@ async def login_for_access_token(
     and returns an MFA-required response. Otherwise, it completes the login process and returns
     the required information.
 
-    PKCE Support (Mobile):
-    - Mobile clients can optionally provide code_challenge and code_challenge_method
-    - For mobile clients with PKCE parameters, tokens are not returned directly
-        - Instead, a session_id is returned for secure token exchange via
-            /public/idp/session/{session_id}/tokens
-
     Args:
         response: The HTTP response object
         request: The HTTP request object
@@ -163,24 +116,15 @@ async def login_for_access_token(
         password_hasher: The password hasher instance used for verifying passwords
         token_manager: The token manager instance used for token operations
         db: Database session
-        code_challenge: PKCE code challenge (base64url-encoded SHA256, optional for mobile)
-        code_challenge_method: PKCE method (must be S256 if provided, optional for mobile)
 
     Returns:
         Union[auth_schema.MFARequiredResponse, dict, str]:
             - If MFA is required, returns an MFA-required response (schema or dict depending on client type)
-            - If MFA is not required and mobile client with PKCE, returns session_id for token exchange
-            - If MFA is not required and no PKCE, proceeds with normal login via auth_utils.complete_login()
+            - Otherwise, proceeds with normal login via auth_utils.complete_login()
 
     Raises:
         HTTPException: If authentication fails, user is inactive, or account is locked
     """
-    _validate_pkce_query_params(
-        client_type,
-        code_challenge,
-        code_challenge_method,
-    )
-
     # Check if username is locked out from too many failed login attempts
     try:
         if failed_attempts.is_locked_out(form_data.username):
@@ -242,27 +186,12 @@ async def login_for_access_token(
     except auth_security_stores.AuthSecurityStoreUnavailableError as err:
         _raise_auth_security_store_unavailable(err)
 
-    # Mobile clients with PKCE use secure token exchange flow
-    # Web clients don't need PKCE - they have httpOnly cookies and same-origin protection
-    if client_type == "mobile" and code_challenge and code_challenge_method:
-        # Use PKCE exchange flow through the public IdP token exchange endpoint
-        return auth_utils.create_mobile_pkce_session_response(
-            response,
-            request,
-            user,
-            code_challenge,
-            code_challenge_method,
-            password_hasher,
-            db,
-        )
-
-    # Web clients and mobile without PKCE get tokens directly
     return auth_utils.complete_login(response, request, user, client_type, password_hasher, token_manager, db)
 
 
 @router.post(
     "/mfa/verify",
-    response_model=(auth_schema.MobileSessionResponse | auth_schema.TokenResponseWeb | auth_schema.TokenResponseMobile),
+    response_model=(auth_schema.TokenResponseWeb | auth_schema.TokenResponseMobile),
 )
 @core_rate_limit.limiter.limit(core_rate_limit.SENSITIVE)
 async def verify_mfa_and_login(
@@ -294,20 +223,12 @@ async def verify_mfa_and_login(
         Session,
         Depends(core_database.get_db),
     ],
-    code_challenge: Annotated[str | None, Query()] = None,
-    code_challenge_method: Annotated[str | None, Query()] = None,
 ):
     """
     Verify MFA code and complete login process.
 
     This endpoint verifies the MFA code for a pending login and completes
     the authentication process if the code is valid.
-
-    PKCE Support (Mobile):
-    - Mobile clients can optionally provide code_challenge and code_challenge_method
-    - For mobile clients with PKCE parameters, tokens are not returned directly
-        - Instead, a session_id is returned for secure token exchange via
-            /public/idp/session/{session_id}/tokens
 
     Args:
         response: The HTTP response object
@@ -320,21 +241,13 @@ async def verify_mfa_and_login(
         password_hasher: The password hasher instance used for verifying passwords
         token_manager: The token manager instance used for token operations
         db: Database session
-        code_challenge: PKCE code challenge (base64url-encoded SHA256, optional for mobile)
-        code_challenge_method: PKCE method (must be S256 if provided, optional for mobile)
 
     Returns:
-        Result from auth_utils.complete_login() or PKCE session response
+        Result from auth_utils.complete_login()
 
     Raises:
         HTTPException: If no pending login found, MFA code is invalid, or user not found
     """
-    _validate_pkce_query_params(
-        client_type,
-        code_challenge,
-        code_challenge_method,
-    )
-
     username_log_id = auth_security_stores.username_log_identifier(mfa_request.username)
 
     # Check if user is locked out from too many failed attempts
@@ -421,21 +334,6 @@ async def verify_mfa_and_login(
     except auth_security_stores.AuthSecurityStoreUnavailableError as err:
         _raise_auth_security_store_unavailable(err)
 
-    # Mobile clients with PKCE use secure token exchange flow
-    # Web clients don't need PKCE - they have httpOnly cookies and same-origin protection
-    if client_type == "mobile" and code_challenge and code_challenge_method:
-        # Use PKCE exchange flow through the public IdP token exchange endpoint
-        return auth_utils.create_mobile_pkce_session_response(
-            response,
-            request,
-            user,
-            code_challenge,
-            code_challenge_method,
-            password_hasher,
-            db,
-        )
-
-    # Web clients and mobile without PKCE get tokens directly
     return auth_utils.complete_login(response, request, user, client_type, password_hasher, token_manager, db)
 
 
@@ -567,11 +465,11 @@ async def refresh_token(
             headers={"WWW-Authenticate": "Bearer"},
         )
 
-    # Verify session has a refresh token (not pending PKCE exchange)
+    # Verify session has a refresh token
     if not session.refresh_token:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Tokens not yet exchanged via PKCE. Complete SSO/PKCE flow first.",
+            detail="Session has no refresh token",
             headers={"WWW-Authenticate": "Bearer"},
         )
 
@@ -709,12 +607,9 @@ async def refresh_token(
         new_csrf_token=new_csrf_token,
     )
 
-    # Opportunistically refresh IdP tokens for all linked identity providers
-    await idp_utils.refresh_idp_tokens_if_needed(user.id, db)
-
     # Token delivery based on client type (web cookie vs mobile body) is
-    # centralised in auth_utils.build_token_response so login, /refresh, and
-    # SSO token exchange share one delivery contract.
+    # centralised in auth_utils.build_token_response so login and /refresh
+    # share one delivery contract.
     return auth_utils.build_token_response(
         response,
         client_type,
@@ -781,11 +676,11 @@ async def logout(
 
     # Check if the session was found
     if session is not None:
-        # Verify session has a refresh token (not pending PKCE exchange)
+        # Verify session has a refresh token
         if not session.refresh_token:
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Tokens not yet exchanged via PKCE. Cannot logout incomplete session.",
+                detail="Session has no refresh token",
                 headers={"WWW-Authenticate": "Bearer"},
             )
 
@@ -802,9 +697,6 @@ async def logout(
 
         # Delete the session from the database
         auth_sessions_crud.delete_session(session.id, token_user_id, db)
-
-        # Clear all IdP refresh tokens for security
-        await idp_utils.clear_all_idp_tokens(token_user_id, db)
 
     if client_type == "web":
         auth_utils.clear_refresh_token_cookies(response)

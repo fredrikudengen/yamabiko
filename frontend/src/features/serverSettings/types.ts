@@ -40,9 +40,6 @@ export type PasswordType = Schemas['PasswordType']
  * @property signupEnabled - Whether self-service sign-up is allowed.
  * @property signupRequireAdminApproval - Whether new sign-ups await admin approval.
  * @property signupRequireEmailVerification - Whether new sign-ups must verify email.
- * @property ssoEnabled - Whether SSO/IdP login is enabled.
- * @property localLoginEnabled - Whether username/password login is allowed.
- * @property ssoAutoRedirect - Whether to auto-redirect when a single IdP is configured.
  * @property tileserverUrl - Map tile URL template (`{z}`/`{x}`/`{y}` placeholders).
  * @property tileserverAttribution - Attribution string shown on the map.
  * @property tileserverApiKey - Tile-server API key (stored encrypted), or `null`.
@@ -63,9 +60,6 @@ export interface ServerSettings {
   signupEnabled: boolean
   signupRequireAdminApproval: boolean
   signupRequireEmailVerification: boolean
-  ssoEnabled: boolean
-  localLoginEnabled: boolean
-  ssoAutoRedirect: boolean
   tileserverUrl: string
   tileserverAttribution: string
   tileserverApiKey: string | null

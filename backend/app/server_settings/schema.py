@@ -76,9 +76,6 @@ class ServerSettingsBase(BaseModel):
         currency (Currency): Currency type (EURO, DOLLAR, or POUND).
         num_records_per_page (StrictInt): Number of records per page in lists (1-100, default: 25).
         signup_enabled (StrictBool): Allow new user registration.
-        sso_enabled (StrictBool): Enable SSO/IdP authentication.
-        local_login_enabled (StrictBool): Allow local username/password authentication.
-        sso_auto_redirect (StrictBool): Automatically redirect to SSO when only one IdP is configured.
         tileserver_url (StrictStr): URL template for map tile server with coordinate placeholders.
         tileserver_attribution (StrictStr): Attribution string for map tile server.
         map_background_color (StrictStr): Hex color code for map background (#RRGGBB format).
@@ -112,16 +109,6 @@ class ServerSettingsBase(BaseModel):
         description="Number of records per page in lists",
     )
     signup_enabled: StrictBool = Field(..., description="Allow user sign-up registration (true - yes, false - no)")
-    sso_enabled: StrictBool = Field(
-        ...,
-        description="Enable SSO/IdP login (true - yes, false - no)",
-    )
-    local_login_enabled: StrictBool = Field(
-        ..., description="Allow local username/password login (true - yes, false - no)"
-    )
-    sso_auto_redirect: StrictBool = Field(
-        ..., description="Auto-redirect to SSO if only one IdP (true - yes, false - no)"
-    )
     tileserver_url: StrictStr = Field(
         max_length=2048,
         min_length=1,
