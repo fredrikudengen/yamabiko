@@ -267,154 +267,6 @@ class TestExportServiceCollectUserActivities:
                 service.collect_user_activities_data(z)
 
 
-class TestExportServiceCollectGearData:
-    def test_collect_gear_empty_components(self) -> None:
-        buf = io.BytesIO()
-        with zipfile.ZipFile(buf, "w", zipfile.ZIP_DEFLATED, compresslevel=6) as z:
-            mock_db = MagicMock(spec=Session)
-            service = profile_export_service.ExportService(user_id=1, db=mock_db)
-            service.performance_config.enable_memory_monitoring = False
-
-            with (
-                patch("users.users_profile.export_service.gear_crud.get_gear_user", return_value=[]),
-                patch(
-                    "users.users_profile.export_service.gear_components_crud.get_gear_components_user", return_value=[]
-                ),
-            ):
-                service.collect_gear_data(z)
-
-    def test_collect_gear_with_data(self) -> None:
-        buf = io.BytesIO()
-        with zipfile.ZipFile(buf, "w", zipfile.ZIP_DEFLATED, compresslevel=6) as z:
-            mock_db = MagicMock(spec=Session)
-            service = profile_export_service.ExportService(user_id=1, db=mock_db)
-            service.performance_config.enable_memory_monitoring = False
-            mock_gears = [MagicMock(), MagicMock()]
-
-            with (
-                patch(
-                    "users.users_profile.export_service.gear_crud.get_gear_user",
-                    return_value=mock_gears,
-                ),
-                patch.object(profile_utils, "sqlalchemy_obj_to_dict", return_value={"id": 1}),
-            ):
-                service.collect_gear_data(z)
-
-        assert service.counts["gears"] == 2
-
-    def test_collect_gear_no_data(self) -> None:
-        buf = io.BytesIO()
-        with zipfile.ZipFile(buf, "w", zipfile.ZIP_DEFLATED, compresslevel=6) as z:
-            mock_db = MagicMock(spec=Session)
-            service = profile_export_service.ExportService(user_id=1, db=mock_db)
-            service.performance_config.enable_memory_monitoring = False
-
-            with patch(
-                "users.users_profile.export_service.gear_crud.get_gear_user",
-                return_value=[],
-            ):
-                service.collect_gear_data(z)
-
-        # Empty data: no count increment
-        assert service.counts.get("gears", 0) == 0
-
-    def test_collect_gear_with_exception_raises_data_collection_error(self) -> None:
-        buf = io.BytesIO()
-        with zipfile.ZipFile(buf, "w", zipfile.ZIP_DEFLATED, compresslevel=6) as z:
-            mock_db = MagicMock(spec=Session)
-            service = profile_export_service.ExportService(user_id=1, db=mock_db)
-            service.performance_config.enable_memory_monitoring = False
-
-            with (
-                patch(
-                    "users.users_profile.export_service.gear_crud.get_gear_user",
-                    side_effect=Exception("unexpected"),
-                ),
-                pytest.raises(DataCollectionError),
-            ):
-                service.collect_gear_data(z)
-
-    def test_collect_gear_components_exception_raises_data_collection_error(self) -> None:
-        buf = io.BytesIO()
-        with zipfile.ZipFile(buf, "w", zipfile.ZIP_DEFLATED, compresslevel=6) as z:
-            mock_db = MagicMock(spec=Session)
-            service = profile_export_service.ExportService(user_id=1, db=mock_db)
-            service.performance_config.enable_memory_monitoring = False
-
-            with (
-                patch(
-                    "users.users_profile.export_service.gear_crud.get_gear_user",
-                    return_value=[],
-                ),
-                patch(
-                    "users.users_profile.export_service.gear_components_crud.get_gear_components_user",
-                    side_effect=Exception("components fail"),
-                ),
-                pytest.raises(DataCollectionError),
-            ):
-                service.collect_gear_data(z)
-
-
-class TestExportServiceCollectHealthWeight:
-    def test_collect_health_weight_with_data(self) -> None:
-        buf = io.BytesIO()
-        with zipfile.ZipFile(buf, "w", zipfile.ZIP_DEFLATED, compresslevel=6) as z:
-            mock_db = MagicMock(spec=Session)
-            service = profile_export_service.ExportService(user_id=1, db=mock_db)
-            service.performance_config.enable_memory_monitoring = False
-            mock_health = [MagicMock(), MagicMock()]
-
-            with (
-                patch(
-                    "users.users_profile.export_service.health_weight_crud.get_all_health_weight_by_user_id",
-                    return_value=mock_health,
-                ),
-                patch(
-                    "users.users_profile.export_service.health_targets_crud.get_health_targets_by_user_id",
-                    return_value=MagicMock(),
-                ),
-                patch.object(profile_utils, "sqlalchemy_obj_to_dict", return_value={"id": 1}),
-            ):
-                service.collect_health_weight(z)
-
-        assert service.counts.get("health_weight", 0) >= 2
-
-    def test_collect_health_weight_crud_exception_raises_data_collection_error(self) -> None:
-        buf = io.BytesIO()
-        with zipfile.ZipFile(buf, "w", zipfile.ZIP_DEFLATED, compresslevel=6) as z:
-            mock_db = MagicMock(spec=Session)
-            service = profile_export_service.ExportService(user_id=1, db=mock_db)
-            service.performance_config.enable_memory_monitoring = False
-
-            with (
-                patch(
-                    "users.users_profile.export_service.health_weight_crud.get_all_health_weight_by_user_id",
-                    side_effect=Exception("unexpected"),
-                ),
-                pytest.raises(DataCollectionError),
-            ):
-                service.collect_health_weight(z)
-
-    def test_collect_health_weight_no_data(self) -> None:
-        buf = io.BytesIO()
-        with zipfile.ZipFile(buf, "w", zipfile.ZIP_DEFLATED, compresslevel=6) as z:
-            mock_db = MagicMock(spec=Session)
-            service = profile_export_service.ExportService(user_id=1, db=mock_db)
-            service.performance_config.enable_memory_monitoring = False
-
-            with (
-                patch(
-                    "users.users_profile.export_service.health_weight_crud.get_all_health_weight_by_user_id",
-                    return_value=[],
-                ),
-                patch(
-                    "users.users_profile.export_service.health_targets_crud.get_health_targets_by_user_id",
-                    return_value=None,
-                ),
-            ):
-                service.collect_health_weight(z)
-
-
 class TestExportServiceCollectUserSettings:
     def test_collect_settings_all_empty(self) -> None:
         buf = io.BytesIO()
@@ -424,14 +276,6 @@ class TestExportServiceCollectUserSettings:
             service.performance_config.enable_memory_monitoring = False
 
             with (
-                patch(
-                    "users.users_profile.export_service.user_default_gear_crud.get_user_default_gear_by_user_id",
-                    return_value=None,
-                ),
-                patch(
-                    "users.users_profile.export_service.user_goals_crud.get_user_goals_by_user_id",
-                    return_value=[],
-                ),
                 patch(
                     "users.users_profile.export_service.user_integrations_crud.get_user_integrations_by_user_id",
                     return_value=None,
@@ -452,14 +296,6 @@ class TestExportServiceCollectUserSettings:
 
             with (
                 patch(
-                    "users.users_profile.export_service.user_default_gear_crud.get_user_default_gear_by_user_id",
-                    return_value=MagicMock(),
-                ),
-                patch(
-                    "users.users_profile.export_service.user_goals_crud.get_user_goals_by_user_id",
-                    return_value=[MagicMock()],
-                ),
-                patch(
                     "users.users_profile.export_service.user_integrations_crud.get_user_integrations_by_user_id",
                     return_value=MagicMock(),
                 ),
@@ -471,8 +307,7 @@ class TestExportServiceCollectUserSettings:
             ):
                 service.collect_user_settings_data(z)
 
-        assert service.counts.get("user_default_gear", 0) >= 1
-        assert service.counts.get("user_goals", 0) >= 1
+        assert service.counts.get("user_integrations", 0) >= 1
 
     def test_identity_providers_not_in_export_zip(self) -> None:
         """Verify identity-link data is never written to the export ZIP (security boundary)."""
@@ -483,14 +318,6 @@ class TestExportServiceCollectUserSettings:
             service.performance_config.enable_memory_monitoring = False
 
             with (
-                patch(
-                    "users.users_profile.export_service.user_default_gear_crud.get_user_default_gear_by_user_id",
-                    return_value=None,
-                ),
-                patch(
-                    "users.users_profile.export_service.user_goals_crud.get_user_goals_by_user_id",
-                    return_value=[],
-                ),
                 patch(
                     "users.users_profile.export_service.user_integrations_crud.get_user_integrations_by_user_id",
                     return_value=None,
@@ -515,7 +342,7 @@ class TestExportServiceCollectUserSettings:
 
             with (
                 patch(
-                    "users.users_profile.export_service.user_default_gear_crud.get_user_default_gear_by_user_id",
+                    "users.users_profile.export_service.user_integrations_crud.get_user_integrations_by_user_id",
                     side_effect=Exception("fail"),
                 ),
                 pytest.raises(DataCollectionError),
@@ -711,8 +538,6 @@ class TestExportServiceGenerateExportArchive:
                 "collect_user_activities_data",
                 return_value=[_make_activity_mock(1)],
             ),
-            patch.object(service, "collect_gear_data"),
-            patch.object(service, "collect_health_weight"),
             patch.object(service, "collect_user_settings_data"),
             patch.object(service, "add_activity_files_to_zip"),
             patch.object(service, "add_activity_media_to_zip"),
@@ -1119,34 +944,6 @@ class TestExportServiceCollectComponentSimpleDetailed:
             assert args[2] == []
 
 
-class TestExportServiceDbErrorWrapsDataCollectionError:
-    def test_gear_db_error_wraps_as_data_collection_error(self) -> None:
-        with zipfile.ZipFile(io.BytesIO(), "w", zipfile.ZIP_DEFLATED, compresslevel=6) as z:
-            service = profile_export_service.ExportService(user_id=1, db=MagicMock(spec=Session))
-            service.performance_config.enable_memory_monitoring = False
-            with (
-                patch(
-                    "users.users_profile.export_service.gear_crud.get_gear_user",
-                    side_effect=SQLAlchemyError("db down"),
-                ),
-                pytest.raises(DataCollectionError),
-            ):
-                service.collect_gear_data(z)
-
-    def test_health_weight_db_error_wraps_as_data_collection_error(self) -> None:
-        with zipfile.ZipFile(io.BytesIO(), "w", zipfile.ZIP_DEFLATED, compresslevel=6) as z:
-            service = profile_export_service.ExportService(user_id=1, db=MagicMock(spec=Session))
-            service.performance_config.enable_memory_monitoring = False
-            with (
-                patch(
-                    "users.users_profile.export_service.health_weight_crud.get_all_health_weight_by_user_id",
-                    side_effect=SQLAlchemyError("db down"),
-                ),
-                pytest.raises(DataCollectionError),
-            ):
-                service.collect_health_weight(z)
-
-
 class TestExportServiceCollectUserSettingsEdgeCases:
     """Cover exception handlers in collect_user_settings_data."""
 
@@ -1159,14 +956,6 @@ class TestExportServiceCollectUserSettingsEdgeCases:
             service.performance_config.enable_memory_monitoring = False
 
             with (
-                patch(
-                    "users.users_profile.export_service.user_default_gear_crud.get_user_default_gear_by_user_id",
-                    side_effect=Exception("gear fail"),
-                ),
-                patch(
-                    "users.users_profile.export_service.user_goals_crud.get_user_goals_by_user_id",
-                    side_effect=Exception("goals fail"),
-                ),
                 patch(
                     "users.users_profile.export_service.user_integrations_crud.get_user_integrations_by_user_id",
                     side_effect=Exception("integrations fail"),
@@ -1190,7 +979,7 @@ class TestExportServiceCollectUserSettingsEdgeCases:
 
             with (
                 patch(
-                    "users.users_profile.export_service.user_default_gear_crud.get_user_default_gear_by_user_id",
+                    "users.users_profile.export_service.user_integrations_crud.get_user_integrations_by_user_id",
                     side_effect=SQLAlchemyError("db down"),
                 ),
                 pytest.raises(DataCollectionError),
@@ -1610,8 +1399,6 @@ class TestExportServiceGenerateExportArchiveEdgeCases:
                 side_effect=ExportTimeoutError("timed out"),
             ),
             patch.object(service, "collect_user_activities_data", return_value=[]),
-            patch.object(service, "collect_gear_data"),
-            patch.object(service, "collect_health_weight"),
             patch.object(service, "collect_user_settings_data"),
             patch.object(service, "add_activity_files_to_zip"),
             patch.object(service, "add_activity_media_to_zip"),
@@ -1633,8 +1420,6 @@ class TestExportServiceGenerateExportArchiveEdgeCases:
             patch("tempfile.NamedTemporaryFile", return_value=tmp_mock),
             patch("os.fsync"),
             patch.object(service, "collect_user_activities_data", return_value=[]),
-            patch.object(service, "collect_gear_data"),
-            patch.object(service, "collect_health_weight"),
             patch.object(service, "collect_user_settings_data"),
             patch.object(service, "add_activity_files_to_zip"),
             patch.object(service, "add_activity_media_to_zip"),
@@ -1653,8 +1438,6 @@ class TestExportServiceGenerateExportArchiveEdgeCases:
         with (
             patch("os.fsync", side_effect=OSError("fsync failed")),
             patch.object(service, "collect_user_activities_data", return_value=[]),
-            patch.object(service, "collect_gear_data"),
-            patch.object(service, "collect_health_weight"),
             patch.object(service, "collect_user_settings_data"),
             patch.object(service, "add_activity_files_to_zip"),
             patch.object(service, "add_activity_media_to_zip"),
@@ -1673,8 +1456,6 @@ class TestExportServiceGenerateExportArchiveEdgeCases:
         with (
             patch("os.fsync", side_effect=MemoryError("OOM")),
             patch.object(service, "collect_user_activities_data", return_value=[]),
-            patch.object(service, "collect_gear_data"),
-            patch.object(service, "collect_health_weight"),
             patch.object(service, "collect_user_settings_data"),
             patch.object(service, "add_activity_files_to_zip"),
             patch.object(service, "add_activity_media_to_zip"),

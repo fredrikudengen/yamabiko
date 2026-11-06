@@ -128,9 +128,9 @@ class TestImportServiceLoadSingleJson:
         )
         service.performance_config.enable_memory_monitoring = False
 
-        zip_data = _make_zip_with_json({"data/gears.json": [{"id": 1}]})
+        zip_data = _make_zip_with_json({"data/user.json": [{"id": 1}]})
         with zipfile.ZipFile(BytesIO(zip_data)) as z:
-            result = service._load_single_json(z, "data/gears.json")
+            result = service._load_single_json(z, "data/user.json")
 
         assert result == [{"id": 1}]
 
@@ -233,125 +233,7 @@ class TestImportServiceGetSplitFiles:
         assert result == []
 
 
-class TestImportServiceGears:
-    async def test_collect_and_import_gears(self) -> None:
-        mock_db = MagicMock(spec=Session)
-        mock_ws = MagicMock()
-        service = profile_import_service.ImportService(
-            user_id=1,
-            db=mock_db,
-            websocket_manager=mock_ws,
-        )
-
-        mock_new_gear = MagicMock()
-        mock_new_gear.id = 10
-
-        with patch(
-            "users.users_profile.import_service.gear_crud.create_gear",
-            return_value=mock_new_gear,
-        ):
-            mapping = await service.collect_and_import_gears_data([{"id": 5, "nickname": "Garmin", "gear_type": 1}])
-
-        assert mapping == {5: 10}
-
-    async def test_collect_and_import_gears_empty(self) -> None:
-        mock_db = MagicMock(spec=Session)
-        mock_ws = MagicMock()
-        service = profile_import_service.ImportService(
-            user_id=1,
-            db=mock_db,
-            websocket_manager=mock_ws,
-        )
-
-        mapping = await service.collect_and_import_gears_data([])
-        assert mapping == {}
-
-    async def test_collect_and_import_gear_components(self) -> None:
-        mock_db = MagicMock(spec=Session)
-        mock_ws = MagicMock()
-        service = profile_import_service.ImportService(
-            user_id=1,
-            db=mock_db,
-            websocket_manager=mock_ws,
-        )
-
-        with patch("users.users_profile.import_service.gear_components_crud.create_gear_component"):
-            await service.collect_and_import_gear_components_data(
-                [{"gear_id": 5, "type": "chain", "brand": "Shimano", "model": "Ultegra"}],
-                {5: 10},
-            )
-
-        assert service.counts["gear_components"] == 1
-
-    async def test_collect_and_import_gear_components_empty(self) -> None:
-        mock_db = MagicMock(spec=Session)
-        mock_ws = MagicMock()
-        service = profile_import_service.ImportService(
-            user_id=1,
-            db=mock_db,
-            websocket_manager=mock_ws,
-        )
-
-        await service.collect_and_import_gear_components_data([], {})
-        assert service.counts.get("gear_components", 0) == 0
-
-
 class TestImportServiceUserData:
-    async def test_collect_and_import_user_default_gear_empty(self) -> None:
-        mock_db = MagicMock(spec=Session)
-        mock_ws = MagicMock()
-        service = profile_import_service.ImportService(
-            user_id=1,
-            db=mock_db,
-            websocket_manager=mock_ws,
-        )
-        await service.collect_and_import_user_default_gear([], {})
-        assert service.counts["user_default_gear"] == 0
-
-    async def test_collect_and_import_user_default_gear_creates_when_missing(self) -> None:
-        mock_db = MagicMock(spec=Session)
-        mock_ws = MagicMock()
-        service = profile_import_service.ImportService(
-            user_id=1,
-            db=mock_db,
-            websocket_manager=mock_ws,
-        )
-        with (
-            patch(
-                "users.users_profile.import_service.user_default_gear_crud.get_user_default_gear_by_user_id",
-                return_value=None,
-            ),
-            patch("users.users_profile.import_service.user_default_gear_crud.create_user_default_gear") as mock_create,
-            patch("users.users_profile.import_service.user_default_gear_crud.edit_user_default_gear"),
-        ):
-            mock_create.return_value.id = 99
-            await service.collect_and_import_user_default_gear([{"run_gear_id": 5}], {5: 10})
-        assert service.counts["user_default_gear"] == 1
-        mock_create.assert_called_once_with(1, mock_db)
-
-    async def test_collect_and_import_user_default_gear_with_remapping(self) -> None:
-        mock_db = MagicMock(spec=Session)
-        mock_ws = MagicMock()
-        service = profile_import_service.ImportService(
-            user_id=1,
-            db=mock_db,
-            websocket_manager=mock_ws,
-        )
-        mock_existing = MagicMock()
-        mock_existing.id = 99
-        with (
-            patch(
-                "users.users_profile.import_service.user_default_gear_crud.get_user_default_gear_by_user_id",
-                return_value=mock_existing,
-            ),
-            patch("users.users_profile.import_service.user_default_gear_crud.edit_user_default_gear"),
-        ):
-            await service.collect_and_import_user_default_gear(
-                [{"run_gear_id": 5, "ride_gear_id": 7}],
-                {5: 10, 7: 20},
-            )
-        assert service.counts["user_default_gear"] == 1
-
     async def test_collect_and_import_user_integrations_empty(self) -> None:
         mock_db = MagicMock(spec=Session)
         mock_ws = MagicMock()
@@ -362,17 +244,6 @@ class TestImportServiceUserData:
         )
         await service.collect_and_import_user_integrations([])
         assert service.counts.get("user_integrations", 0) == 0
-
-    async def test_collect_and_import_user_goals_empty(self) -> None:
-        mock_db = MagicMock(spec=Session)
-        mock_ws = MagicMock()
-        service = profile_import_service.ImportService(
-            user_id=1,
-            db=mock_db,
-            websocket_manager=mock_ws,
-        )
-        await service.collect_and_import_user_goals([])
-        assert service.counts.get("user_goals", 0) == 0
 
     async def test_collect_and_import_user_privacy_settings_empty(self) -> None:
         mock_db = MagicMock(spec=Session)
@@ -399,8 +270,6 @@ class TestImportServiceUserData:
                 "users.users_profile.import_service.users_crud.edit_profile_user",
                 new_callable=AsyncMock,
             ),
-            patch.object(service, "collect_and_import_user_default_gear", new_callable=AsyncMock),
-            patch.object(service, "collect_and_import_user_goals", new_callable=AsyncMock),
             patch.object(service, "collect_and_import_user_integrations", new_callable=AsyncMock),
             patch.object(service, "collect_and_import_user_privacy_settings", new_callable=AsyncMock),
         ):
@@ -408,9 +277,6 @@ class TestImportServiceUserData:
                 [{"photo_path": "data/user_images/old_user.jpg"}],
                 [],
                 [],
-                [],
-                [],
-                {},
             )
 
         assert service.counts["user"] == 1
@@ -425,16 +291,12 @@ class TestImportServiceUserData:
         )
 
         with (
-            patch.object(service, "collect_and_import_user_default_gear", new_callable=AsyncMock) as mock_gear,
-            patch.object(service, "collect_and_import_user_goals", new_callable=AsyncMock) as mock_goals,
             patch.object(service, "collect_and_import_user_integrations", new_callable=AsyncMock) as mock_int,
             patch.object(service, "collect_and_import_user_privacy_settings", new_callable=AsyncMock) as mock_priv,
         ):
-            await service.collect_and_import_user_data([], [], [], [], [], {})
+            await service.collect_and_import_user_data([], [], [])
 
         assert service.counts.get("user", 0) == 0
-        mock_gear.assert_called_once()
-        mock_goals.assert_called_once()
         mock_int.assert_called_once()
         mock_priv.assert_called_once()
 
@@ -453,22 +315,6 @@ class TestImportServiceUserData:
             await service.collect_and_import_user_integrations([{"strava_sync_gear": True}])
 
         assert service.counts["user_integrations"] == 1
-
-    async def test_collect_and_import_user_goals(self) -> None:
-        mock_db = MagicMock(spec=Session)
-        mock_ws = MagicMock()
-        service = profile_import_service.ImportService(
-            user_id=1,
-            db=mock_db,
-            websocket_manager=mock_ws,
-        )
-
-        with patch("users.users_profile.import_service.user_goals_crud.create_user_goal"):
-            await service.collect_and_import_user_goals(
-                [{"interval": "daily", "activity_type": "run", "goal_type": "distance", "goal_distance": 5000}]
-            )
-
-        assert service.counts["user_goals"] == 1
 
     async def test_collect_and_import_user_privacy_settings(self) -> None:
         mock_db = MagicMock(spec=Session)
@@ -534,88 +380,6 @@ class TestImportServiceUserData:
         assert service.counts.get("user_identity_providers", 0) == 0
 
 
-class TestImportServiceHealth:
-    async def test_collect_and_import_health_weight(self) -> None:
-        mock_db = MagicMock(spec=Session)
-        mock_ws = MagicMock()
-        service = profile_import_service.ImportService(
-            user_id=1,
-            db=mock_db,
-            websocket_manager=mock_ws,
-        )
-
-        mock_health_target = MagicMock()
-        mock_health_target.id = 1
-
-        with (
-            patch("users.users_profile.import_service.health_weight_crud.create_health_weight"),
-            patch(
-                "users.users_profile.import_service.health_targets_crud.get_health_targets_by_user_id",
-                return_value=mock_health_target,
-            ),
-            patch("users.users_profile.import_service.health_targets_crud.edit_health_target"),
-        ):
-            await service.collect_and_import_health_weight(
-                [{"weight": 75.5}],
-                [{"weight": 80.0, "steps": 10000}],
-            )
-
-        assert service.counts["health_weight"] == 1
-        assert service.counts["health_targets"] == 1
-
-    async def test_collect_and_import_health_weight_string_conversion_errors(self) -> None:
-        mock_db = MagicMock(spec=Session)
-        mock_ws = MagicMock()
-        service = profile_import_service.ImportService(
-            user_id=1,
-            db=mock_db,
-            websocket_manager=mock_ws,
-        )
-
-        mock_target = MagicMock()
-        mock_target.id = 1
-
-        with (
-            patch("users.users_profile.import_service.health_weight_crud.create_health_weight"),
-            patch(
-                "users.users_profile.import_service.health_targets_crud.get_health_targets_by_user_id",
-                return_value=mock_target,
-            ),
-            patch("users.users_profile.import_service.health_targets_crud.edit_health_target"),
-        ):
-            await service.collect_and_import_health_weight(
-                [{"weight": "abc", "physique_rating": "xyz", "metabolic_age": "invalid"}],
-                [{"weight": "bad", "steps": "wrong", "sleep": "nope"}],
-            )
-
-        assert service.counts["health_weight"] == 1
-        assert service.counts["health_targets"] == 1
-
-    async def test_collect_and_import_health_weight_no_targets(self) -> None:
-        mock_db = MagicMock(spec=Session)
-        mock_ws = MagicMock()
-        service = profile_import_service.ImportService(
-            user_id=1,
-            db=mock_db,
-            websocket_manager=mock_ws,
-        )
-
-        with (
-            patch("users.users_profile.import_service.health_weight_crud.create_health_weight"),
-            patch(
-                "users.users_profile.import_service.health_targets_crud.get_health_targets_by_user_id",
-                return_value=None,
-            ),
-            patch("users.users_profile.import_service.health_targets_crud.create_health_targets"),
-        ):
-            await service.collect_and_import_health_weight(
-                [{"weight": 75.5}],
-                [],
-            )
-
-        assert service.counts["health_weight"] == 1
-
-
 class TestImportServiceActivities:
     async def test_collect_and_import_activities_batched_empty(self) -> None:
         mock_db = MagicMock(spec=Session)
@@ -631,7 +395,6 @@ class TestImportServiceActivities:
             mapping = await service.collect_and_import_activities_data_batched(
                 z,
                 set(),
-                {},
                 0,
                 3600,
             )
@@ -653,7 +416,6 @@ class TestImportServiceActivities:
             await service.collect_and_import_activities_data_batched(
                 z,
                 set(),
-                {},
                 0,
                 3600,
             )
@@ -832,16 +594,12 @@ class TestImportServiceFromZip:
             }
         )
 
-        async def _increment_gears(_data):
-            service.counts["gears"] = 1
-            return {}
+        async def _increment_user(*_args):
+            service.counts["user"] = 1
 
         with (
-            patch.object(service, "collect_and_import_gears_data", side_effect=_increment_gears),
-            patch.object(service, "collect_and_import_gear_components_data", new_callable=AsyncMock),
-            patch.object(service, "collect_and_import_user_data", new_callable=AsyncMock),
+            patch.object(service, "collect_and_import_user_data", side_effect=_increment_user),
             patch.object(service, "collect_and_import_activities_data_batched", return_value={}),
-            patch.object(service, "collect_and_import_health_weight", new_callable=AsyncMock),
             patch.object(service, "add_activity_files_from_zip", new_callable=AsyncMock),
             patch.object(service, "add_activity_media_from_zip", new_callable=AsyncMock),
             patch.object(service, "add_user_images_from_zip", new_callable=AsyncMock),
@@ -861,10 +619,10 @@ class TestImportServiceFromZip:
         service.performance_config.enable_memory_monitoring = False
         service.performance_config.max_file_size_mb = 100
 
-        zip_data = _make_zip_with_json({"data/gears.json": []})
+        zip_data = _make_zip_with_json({"data/user.json": []})
 
         with (
-            patch.object(service, "collect_and_import_gears_data", side_effect=OSError("disk full")),
+            patch.object(service, "collect_and_import_user_data", side_effect=OSError("disk full")),
             pytest.raises(FileSystemError),
         ):
             await service.import_from_zip_data(zip_data)
@@ -898,11 +656,8 @@ class TestImportServiceFromZip:
         )
 
         with (
-            patch.object(service, "collect_and_import_gears_data", return_value={}),
-            patch.object(service, "collect_and_import_gear_components_data", new_callable=AsyncMock),
             patch.object(service, "collect_and_import_user_data", new_callable=AsyncMock),
             patch.object(service, "collect_and_import_activities_data_batched", return_value={}),
-            patch.object(service, "collect_and_import_health_weight", new_callable=AsyncMock),
             patch.object(service, "add_activity_files_from_zip", new_callable=AsyncMock),
             patch.object(service, "add_activity_media_from_zip", new_callable=AsyncMock),
             patch.object(service, "add_user_images_from_zip", new_callable=AsyncMock),
@@ -1272,7 +1027,6 @@ class TestImportServiceActivitiesDataBatched:
             mapping = await service.collect_and_import_activities_data_batched(
                 z,
                 file_list,
-                {5: 20},
                 time.time(),
                 3600,
             )
@@ -1322,7 +1076,6 @@ class TestImportServiceActivitiesDataBatched:
             mapping = await service.collect_and_import_activities_data_batched(
                 z,
                 file_list,
-                {5: 20},
                 time.time(),
                 3600,
             )
@@ -1606,75 +1359,6 @@ class TestImportServiceAddUserImages:
         assert service.counts.get("user_images", 0) == 0
 
 
-class TestImportServiceHealthEmptyBranches:
-    async def test_collect_and_import_health_weight_empty_data(self) -> None:
-        mock_db = MagicMock(spec=Session)
-        mock_ws = MagicMock()
-        service = profile_import_service.ImportService(
-            user_id=1,
-            db=mock_db,
-            websocket_manager=mock_ws,
-        )
-
-        mock_target = MagicMock()
-        mock_target.id = 1
-
-        with (
-            patch(
-                "users.users_profile.import_service.health_targets_crud.get_health_targets_by_user_id",
-                return_value=mock_target,
-            ),
-            patch("users.users_profile.import_service.health_targets_crud.edit_health_target"),
-        ):
-            await service.collect_and_import_health_weight([], [{"weight": 80.0}])
-
-        assert service.counts.get("health_weight", 0) == 0
-        assert service.counts["health_targets"] == 1
-
-    async def test_collect_and_import_health_targets_no_current(self) -> None:
-        mock_db = MagicMock(spec=Session)
-        mock_ws = MagicMock()
-        service = profile_import_service.ImportService(
-            user_id=1,
-            db=mock_db,
-            websocket_manager=mock_ws,
-        )
-
-        with (
-            patch("users.users_profile.import_service.health_weight_crud.create_health_weight"),
-            patch(
-                "users.users_profile.import_service.health_targets_crud.get_health_targets_by_user_id",
-                return_value=None,
-            ),
-            patch("users.users_profile.import_service.health_targets_crud.edit_health_target"),
-            patch(
-                "users.users_profile.import_service.health_targets_schema.HealthTargetsUpdate", return_value=MagicMock()
-            ),
-        ):
-            await service.collect_and_import_health_weight(
-                [{"weight": 75.5}],
-                [{"weight": 80.0, "id": 99}],
-            )
-
-        assert service.counts["health_weight"] == 1
-        assert service.counts["health_targets"] == 1
-
-    async def test_collect_and_import_health_weight_empty_targets(self) -> None:
-        mock_db = MagicMock(spec=Session)
-        mock_ws = MagicMock()
-        service = profile_import_service.ImportService(
-            user_id=1,
-            db=mock_db,
-            websocket_manager=mock_ws,
-        )
-
-        with patch("users.users_profile.import_service.health_weight_crud.create_health_weight"):
-            await service.collect_and_import_health_weight([{"weight": 75.5}], [])
-
-        assert service.counts["health_weight"] == 1
-        assert service.counts.get("health_targets", 0) == 0
-
-
 class TestImportServiceFromZipExtended:
     async def test_import_from_zip_json_decode_error(self) -> None:
         mock_db = MagicMock(spec=Session)
@@ -1689,7 +1373,7 @@ class TestImportServiceFromZipExtended:
 
         buf = BytesIO()
         with zipfile.ZipFile(buf, "w", zipfile.ZIP_DEFLATED) as z:
-            z.writestr("data/gears.json", "not-valid-json")
+            z.writestr("data/user.json", "not-valid-json")
         zip_data = buf.getvalue()
 
         with pytest.raises(JSONParseError, match="Failed to parse JSON"):

@@ -10,10 +10,8 @@ from sqlalchemy.orm import Session
 
 import core.config as core_config
 import core.file_uploads as core_file_uploads
-import health.health_targets.crud as health_targets_crud
 import users.users.crud as users_crud
 import users.users.schema as users_schema
-import users.users_default_gear.crud as user_default_gear_crud
 import users.users_integrations.crud as user_integrations_crud
 import users.users_privacy_settings.crud as users_privacy_settings_crud
 
@@ -114,12 +112,6 @@ def create_user_default_data(
 
     # Create the user privacy settings
     users_privacy_settings_crud.create_user_privacy_settings(user_id, db)
-
-    # Create the user health targets
-    health_targets_crud.create_health_targets(user_id, db)
-
-    # Create the user default gear
-    user_default_gear_crud.create_user_default_gear(user_id, db)
 
     # Create the user's MFA row (disabled by default) via the auth boundary.
     identity_service.initialize_user_mfa(user_id)

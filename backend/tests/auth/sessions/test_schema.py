@@ -265,8 +265,6 @@ class TestUsersSessionsInternalSchema:
             expires_at=now,
             user_id=1,
             refresh_token="hashed-token",
-            oauth_state_id=None,
-            tokens_exchanged=False,
             token_family_id="family-id",
             rotation_count=0,
             last_rotation_at=None,
@@ -275,8 +273,6 @@ class TestUsersSessionsInternalSchema:
 
         # Assert
         assert session.refresh_token == "hashed-token"
-        assert session.oauth_state_id is None
-        assert session.tokens_exchanged is False
         assert session.token_family_id == "family-id"
         assert session.rotation_count == 0
         assert session.last_rotation_at is None
@@ -302,41 +298,12 @@ class TestUsersSessionsInternalSchema:
             last_activity_at=now,
             expires_at=now,
             user_id=1,
-            tokens_exchanged=False,
             token_family_id="family-id",
             rotation_count=0,
         )
 
         # Assert
         assert session.refresh_token is None
-
-    def test_internal_schema_tokens_exchanged_default(self):
-        """
-        Test UsersSessionsInternal schema tokens_exchanged default.
-        """
-        # Arrange
-        now = datetime.now(UTC)
-
-        # Act
-        session = users_session_schema.UsersSessionsInternal(
-            id="test-session-id",
-            ip_address="192.168.1.1",
-            device_type="PC",
-            operating_system="Windows",
-            operating_system_version="10",
-            browser="Chrome",
-            browser_version="120.0",
-            created_at=now,
-            last_activity_at=now,
-            expires_at=now,
-            user_id=1,
-            refresh_token="hashed-token",
-            token_family_id="family-id",
-            rotation_count=0,
-        )
-
-        # Assert
-        assert session.tokens_exchanged is False
 
     def test_internal_schema_rotation_count_non_negative(self):
         """
@@ -365,36 +332,6 @@ class TestUsersSessionsInternalSchema:
             )
 
         assert "rotation_count" in str(exc_info.value)
-
-    def test_internal_schema_oauth_state_id_max_length(self):
-        """
-        Test UsersSessionsInternal schema oauth_state_id max length.
-        """
-        # Arrange
-        now = datetime.now(UTC)
-        long_oauth_state = "a" * 70  # Exceeds 64 character limit
-
-        # Act & Assert
-        with pytest.raises(ValidationError) as exc_info:
-            users_session_schema.UsersSessionsInternal(
-                id="test-session-id",
-                ip_address="192.168.1.1",
-                device_type="PC",
-                operating_system="Windows",
-                operating_system_version="10",
-                browser="Chrome",
-                browser_version="120.0",
-                created_at=now,
-                last_activity_at=now,
-                expires_at=now,
-                user_id=1,
-                refresh_token="hashed-token",
-                oauth_state_id=long_oauth_state,
-                token_family_id="family-id",
-                rotation_count=0,
-            )
-
-        assert "oauth_state_id" in str(exc_info.value)
 
     def test_internal_schema_inherits_from_base(self):
         """
@@ -427,8 +364,6 @@ class TestUsersSessionsInternalSchema:
             expires_at=now,
             user_id=1,
             refresh_token="hashed-token",
-            oauth_state_id="oauth-state-123",
-            tokens_exchanged=True,
             token_family_id="family-id",
             rotation_count=5,
             last_rotation_at=now,
@@ -436,8 +371,6 @@ class TestUsersSessionsInternalSchema:
         )
 
         # Assert
-        assert session.oauth_state_id == "oauth-state-123"
-        assert session.tokens_exchanged is True
         assert session.rotation_count == 5
         assert session.last_rotation_at == now
         assert session.csrf_token_hash == "csrf-hash"

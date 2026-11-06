@@ -444,36 +444,6 @@ class TestEditUser:
         mock_db.refresh.assert_called_once()
 
     @pytest.mark.asyncio
-    async def test_success_with_height_change(self):
-        from users.users.crud import edit_user
-
-        mock_db = MagicMock(spec=Session)
-        mock_db_user = MagicMock()
-        mock_db_user.height = 180
-        mock_db_user.photo_path = None
-
-        mock_user_schema = MagicMock()
-        mock_user_schema.username = "updateduser"
-        mock_user_schema.photo_path = None
-        # Return a copy so the returned dict has the new height
-        mock_user_schema.model_dump.return_value = {"username": "updateduser", "height": 185}
-
-        with (
-            patch("users.users.crud._get_user_model_by_id_or_404", return_value=mock_db_user),
-            patch("users.users.crud.health_weight_utils.calculate_bmi_all_user_entries") as mock_bmi,
-        ):
-            # Simulate that height changes during refresh
-            def refresh_side_effect():
-                mock_db_user.height = 185
-
-            mock_db.refresh.side_effect = lambda x: refresh_side_effect()
-
-            result = await edit_user(1, mock_user_schema, mock_db)
-
-        assert result == mock_db_user
-        mock_bmi.assert_called_once()
-
-    @pytest.mark.asyncio
     async def test_with_photo_path_update(self):
         from users.users.crud import edit_user
 
@@ -717,30 +687,6 @@ class TestEditProfileUser:
             result = await edit_profile_user(1, mock_profile, mock_db)
 
         assert result == mock_db_user
-
-    @pytest.mark.asyncio
-    async def test_height_change_triggers_bmi_recalc(self):
-        from users.users.crud import edit_profile_user
-
-        mock_db = MagicMock(spec=Session)
-        mock_db_user = MagicMock()
-        mock_db_user.id = 1
-        mock_db_user.height = 180
-        mock_db_user.photo_path = None
-
-        mock_profile = MagicMock()
-        mock_profile.model_dump.return_value = {"height": 185}
-
-        with (
-            patch("users.users.crud._get_user_model_by_id_or_404", return_value=mock_db_user),
-            patch("users.users.crud.health_weight_utils.calculate_bmi_all_user_entries") as mock_bmi,
-        ):
-            mock_db.refresh.side_effect = lambda x: setattr(mock_db_user, "height", 185)
-
-            result = await edit_profile_user(1, mock_profile, mock_db)
-
-        assert result == mock_db_user
-        mock_bmi.assert_called_once_with(1, mock_db)
 
     @pytest.mark.asyncio
     async def test_max_heart_rate_change_triggers_hr_zone_recompute(self):

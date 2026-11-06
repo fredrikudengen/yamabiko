@@ -22,7 +22,6 @@ from sqlalchemy.orm import Session
 
 import auth.password_policy as auth_password_policy
 import core.decorators as core_decorators
-import health.health_weight.utils as health_weight_utils
 import server_settings.schema as server_settings_schema
 import server_settings.utils as server_settings_utils
 import users.users.models as users_models
@@ -89,10 +88,8 @@ def _get_user_model_by_id_or_404(user_id: int, db: Session) -> users_models.User
 
 def _persist_user_edits(
     db_users: users_models.Users,
-    height_before: int | None,
     max_heart_rate_before: int | None,
     birthdate_before: datetime.date | None,
-    recalculate_bmi_on_height_change: bool,
     db: Session,
 ) -> users_schema.UsersRead:
     """
@@ -100,22 +97,17 @@ def _persist_user_edits(
 
     Bundles the blocking portion of an edit into a single unit so
     callers can offload it with ``run_in_threadpool`` and keep the API
-    event loop responsive. The commit/refresh, the bulk BMI
-    recalculation, and the HR zone recomputation are all synchronous
-    SQLAlchemy calls.
+    event loop responsive. The commit/refresh and the HR zone
+    recomputation are synchronous SQLAlchemy calls.
 
     Args:
         db_users: Mapped ``Users`` row carrying pending in-memory
             changes that have not yet been committed.
-        height_before: User height prior to the edit, used to detect a
-            change that requires recalculating BMI.
         max_heart_rate_before: Max heart rate prior to the edit, used
             to detect a change that requires recomputing HR zones.
         birthdate_before: Birthdate prior to the edit; it feeds the
             age-derived max-HR fallback, so a change can also require
             recomputing HR zones.
-        recalculate_bmi_on_height_change: When ``True`` and the height
-            actually changed, recompute BMI for every weight entry.
         db: SQLAlchemy database session.
 
     Returns:
@@ -123,10 +115,6 @@ def _persist_user_edits(
     """
     db.commit()
     db.refresh(db_users)
-
-    if recalculate_bmi_on_height_change and height_before != db_users.height:
-        # Update the user's health data
-        health_weight_utils.calculate_bmi_all_user_entries(db_users.id, db)
 
     # HR zones are pre-computed and stored per stream at import time
     # from the user's resolved max heart rate. Recompute them when the
@@ -456,7 +444,6 @@ async def edit_user(user_id: int, user: users_schema.UsersRead, db: Session) -> 
         # Fetch the user off the event loop (blocking DB read).
         db_users = await run_in_threadpool(_get_user_model_by_id_or_404, user_id, db)
 
-        height_before = db_users.height
         max_heart_rate_before = db_users.max_heart_rate
         birthdate_before = db_users.birthdate
 
@@ -481,16 +468,14 @@ async def edit_user(user_id: int, user: users_schema.UsersRead, db: Session) -> 
                 continue
             setattr(db_users, key, value)
 
-        # Persist the changes off the event loop. The commit/refresh and the
-        # bulk BMI recalculation are blocking SQLAlchemy calls, so run them
-        # in a worker thread to keep the API event loop responsive.
+        # Persist the changes off the event loop. The commit/refresh is a
+        # blocking SQLAlchemy call, so run it in a worker thread to keep the
+        # API event loop responsive.
         updated_user = await run_in_threadpool(
             _persist_user_edits,
             db_users,
-            height_before,
             max_heart_rate_before,
             birthdate_before,
-            True,
             db,
         )
 
@@ -568,7 +553,6 @@ async def edit_profile_user(
         # Fetch the user off the event loop (blocking DB read).
         db_users = await run_in_threadpool(_get_user_model_by_id_or_404, user_id, db)
 
-        height_before = db_users.height
         max_heart_rate_before = db_users.max_heart_rate
         birthdate_before = db_users.birthdate
         previous_photo_path = db_users.photo_path
@@ -624,16 +608,14 @@ async def edit_profile_user(
         for key, value in updates.items():
             setattr(db_users, key, value)
 
-        # Persist the changes off the event loop. The commit/refresh and the
-        # bulk BMI recalculation are blocking SQLAlchemy calls, so run them
-        # in a worker thread to keep the API event loop responsive.
+        # Persist the changes off the event loop. The commit/refresh is a
+        # blocking SQLAlchemy call, so run it in a worker thread to keep the
+        # API event loop responsive.
         return await run_in_threadpool(
             _persist_user_edits,
             db_users,
-            height_before,
             max_heart_rate_before,
             birthdate_before,
-            "height" in updates,
             db,
         )
     except HTTPException:

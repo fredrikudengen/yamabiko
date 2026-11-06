@@ -143,7 +143,6 @@ def create_session_object(
     request: Request,
     hashed_refresh_token: str | None,
     refresh_token_exp: datetime,
-    oauth_state_id: str | None = None,
     csrf_token_hash: str | None = None,
 ) -> auth_sessions_schema.UsersSessionsInternal:
     """
@@ -155,7 +154,6 @@ def create_session_object(
         request: HTTP request containing client information.
         hashed_refresh_token: Hashed refresh token.
         refresh_token_exp: Refresh token expiration datetime.
-        oauth_state_id: Optional OAuth state ID for PKCE.
         csrf_token_hash: Hashed CSRF token for validation.
 
     Returns:
@@ -179,8 +177,6 @@ def create_session_object(
         created_at=now,
         last_activity_at=now,
         expires_at=refresh_token_exp,
-        oauth_state_id=oauth_state_id,
-        tokens_exchanged=False,
         token_family_id=session_id,
         rotation_count=0,
         last_rotation_at=None,
@@ -227,8 +223,6 @@ def edit_session_object(
         created_at=session.created_at,
         last_activity_at=now,
         expires_at=refresh_token_exp,
-        oauth_state_id=session.oauth_state_id,
-        tokens_exchanged=session.tokens_exchanged,
         token_family_id=session.token_family_id,
         rotation_count=new_rotation_count,
         last_rotation_at=now,
@@ -243,7 +237,6 @@ def create_session(
     refresh_token: str | None,
     password_hasher: auth_password_hasher.PasswordHasher,
     db: Session,
-    oauth_state_id: str | None = None,
     csrf_token: str | None = None,
 ) -> None:
     """
@@ -256,7 +249,6 @@ def create_session(
         refresh_token: Refresh token to associate or None.
         password_hasher: Utility to hash tokens.
         db: Database session for storing.
-        oauth_state_id: Optional OAuth state ID for PKCE.
         csrf_token: Plain CSRF token to hash and store.
 
     Raises:
@@ -275,7 +267,6 @@ def create_session(
         request,
         password_hasher.hash_password(refresh_token) if refresh_token else None,
         exp,
-        oauth_state_id,
         csrf_hash,
     )
 

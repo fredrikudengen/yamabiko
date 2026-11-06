@@ -17,11 +17,6 @@ import users.users.schema as user_schema
 # Variables and constants
 DEFAULT_ROUTER_MODULES = [
     "session.router",
-    "health.health_sleep.router",
-    "health.health_steps.router",
-    "health.health_targets.router",
-    "health.health_weight.router",
-    "users.users_goals.router",
     "auth.api_keys.router",
 ]
 
@@ -128,23 +123,12 @@ def _include_router_if_exists(app: FastAPI, dotted: str):
     Notes:
         - If the module does not exist or does not have a 'router' attribute, the function silently ignores the error.
         - This is useful for conditionally including routers in a modular FastAPI project.
-        - For health_weight router, adds /health_weight prefix to match expected test URLs
     """
     with contextlib.suppress(Exception):
         mod = import_module(dotted)
         router = getattr(mod, "router", None)
         if router is not None:
-            if dotted == "health.health_sleep.router":
-                app.include_router(router, prefix="/health_sleep")
-            elif dotted == "health.health_steps.router":
-                app.include_router(router, prefix="/health_steps")
-            elif dotted == "health.health_targets.router":
-                app.include_router(router, prefix="/health/targets")
-            elif dotted == "health.health_weight.router":
-                app.include_router(router, prefix="/health_weight")
-            elif dotted == "users.users_goals.router":
-                app.include_router(router, prefix="/user_goals")
-            elif dotted == "auth.api_keys.router":
+            if dotted == "auth.api_keys.router":
                 app.include_router(router, prefix="/api_keys")
             elif dotted == "server_settings.public_router":
                 app.include_router(router, prefix="/server_settings/public")

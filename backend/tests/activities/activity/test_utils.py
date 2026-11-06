@@ -71,7 +71,6 @@ class TestApplyVisibilityMask:
         schema.town = "Town"
         schema.country = "Country"
         schema.hide_gear = True
-        schema.gear_id = 1
         schema.strava_gear_id = "g1"
         schema.garminconnect_gear_id = "g2"
         schema.hide_hr = False
@@ -83,7 +82,6 @@ class TestApplyVisibilityMask:
         assert result.city is None
         assert result.town is None
         assert result.country is None
-        assert result.gear_id is None
         assert result.strava_gear_id is None
         assert result.garminconnect_gear_id is None
 
@@ -96,13 +94,11 @@ class TestApplyVisibilityMask:
         schema.hide_location = False
         schema.city = "City"
         schema.hide_gear = False
-        schema.gear_id = 1
 
         result = apply_visibility_mask(schema, is_owner=False)
 
         assert result.start_time == "2024-01-15T08:00:00"
         assert result.city == "City"
-        assert result.gear_id == 1
 
     def test_mask_private_notes_false_allows_notes(self):
         from activities.activity.utils import apply_visibility_mask

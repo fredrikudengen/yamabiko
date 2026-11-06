@@ -32,9 +32,6 @@ class UsersSessions(Base):
         last_activity_at: Last activity timestamp for idle
             timeout.
         expires_at: Session expiration timestamp.
-        oauth_state_id: Unused since SSO was removed; kept until the table is dropped.
-        tokens_exchanged: Prevents duplicate token exchange for
-            mobile.
         token_family_id: UUID identifying token family for reuse
             detection.
         rotation_count: Number of times refresh token has been
@@ -108,18 +105,6 @@ class UsersSessions(Base):
         DateTime(timezone=True),
         nullable=False,
         comment="Session expiration date (datetime)",
-    )
-    oauth_state_id: Mapped[str | None] = mapped_column(
-        String(64),
-        ForeignKey("oauth_states.id", ondelete="SET NULL"),
-        nullable=True,
-        index=True,
-        comment="Link to OAuth state for PKCE validation",
-    )
-    tokens_exchanged: Mapped[bool] = mapped_column(
-        default=False,
-        nullable=False,
-        comment="Prevents duplicate token exchange for mobile",
     )
     token_family_id: Mapped[str] = mapped_column(
         String(36),

@@ -24,7 +24,6 @@ if TYPE_CHECKING:
     from activities.activity_workout_steps.models import (
         ActivityWorkoutSteps,
     )
-    from gears.gear.models import Gear
     from users.users.models import Users
 
 
@@ -65,7 +64,6 @@ class Activity(Base):
         workout_rpe: Workout RPE (10-100).
         calories: Calories consumed (kcal).
         visibility: 0 - public, 1 - followers, 2 - private.
-        gear_id: Associated gear ID.
         strava_gear_id: Strava gear ID.
         strava_activity_id: Strava activity ID.
         garminconnect_activity_id: Garmin Connect activity ID.
@@ -89,7 +87,6 @@ class Activity(Base):
         tracker_model: Device model.
         map_thumbnail_path: Path to the static map thumbnail.
         users: Relationship to the owner user.
-        gear: Relationship to the associated gear.
         activity_laps: Related activity laps.
         activity_sets: Related activity sets.
         activities_streams: Related activity streams.
@@ -245,12 +242,6 @@ class Activity(Base):
         default=0,
         comment="0 - public, 1 - followers, 2 - private",
     )
-    gear_id: Mapped[int | None] = mapped_column(
-        ForeignKey("gear.id", ondelete="SET NULL"),
-        nullable=True,
-        index=True,
-        comment="Gear ID associated with this activity",
-    )
     strava_gear_id: Mapped[str | None] = mapped_column(
         String(45),
         nullable=True,
@@ -361,11 +352,6 @@ class Activity(Base):
 
     # Define a relationship to the Users model
     users: Mapped["Users"] = relationship(
-        back_populates="activities",
-    )
-
-    # Define a relationship to the Gear model
-    gear: Mapped["Gear | None"] = relationship(
         back_populates="activities",
     )
 

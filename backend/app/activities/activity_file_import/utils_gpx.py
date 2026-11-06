@@ -67,7 +67,6 @@ class ParseState:
     first_waypoint_time: datetime | None = None
     last_waypoint_time: datetime | None = None
     location_resolved: bool = False
-    gear_id: int | None = None
     city: str | None = None
     town: str | None = None
     country: str | None = None
@@ -557,7 +556,6 @@ def _build_activity_schema(
         average_cad=(round(state.avg_cadence) if state.avg_cadence else None),
         max_cad=(round(state.max_cadence) if state.max_cadence else None),
         calories=state.calories,
-        gear_id=state.gear_id,
         strava_gear_id=None,
         strava_activity_id=None,
         garminconnect_activity_id=None,

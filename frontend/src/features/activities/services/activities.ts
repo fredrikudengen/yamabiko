@@ -51,7 +51,6 @@ export function mapActivity(dto: ActivityDto): Activity {
     activityType: dto.activity_type,
     visibility: dto.visibility ?? 0,
     isHidden: dto.is_hidden,
-    gearId: dto.gear_id ?? null,
 
     startTime: dto.start_time_tz_applied ?? dto.start_time ?? null,
     city: dto.city ?? null,

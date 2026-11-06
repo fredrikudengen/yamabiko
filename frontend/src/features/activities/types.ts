@@ -186,7 +186,6 @@ export interface Activity {
   /** 0 - public, 1 - followers, 2 - private. */
   visibility: number
   isHidden: boolean
-  gearId: number | null
 
   /** Start time with the activity's timezone already applied (ISO string). */
   startTime: string | null

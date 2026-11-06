@@ -10,19 +10,6 @@ from core.database import Base
 
 if TYPE_CHECKING:
     from activities.activity.models import Activity
-    from followers.models import Follower
-    from gears.gear.models import Gear
-    from gears.gear_components.models import GearComponents
-    from health.health_fasting.models import HealthFasting
-    from health.health_poop.models import HealthPoop
-    from health.health_sleep.models import HealthSleep
-    from health.health_steps.models import HealthSteps
-    from health.health_targets.models import HealthTargets
-    from health.health_water.models import HealthWater
-    from health.health_weight.models import HealthWeight
-    from notifications.models import Notification
-    from users.users_default_gear.models import UsersDefaultGear
-    from users.users_goals.models import UsersGoal
     from users.users_integrations.models import UsersIntegrations
     from users.users_privacy_settings.models import UsersPrivacySettings
 
@@ -54,24 +41,8 @@ class Users(Base):
         pending_admin_approval: Whether the user is pending
             admin approval for activation.
         users_integrations: List of integrations.
-        users_default_gear: List of default gear.
         users_privacy_settings: List of privacy settings.
-        gear: List of gear owned by the user.
-        gear_components: List of gear components.
         activities: List of activities performed.
-        followers: List of Follower objects representing users
-            who follow this user.
-        following: List of Follower objects representing users
-            this user is following.
-        health_sleep: List of health sleep records.
-        health_weight: List of health weight records.
-        health_steps: List of health steps records.
-        health_targets: List of health targets.
-        health_fasting: List of health fasting records.
-        health_water: List of health water intake records.
-        health_poop: List of health poop records.
-        notifications: List of notifications.
-        goals: List of user goals.
     """
 
     __tablename__ = "users"
@@ -176,69 +147,11 @@ class Users(Base):
         back_populates="users",
         cascade="all, delete-orphan",
     )
-    users_default_gear: Mapped[list["UsersDefaultGear"]] = relationship(
-        back_populates="users",
-        cascade="all, delete-orphan",
-    )
     users_privacy_settings: Mapped[list["UsersPrivacySettings"]] = relationship(
         back_populates="users",
         cascade="all, delete-orphan",
     )
-    gear: Mapped[list["Gear"]] = relationship(
-        back_populates="users",
-        cascade="all, delete-orphan",
-    )
-    gear_components: Mapped[list["GearComponents"]] = relationship(
-        back_populates="users",
-        cascade="all, delete-orphan",
-    )
     activities: Mapped[list["Activity"]] = relationship(
-        back_populates="users",
-        cascade="all, delete-orphan",
-    )
-    followers: Mapped[list["Follower"]] = relationship(
-        back_populates="following",
-        cascade="all, delete-orphan",
-        foreign_keys="Follower.following_id",
-    )
-    following: Mapped[list["Follower"]] = relationship(
-        back_populates="follower",
-        cascade="all, delete-orphan",
-        foreign_keys="Follower.follower_id",
-    )
-    health_sleep: Mapped[list["HealthSleep"]] = relationship(
-        back_populates="users",
-        cascade="all, delete-orphan",
-    )
-    health_weight: Mapped[list["HealthWeight"]] = relationship(
-        back_populates="users",
-        cascade="all, delete-orphan",
-    )
-    health_steps: Mapped[list["HealthSteps"]] = relationship(
-        back_populates="users",
-        cascade="all, delete-orphan",
-    )
-    health_targets: Mapped[list["HealthTargets"]] = relationship(
-        back_populates="users",
-        cascade="all, delete-orphan",
-    )
-    health_fasting: Mapped[list["HealthFasting"]] = relationship(
-        back_populates="users",
-        cascade="all, delete-orphan",
-    )
-    health_water: Mapped[list["HealthWater"]] = relationship(
-        back_populates="users",
-        cascade="all, delete-orphan",
-    )
-    health_poop: Mapped[list["HealthPoop"]] = relationship(
-        back_populates="users",
-        cascade="all, delete-orphan",
-    )
-    notifications: Mapped[list["Notification"]] = relationship(
-        back_populates="users",
-        cascade="all, delete-orphan",
-    )
-    goals: Mapped[list["UsersGoal"]] = relationship(
         back_populates="users",
         cascade="all, delete-orphan",
     )

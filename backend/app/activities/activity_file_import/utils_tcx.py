@@ -242,7 +242,6 @@ def _build_activity(
     avg_power: float | None,
     max_power: float | None,
     norm_power: float | None,
-    gear_id: int | None,
     user_privacy_settings: users_privacy_settings_models.UsersPrivacySettings,
 ) -> activities_schema.Activity:
     """
@@ -262,7 +261,6 @@ def _build_activity(
         avg_power: Average power or None.
         max_power: Maximum power or None.
         norm_power: Normalized power or None.
-        gear_id: Gear ID or None.
         user_privacy_settings: User privacy settings
             ORM instance.
 
@@ -299,7 +297,6 @@ def _build_activity(
         average_cad=(round(tcx_file.cadence_avg) if tcx_file.cadence_avg else None),
         max_cad=(round(tcx_file.cadence_max) if tcx_file.cadence_max else None),
         calories=(tcx_file.calories if tcx_file.calories else None),
-        gear_id=gear_id,
         **privacy_kwargs,
     )
 
@@ -346,8 +343,6 @@ def parse_tcx_file(
         norm_power: float | None = None
 
         activity_type = activities_utils.define_activity_type(tcx_file.activity_type)
-
-        gear_id = None
 
         laps = _parse_laps(tcx_file)
         waypoints = _extract_waypoints(trackpoints, tcx_file)
@@ -416,7 +411,6 @@ def parse_tcx_file(
             avg_power=avg_power,
             max_power=max_power,
             norm_power=norm_power,
-            gear_id=gear_id,
             user_privacy_settings=user_privacy_settings,
         )
 
