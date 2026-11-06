@@ -83,10 +83,6 @@ dev = [
     {include-group = "test"},
     {include-group = "typecheck"},
 ]
-docs = [
-    "mkdocs-material>=9.6.0",
-    "mkdocstrings[python]>=0.29.0",
-]
 
 [tool.uv]
 required-version = "0.12.23"
