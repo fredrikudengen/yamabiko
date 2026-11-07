@@ -55,38 +55,12 @@ class TestScopeConstants:
         assert "sessions:read" in auth_constants.USERS_ADMIN_SCOPE
         assert "sessions:write" in auth_constants.USERS_ADMIN_SCOPE
 
-    def test_gears_scope_defined(self):
-        """Test that gears scope is properly defined."""
-        assert auth_constants.GEARS_SCOPE is not None
-        assert isinstance(auth_constants.GEARS_SCOPE, tuple)
-        assert "gears:read" in auth_constants.GEARS_SCOPE
-        assert "gears:write" in auth_constants.GEARS_SCOPE
-
     def test_activities_scope_defined(self):
         """Test that activities scope is properly defined."""
         assert auth_constants.ACTIVITIES_SCOPE is not None
         assert isinstance(auth_constants.ACTIVITIES_SCOPE, tuple)
         assert "activities:read" in auth_constants.ACTIVITIES_SCOPE
         assert "activities:write" in auth_constants.ACTIVITIES_SCOPE
-
-    def test_health_scope_defined(self):
-        """Test that health scope is properly defined."""
-        assert auth_constants.HEALTH_SCOPE is not None
-        assert isinstance(auth_constants.HEALTH_SCOPE, tuple)
-        assert "health:read" in auth_constants.HEALTH_SCOPE
-        assert "health:write" in auth_constants.HEALTH_SCOPE
-        assert "health_targets:read" in auth_constants.HEALTH_SCOPE
-        assert "health_targets:write" in auth_constants.HEALTH_SCOPE
-
-    def test_identity_providers_scope_defined(self):
-        """Test that identity providers scopes are properly defined."""
-        assert auth_constants.IDENTITY_PROVIDERS_REGULAR_SCOPE is not None
-        assert isinstance(auth_constants.IDENTITY_PROVIDERS_REGULAR_SCOPE, tuple)
-        assert "identity_providers:read" in auth_constants.IDENTITY_PROVIDERS_REGULAR_SCOPE
-
-        assert auth_constants.IDENTITY_PROVIDERS_ADMIN_SCOPE is not None
-        assert isinstance(auth_constants.IDENTITY_PROVIDERS_ADMIN_SCOPE, tuple)
-        assert "identity_providers:write" in auth_constants.IDENTITY_PROVIDERS_ADMIN_SCOPE
 
     def test_server_settings_scope_defined(self):
         """Test that server settings scopes are properly defined."""
@@ -108,12 +82,8 @@ class TestScopeConstants:
             "profile",
             "users:read",
             "users:write",
-            "gears:read",
-            "gears:write",
             "activities:read",
             "activities:write",
-            "health:read",
-            "health:write",
             "server_settings:read",
             "server_settings:write",
         ]
@@ -132,16 +102,8 @@ class TestScopeConstants:
         for scope in auth_constants.USERS_REGULAR_SCOPE:
             assert scope in auth_constants.REGULAR_ACCESS_SCOPE
 
-        # Should include gears scope
-        for scope in auth_constants.GEARS_SCOPE:
-            assert scope in auth_constants.REGULAR_ACCESS_SCOPE
-
         # Should include activities scope
         for scope in auth_constants.ACTIVITIES_SCOPE:
-            assert scope in auth_constants.REGULAR_ACCESS_SCOPE
-
-        # Should include health scope
-        for scope in auth_constants.HEALTH_SCOPE:
             assert scope in auth_constants.REGULAR_ACCESS_SCOPE
 
     def test_admin_access_scope_composition(self):
@@ -155,10 +117,6 @@ class TestScopeConstants:
 
         # Should include users admin scope
         for scope in auth_constants.USERS_ADMIN_SCOPE:
-            assert scope in auth_constants.ADMIN_ACCESS_SCOPE
-
-        # Should include identity providers admin scope
-        for scope in auth_constants.IDENTITY_PROVIDERS_ADMIN_SCOPE:
             assert scope in auth_constants.ADMIN_ACCESS_SCOPE
 
         # Should include server settings admin scope

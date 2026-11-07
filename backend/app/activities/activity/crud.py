@@ -1,6 +1,5 @@
 """CRUD operations for activities."""
 
-from collections import defaultdict
 from datetime import UTC, date, datetime
 from typing import Any
 from urllib.parse import unquote
@@ -29,7 +28,6 @@ import activities.activity.schema as activities_schema
 import activities.activity.utils as activities_utils
 import core.logger as core_logger
 import core.sanitization as core_sanitization
-import followers.models as followers_models
 import server_settings.utils as server_settings_utils
 
 # Mapping from frontend sort keys to model columns
@@ -59,35 +57,20 @@ _NUMERIC_SORT_COLUMNS = {
 def _visible_to_requester_condition(requester_user_id: int | None):
     """Build the non-owner activity visibility condition.
 
+    Yamabiko has no followers, so a non-owner only ever sees public
+    activities; followers-only activities stay with their owner.
+
     Args:
         requester_user_id: Requesting user ID, or None for an
-            anonymous/public-only read.
+            anonymous/public-only read. Kept for the callers' sake.
 
     Returns:
-        SQLAlchemy condition limiting rows to public or accepted
-        follower-visible activities.
+        SQLAlchemy condition limiting rows to visible public activities.
     """
-    visibility_conditions = [activities_models.Activity.visibility == 0]
-    if requester_user_id is not None:
-        accepted_follower_exists = (
-            select(followers_models.Follower.follower_id)
-            .where(
-                followers_models.Follower.follower_id == requester_user_id,
-                followers_models.Follower.following_id == activities_models.Activity.user_id,
-                followers_models.Follower.is_accepted.is_(True),
-            )
-            .exists()
-        )
-        visibility_conditions.append(
-            and_(
-                activities_models.Activity.visibility == 1,
-                accepted_follower_exists,
-            )
-        )
-
+    del requester_user_id
     return and_(
         activities_models.Activity.is_hidden.is_(False),
-        or_(*visibility_conditions),
+        activities_models.Activity.visibility == 0,
     )
 
 
@@ -299,44 +282,6 @@ def get_user_activities(
         )
     except SQLAlchemyError as err:
         raise _internal_server_error(err, "get_user_activities") from err
-
-
-def get_user_activities_by_user_id_and_garminconnect_gear_set(
-    user_id: int, db: Session
-) -> list[activities_schema.Activity] | None:
-    """Get activities for a user that have a Garmin gear ID.
-
-    Args:
-        user_id: Owner user ID.
-        db: Database session.
-
-    Returns:
-        List of activity schemas or None when empty.
-
-    Raises:
-        HTTPException: 500 on database error.
-    """
-    try:
-        stmt = (
-            select(activities_models.Activity)
-            .where(
-                activities_models.Activity.user_id == user_id,
-                activities_models.Activity.garminconnect_gear_id.isnot(None),
-            )
-            .order_by(desc(activities_models.Activity.start_time))
-        )
-        activities = db.execute(stmt).scalars().all()
-        if not activities:
-            return None
-        return _serialize_and_mask(
-            list(activities),
-            requester_user_id=user_id,
-        )
-    except SQLAlchemyError as err:
-        raise _internal_server_error(
-            err,
-            "get_user_activities_by_user_id_and_garminconnect_gear_set",
-        ) from err
 
 
 def get_user_activities_with_pagination(
@@ -630,253 +575,6 @@ def get_user_activities_per_timeframe_and_activity_types(
         raise _internal_server_error(
             err,
             "get_user_activities_per_timeframe_and_activity_types",
-        ) from err
-
-
-def get_user_following_activities_per_timeframe(
-    user_id: int,
-    start: datetime,
-    end: datetime,
-    db: Session,
-) -> list[activities_schema.Activity] | None:
-    """Get followed users' activities within a date range.
-
-    Args:
-        user_id: Requesting user ID (the follower).
-        start: Inclusive start datetime.
-        end: Inclusive end datetime.
-        db: Database session.
-
-    Returns:
-        List of activity schemas or None when empty.
-
-    Raises:
-        HTTPException: 500 on database error.
-    """
-    try:
-        stmt = (
-            select(activities_models.Activity)
-            .join(
-                followers_models.Follower,
-                followers_models.Follower.following_id == activities_models.Activity.user_id,
-            )
-            .where(
-                and_(
-                    followers_models.Follower.follower_id == user_id,
-                    followers_models.Follower.is_accepted,
-                ),
-                activities_models.Activity.visibility.in_([0, 1]),
-                activities_models.Activity.is_hidden.is_(False),
-                activities_models.Activity.strava_activity_id.is_(None),
-                func.date(activities_models.Activity.start_time) >= start.date(),
-                func.date(activities_models.Activity.start_time) <= end.date(),
-            )
-            .order_by(desc(activities_models.Activity.start_time))
-        )
-        activities = db.execute(stmt).scalars().all()
-        if not activities:
-            return None
-        return _serialize_and_mask(list(activities), force_non_owner=True)
-    except SQLAlchemyError as err:
-        raise _internal_server_error(err, "get_user_following_activities_per_timeframe") from err
-
-
-def get_user_following_activities_with_pagination(
-    user_id: int, page_number: int, num_records: int, db: Session
-) -> list[activities_schema.Activity] | None:
-    """Get a page of activities from users a user follows.
-
-    Args:
-        user_id: Requesting user ID.
-        page_number: 1-based page number.
-        num_records: Records per page.
-        db: Database session.
-
-    Returns:
-        List of activity schemas or None when empty.
-
-    Raises:
-        HTTPException: 500 on database error.
-    """
-    try:
-        stmt = (
-            select(activities_models.Activity)
-            .join(
-                followers_models.Follower,
-                followers_models.Follower.following_id == activities_models.Activity.user_id,
-            )
-            .where(
-                and_(
-                    followers_models.Follower.follower_id == user_id,
-                    followers_models.Follower.is_accepted,
-                ),
-                activities_models.Activity.visibility.in_([0, 1]),
-                activities_models.Activity.is_hidden.is_(False),
-                activities_models.Activity.strava_activity_id.is_(None),
-            )
-            .order_by(desc(activities_models.Activity.start_time))
-            .offset((page_number - 1) * num_records)
-            .limit(num_records)
-        )
-        activities = db.execute(stmt).scalars().all()
-        if not activities:
-            return None
-        return _serialize_and_mask(list(activities), force_non_owner=True)
-    except SQLAlchemyError as err:
-        raise _internal_server_error(err, "get_user_following_activities_with_pagination") from err
-
-
-def get_user_following_activities(user_id: int, db: Session) -> list[activities_schema.Activity] | None:
-    """Get all activities from users a user follows.
-
-    Args:
-        user_id: Requesting user ID.
-        db: Database session.
-
-    Returns:
-        List of activity schemas or None when empty.
-
-    Raises:
-        HTTPException: 500 on database error.
-    """
-    try:
-        stmt = (
-            select(activities_models.Activity)
-            .join(
-                followers_models.Follower,
-                followers_models.Follower.following_id == activities_models.Activity.user_id,
-            )
-            .where(
-                and_(
-                    followers_models.Follower.follower_id == user_id,
-                    followers_models.Follower.is_accepted,
-                ),
-                activities_models.Activity.visibility.in_([0, 1]),
-                activities_models.Activity.is_hidden.is_(False),
-                activities_models.Activity.strava_activity_id.is_(None),
-            )
-        )
-        activities = db.execute(stmt).scalars().all()
-        if not activities:
-            return None
-        return [activities_utils.serialize_activity(a) for a in activities]
-    except SQLAlchemyError as err:
-        raise _internal_server_error(err, "get_user_following_activities") from err
-
-
-def get_gear_activities_count_by_user_id(
-    user_id: int,
-    gear_id: int,
-    db: Session,
-) -> int:
-    """Count activities for a gear owned by user.
-
-    Args:
-        user_id: Owner user ID.
-        gear_id: Gear ID.
-        db: Database session.
-
-    Returns:
-        Number of activities for the gear.
-
-    Raises:
-        HTTPException: 500 on database error.
-    """
-    try:
-        stmt = (
-            select(func.count())
-            .select_from(activities_models.Activity)
-            .where(
-                activities_models.Activity.user_id == user_id,
-                activities_models.Activity.gear_id == gear_id,
-            )
-        )
-        count = db.execute(stmt).scalar()
-        return count or 0
-    except SQLAlchemyError as err:
-        raise _internal_server_error(err, "get_gear_activities_count_by_user_id") from err
-
-
-def get_user_activities_by_gear_id_and_user_id(
-    user_id: int, gear_id: int, db: Session
-) -> list[activities_schema.Activity] | None:
-    """Get all activities for a gear owned by a user.
-
-    Args:
-        user_id: Owner user ID.
-        gear_id: Gear ID.
-        db: Database session.
-
-    Returns:
-        List of activity schemas or None when empty.
-
-    Raises:
-        HTTPException: 500 on database error.
-    """
-    try:
-        stmt = (
-            select(activities_models.Activity)
-            .where(
-                activities_models.Activity.user_id == user_id,
-                activities_models.Activity.gear_id == gear_id,
-            )
-            .order_by(desc(activities_models.Activity.start_time))
-        )
-        activities = db.execute(stmt).scalars().all()
-        if not activities:
-            return None
-        return _serialize_and_mask(
-            list(activities),
-            requester_user_id=user_id,
-        )
-    except SQLAlchemyError as err:
-        raise _internal_server_error(err, "get_user_activities_by_gear_id_and_user_id") from err
-
-
-def get_user_activities_by_gear_id_and_user_id_with_pagination(
-    user_id: int,
-    gear_id: int,
-    page_number: int,
-    num_records: int,
-    db: Session,
-) -> list[activities_schema.Activity] | None:
-    """Get a page of activities for a gear owned by a user.
-
-    Args:
-        user_id: Owner user ID.
-        gear_id: Gear ID.
-        page_number: 1-based page number.
-        num_records: Records per page.
-        db: Database session.
-
-    Returns:
-        List of activity schemas or None when empty.
-
-    Raises:
-        HTTPException: 500 on database error.
-    """
-    try:
-        stmt = (
-            select(activities_models.Activity)
-            .where(
-                activities_models.Activity.user_id == user_id,
-                activities_models.Activity.gear_id == gear_id,
-            )
-            .order_by(desc(activities_models.Activity.start_time))
-            .offset((page_number - 1) * num_records)
-            .limit(num_records)
-        )
-        activities = db.execute(stmt).scalars().all()
-        if not activities:
-            return None
-        return _serialize_and_mask(
-            list(activities),
-            requester_user_id=user_id,
-        )
-    except SQLAlchemyError as err:
-        raise _internal_server_error(
-            err,
-            "get_user_activities_by_gear_id_and_user_id_with_pagination",
         ) from err
 
 
@@ -1357,93 +1055,6 @@ def edit_user_activities_visibility(user_id: int, visibility: int, db: Session) 
     except SQLAlchemyError as err:
         db.rollback()
         raise _internal_server_error(err, "edit_user_activities_visibility") from err
-
-
-def bulk_set_activities_gear_id(
-    user_id: int,
-    gear_assignments: dict[int, int | None],
-    db: Session,
-) -> int:
-    """Bulk-update ``gear_id`` for many activities owned by a user.
-
-    Assignments are grouped by target ``gear_id`` so the database
-    only sees one ``UPDATE`` per distinct gear value, regardless
-    of how many activities are being updated. Ownership is enforced
-    in the ``WHERE`` clause so activities belonging to other users
-    are silently ignored.
-
-    Args:
-        user_id: Owner user ID.
-        gear_assignments: Mapping of ``activity_id`` -> ``gear_id``
-            (use ``None`` to clear the gear assignment).
-        db: Database session.
-
-    Returns:
-        Total number of rows updated across all groups.
-
-    Raises:
-        HTTPException: 500 on database error.
-    """
-    if not gear_assignments:
-        return 0
-    try:
-        by_gear: dict[int | None, list[int]] = defaultdict(list)
-        for activity_id, gear_id in gear_assignments.items():
-            by_gear[gear_id].append(activity_id)
-
-        total = 0
-        for gear_id, activity_ids in by_gear.items():
-            stmt = (
-                sa_update(activities_models.Activity)
-                .where(
-                    activities_models.Activity.user_id == user_id,
-                    activities_models.Activity.id.in_(activity_ids),
-                )
-                .values(gear_id=gear_id)
-            )
-            result: CursorResult[Any] = db.execute(stmt)
-            total += result.rowcount or 0
-        db.commit()
-        return total
-    except SQLAlchemyError as err:
-        db.rollback()
-        raise _internal_server_error(err, "bulk_set_activities_gear_id") from err
-
-
-def update_activity_gear_id(
-    activity_id: int,
-    user_id: int,
-    gear_id: int | None,
-    db: Session,
-) -> None:
-    """Set the gear_id on a single activity.
-
-    Args:
-        activity_id: Activity ID.
-        user_id: Owner user ID.
-        gear_id: Gear ID to associate, or None to clear.
-        db: Database session.
-
-    Returns:
-        None
-
-    Raises:
-        HTTPException: 500 on database error.
-    """
-    try:
-        stmt = (
-            sa_update(activities_models.Activity)
-            .where(
-                activities_models.Activity.id == activity_id,
-                activities_models.Activity.user_id == user_id,
-            )
-            .values(gear_id=gear_id)
-        )
-        db.execute(stmt)
-        db.commit()
-    except SQLAlchemyError as err:
-        db.rollback()
-        raise _internal_server_error(err, "update_activity_gear_id") from err
 
 
 def delete_activity(activity_id: int, db: Session) -> None:

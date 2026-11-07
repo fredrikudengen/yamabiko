@@ -64,7 +64,6 @@ class Activity(BaseModel):
         calories: Estimated calories burned.
         visibility: Visibility level of the activity
             (0 - public, 1 - followers, 2 - private).
-        gear_id: Associated gear identifier.
         strava_gear_id: Strava gear identifier.
         strava_activity_id: Strava activity identifier.
         garminconnect_activity_id: Garmin Connect activity
@@ -128,7 +127,6 @@ class Activity(BaseModel):
     workout_rpe: int | None = Field(default=None, ge=10, le=100)
     calories: int | None = Field(default=None, ge=0)
     visibility: int | None = Field(default=None, ge=0, le=2)
-    gear_id: int | None = Field(default=None, ge=1)
     strava_gear_id: str | None = Field(default=None, max_length=45)
     strava_activity_id: int | None = None
     garminconnect_activity_id: int | None = None
@@ -262,7 +260,6 @@ class ActivityEdit(BaseModel):
         activity_type: Numeric sport type code.
         visibility: 0 - public, 1 - followers, 2 - private.
         is_hidden: Whether the activity is hidden.
-        gear_id: Associated gear identifier.
         hide_start_time: Hide start time from others.
         hide_location: Hide location from others.
         hide_map: Hide map from others.
@@ -286,7 +283,6 @@ class ActivityEdit(BaseModel):
     activity_type: PositiveInt
     visibility: VisibilityValue | None = None
     is_hidden: StrictBool | None = None
-    gear_id: PositiveInt | None = None
     hide_start_time: StrictBool | None = None
     hide_location: StrictBool | None = None
     hide_map: StrictBool | None = None

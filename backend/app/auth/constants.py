@@ -49,23 +49,10 @@ USERS_ADMIN_SCOPE: Final[tuple[str, ...]] = (
     "sessions:read",
     "sessions:write",
 )
-GEARS_SCOPE: Final[tuple[str, ...]] = ("gears:read", "gears:write")
 ACTIVITIES_SCOPE: Final[tuple[str, ...]] = (
     "activities:read",
     "activities:write",
     "activities:upload",
-)
-IDENTITY_PROVIDERS_REGULAR_SCOPE: Final[tuple[str, ...]] = ("identity_providers:read",)
-IDENTITY_PROVIDERS_ADMIN_SCOPE: Final[tuple[str, ...]] = ("identity_providers:write",)
-HEALTH_SCOPE: Final[tuple[str, ...]] = (
-    "health:read",
-    "health:write",
-    "health_targets:read",
-    "health_targets:write",
-)
-NOTIFICATIONS_REGULAR_SCOPE: Final[tuple[str, ...]] = (
-    "notifications:read",
-    "notifications:write",
 )
 SERVER_SETTINGS_REGULAR_SCOPE: Final[tuple[str, ...]] = ()
 SERVER_SETTINGS_ADMIN_SCOPE: Final[tuple[str, ...]] = (
@@ -79,35 +66,15 @@ SCOPE_DICT: Final[dict[str, str]] = {
     "users:write": "Write privileges over users",
     "sessions:read": "Read privileges over sessions",
     "sessions:write": "Create/edit/delete privileges over sessions",
-    "gears:read": "Read privileges over gears",
-    "gears:write": "Write privileges over gears",
     "activities:read": "Read privileges over activities",
     "activities:write": "Write privileges over activities",
     "activities:upload": "Upload privileges over activities",
-    "health:read": "Read privileges over health data",
-    "health:write": "Write privileges over health data",
-    "health_targets:read": "Read privileges over health targets data",
-    "health_targets:write": "Write privileges over health targets data",
-    "notifications:read": "Read privileges over notifications",
-    "notifications:write": "Write privileges over notifications",
     "server_settings:read": "Read privileges over server settings",
     "server_settings:write": "Write privileges over server settings",
-    "identity_providers:read": "Read privileges over identity providers",
-    "identity_providers:write": "Write privileges over identity providers",
 }
 
-REGULAR_ACCESS_SCOPE: Final[tuple[str, ...]] = (
-    USERS_REGULAR_SCOPE
-    + ACTIVITIES_SCOPE
-    + GEARS_SCOPE
-    + IDENTITY_PROVIDERS_REGULAR_SCOPE
-    + HEALTH_SCOPE
-    + NOTIFICATIONS_REGULAR_SCOPE
-    + SERVER_SETTINGS_REGULAR_SCOPE
-)
-ADMIN_ACCESS_SCOPE: Final[tuple[str, ...]] = (
-    REGULAR_ACCESS_SCOPE + USERS_ADMIN_SCOPE + IDENTITY_PROVIDERS_ADMIN_SCOPE + SERVER_SETTINGS_ADMIN_SCOPE
-)
+REGULAR_ACCESS_SCOPE: Final[tuple[str, ...]] = USERS_REGULAR_SCOPE + ACTIVITIES_SCOPE + SERVER_SETTINGS_REGULAR_SCOPE
+ADMIN_ACCESS_SCOPE: Final[tuple[str, ...]] = REGULAR_ACCESS_SCOPE + USERS_ADMIN_SCOPE + SERVER_SETTINGS_ADMIN_SCOPE
 
 # Startup invariant: every scope advertised in SCOPE_DICT (which feeds the
 # Swagger UI scope picker for OAuth2PasswordBearer) MUST be one that the

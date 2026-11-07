@@ -39,9 +39,6 @@ def create_activity_objects(
     try:
         timezone = core_config.settings.TZ
 
-        # Define variables
-        gear_id = None
-
         activities = []
 
         for session_record in sessions_records:
@@ -199,7 +196,6 @@ def create_activity_objects(
                 workout_feeling=session_record["session"]["workout_feeling"],
                 workout_rpe=session_record["session"]["workout_rpe"],
                 calories=session_record["session"]["calories"],
-                gear_id=gear_id,
                 strava_gear_id=None,
                 strava_activity_id=None,
                 garminconnect_activity_id=None,

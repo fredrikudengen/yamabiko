@@ -6,7 +6,6 @@ from pydantic import (
     BaseModel,
     ConfigDict,
     Field,
-    StrictBool,
     StrictInt,
     StrictStr,
 )
@@ -65,9 +64,6 @@ class UsersSessionsInternal(UsersSessionsBase):
     Attributes:
         user_id: User ID that owns this session.
         refresh_token: Hashed session refresh token.
-        oauth_state_id: Link to OAuth state for PKCE.
-        tokens_exchanged: Prevents duplicate mobile token
-            exchange.
         token_family_id: UUID for token family reuse
             detection.
         rotation_count: Number of times refresh token
@@ -79,15 +75,6 @@ class UsersSessionsInternal(UsersSessionsBase):
 
     user_id: StrictInt = Field(..., ge=1, description="User ID that owns this session")
     refresh_token: StrictStr | None = Field(None, description="Hashed session refresh token")
-    oauth_state_id: StrictStr | None = Field(
-        None,
-        max_length=64,
-        description="Link to OAuth state for PKCE validation",
-    )
-    tokens_exchanged: StrictBool = Field(
-        default=False,
-        description="Prevents duplicate token exchange for mobile",
-    )
     token_family_id: StrictStr = Field(
         ...,
         description="UUID identifying token family for reuse detection",

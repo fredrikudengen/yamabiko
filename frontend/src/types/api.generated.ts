@@ -2442,7 +2442,6 @@ export interface components {
          *         calories: Estimated calories burned.
          *         visibility: Visibility level of the activity
          *             (0 - public, 1 - followers, 2 - private).
-         *         gear_id: Associated gear identifier.
          *         strava_gear_id: Strava gear identifier.
          *         strava_activity_id: Strava activity identifier.
          *         garminconnect_activity_id: Garmin Connect activity
@@ -2505,8 +2504,6 @@ export interface components {
             garminconnect_activity_id?: number | null;
             /** Garminconnect Gear Id */
             garminconnect_gear_id?: string | null;
-            /** Gear Id */
-            gear_id?: number | null;
             /** Googlehealth Activity Id */
             googlehealth_activity_id?: string | null;
             /** Hide Cadence */
@@ -2605,7 +2602,6 @@ export interface components {
          *         activity_type: Numeric sport type code.
          *         visibility: 0 - public, 1 - followers, 2 - private.
          *         is_hidden: Whether the activity is hidden.
-         *         gear_id: Associated gear identifier.
          *         hide_start_time: Hide start time from others.
          *         hide_location: Hide location from others.
          *         hide_map: Hide map from others.
@@ -2624,8 +2620,6 @@ export interface components {
             activity_type: number;
             /** Description */
             description?: string | null;
-            /** Gear Id */
-            gear_id?: number | null;
             /** Hide Cadence */
             hide_cadence?: boolean | null;
             /** Hide Elevation */

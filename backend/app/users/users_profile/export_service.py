@@ -1,7 +1,7 @@
 """Profile data export service for ZIP archive generation.
 
 This module provides the ExportService class for exporting
-user profile data including activities, health records, gear,
+user profile data including activities, media
 and settings to a downloadable ZIP archive with streaming.
 
 Key Features:
@@ -30,13 +30,6 @@ import activities.activity_streams.crud as activity_streams_crud
 import activities.activity_workout_steps.crud as activity_workout_steps_crud
 import core.config as core_config
 import core.logger as core_logger
-import gears.gear.crud as gear_crud
-import gears.gear_components.crud as gear_components_crud
-import health.health_targets.crud as health_targets_crud
-import health.health_weight.crud as health_weight_crud
-import users.users_default_gear.crud as user_default_gear_crud
-import users.users_default_gear.schema as user_default_gear_schema
-import users.users_goals.crud as user_goals_crud
 import users.users_integrations.crud as user_integrations_crud
 import users.users_privacy_settings.crud as users_privacy_settings_crud
 import users.users_profile.utils as users_profile_utils
@@ -568,100 +561,6 @@ class ExportService:
                 "info",
             )
 
-    def collect_gear_data(self, zipf: zipfile.ZipFile) -> None:
-        """
-        Collect and write gear data to ZIP.
-
-        Args:
-            zipf: ZipFile instance to write to.
-
-        Raises:
-            DatabaseConnectionError: If database error occurs.
-        """
-        try:
-            # Collect and write gears
-            try:
-                gears = gear_crud.get_gear_user(self.user_id, self.db)
-                if gears:
-                    gears_dicts = [users_profile_utils.sqlalchemy_obj_to_dict(g) for g in gears]
-                    users_profile_utils.write_json_to_zip(zipf, "data/gears.json", gears_dicts, self.counts)
-                else:
-                    users_profile_utils.write_json_to_zip(zipf, "data/gears.json", [], self.counts)
-            except Exception as err:
-                core_logger.print_to_log(f"Failed to collect gears: {err}", "error", exc=err)
-                raise DataCollectionError(f"Failed to collect gears: {err}") from err
-
-            # Collect and write gear components
-            try:
-                gear_components = gear_components_crud.get_gear_components_user(self.user_id, self.db)
-                if gear_components:
-                    gear_components_dicts = [users_profile_utils.sqlalchemy_obj_to_dict(gc) for gc in gear_components]
-                    users_profile_utils.write_json_to_zip(
-                        zipf,
-                        "data/gear_components.json",
-                        gear_components_dicts,
-                        self.counts,
-                    )
-                else:
-                    users_profile_utils.write_json_to_zip(zipf, "data/gear_components.json", [], self.counts)
-            except Exception as err:
-                core_logger.print_to_log(f"Failed to collect gear components: {err}", "error", exc=err)
-                raise DataCollectionError(f"Failed to collect gear components: {err}") from err
-
-        except SQLAlchemyError as err:
-            core_logger.print_to_log(f"Database error collecting gear data: {err}", "error", exc=err)
-            raise DatabaseConnectionError(f"Failed to collect gear data: {err}") from err
-
-    def collect_health_weight(self, zipf: zipfile.ZipFile) -> None:
-        """
-        Collect and write health data to ZIP.
-
-        Args:
-            zipf: ZipFile instance to write to.
-
-        Raises:
-            DatabaseConnectionError: If database error occurs.
-        """
-        try:
-            # Collect and write health data
-            try:
-                health_weight = health_weight_crud.get_all_health_weight_by_user_id(self.user_id, self.db)
-                if health_weight:
-                    health_weight_dicts = [users_profile_utils.sqlalchemy_obj_to_dict(hd) for hd in health_weight]
-                    users_profile_utils.write_json_to_zip(
-                        zipf,
-                        "data/health_weight.json",
-                        health_weight_dicts,
-                        self.counts,
-                    )
-                else:
-                    users_profile_utils.write_json_to_zip(zipf, "data/health_weight.json", [], self.counts)
-            except Exception as err:
-                core_logger.print_to_log(f"Failed to collect health data: {err}", "error", exc=err)
-                raise DataCollectionError(f"Failed to collect health data: {err}") from err
-
-            # Collect and write health targets
-            try:
-                health_targets = health_targets_crud.get_health_targets_by_user_id(self.user_id, self.db)
-                if health_targets:
-                    # health_targets is a single object, not a list
-                    health_targets_dict = users_profile_utils.sqlalchemy_obj_to_dict(health_targets)
-                    users_profile_utils.write_json_to_zip(
-                        zipf,
-                        "data/health_targets.json",
-                        [health_targets_dict],
-                        self.counts,
-                    )
-                else:
-                    users_profile_utils.write_json_to_zip(zipf, "data/health_targets.json", [], self.counts)
-            except Exception as err:
-                core_logger.print_to_log(f"Failed to collect health targets: {err}", "error", exc=err)
-                raise DataCollectionError(f"Failed to collect health targets: {err}") from err
-
-        except SQLAlchemyError as err:
-            core_logger.print_to_log(f"Database error collecting health data: {err}", "error", exc=err)
-            raise DatabaseConnectionError(f"Failed to collect health data: {err}") from err
-
     def collect_user_settings_data(self, zipf: zipfile.ZipFile) -> None:
         """
         Collect and write user settings to ZIP.
@@ -673,37 +572,6 @@ class ExportService:
             DatabaseConnectionError: If database error occurs.
         """
         try:
-            # Collect and write user default gear
-            try:
-                user_default_gear: user_default_gear_schema.UsersDefaultGearRead | None = (
-                    user_default_gear_crud.get_user_default_gear_by_user_id(self.user_id, self.db)
-                )
-                if user_default_gear:
-                    default_gear_dict = [user_default_gear.model_dump(mode="json")]
-                    users_profile_utils.write_json_to_zip(
-                        zipf,
-                        "data/user_default_gear.json",
-                        default_gear_dict,
-                        self.counts,
-                    )
-                else:
-                    users_profile_utils.write_json_to_zip(zipf, "data/user_default_gear.json", [], self.counts)
-            except Exception as err:
-                core_logger.print_to_log(f"Failed to collect user default gear: {err}", "error", exc=err)
-                raise DataCollectionError(f"Failed to collect user default gear: {err}") from err
-
-            # Collect and write user goals
-            try:
-                user_goals = user_goals_crud.get_user_goals_by_user_id(self.user_id, self.db)
-                if user_goals:
-                    user_goals_dicts = [ug.model_dump() for ug in user_goals]
-                    users_profile_utils.write_json_to_zip(zipf, "data/user_goals.json", user_goals_dicts, self.counts)
-                else:
-                    users_profile_utils.write_json_to_zip(zipf, "data/user_goals.json", [], self.counts)
-            except Exception as err:
-                core_logger.print_to_log(f"Failed to collect user goals: {err}", "error", exc=err)
-                raise DataCollectionError(f"Failed to collect user goals: {err}") from err
-
             # Collect and write user integrations
             try:
                 user_integrations = user_integrations_crud.get_user_integrations_by_user_id(self.user_id, self.db)
@@ -1009,16 +877,6 @@ class ExportService:
                         users_profile_utils.check_timeout(timeout_seconds, start_time, ExportTimeoutError, "Export")
                         core_logger.print_to_log("Collecting and writing activities data...", "info")
                         user_activities = self.collect_user_activities_data(zipf)
-
-                        # Collect and write gear data progressively
-                        users_profile_utils.check_timeout(timeout_seconds, start_time, ExportTimeoutError, "Export")
-                        core_logger.print_to_log("Collecting and writing gear data...", "info")
-                        self.collect_gear_data(zipf)
-
-                        # Collect and write health data progressively
-                        users_profile_utils.check_timeout(timeout_seconds, start_time, ExportTimeoutError, "Export")
-                        core_logger.print_to_log("Collecting and writing health data...", "info")
-                        self.collect_health_weight(zipf)
 
                         # Collect and write settings data progressively
                         users_profile_utils.check_timeout(timeout_seconds, start_time, ExportTimeoutError, "Export")

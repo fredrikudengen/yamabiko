@@ -37,20 +37,8 @@ import activities.activity_workout_steps.schema as activity_workout_steps_schema
 import core.config as core_config
 import core.file_uploads as file_uploads
 import core.logger as core_logger
-import gears.gear.crud as gear_crud
-import gears.gear.schema as gear_schema
-import gears.gear_components.crud as gear_components_crud
-import gears.gear_components.schema as gear_components_schema
-import health.health_targets.crud as health_targets_crud
-import health.health_targets.schema as health_targets_schema
-import health.health_weight.crud as health_weight_crud
-import health.health_weight.schema as health_weight_schema
 import users.users.crud as users_crud
 import users.users.schema as users_schema
-import users.users_default_gear.crud as user_default_gear_crud
-import users.users_default_gear.schema as user_default_gear_schema
-import users.users_goals.crud as user_goals_crud
-import users.users_goals.schema as user_goals_schema
 import users.users_integrations.crud as user_integrations_crud
 import users.users_integrations.schema as users_integrations_schema
 import users.users_privacy_settings.crud as users_privacy_settings_crud
@@ -214,41 +202,21 @@ class ImportService:
             with zipfile.ZipFile(BytesIO(zip_data)) as zipf:
                 file_list = set(zipf.namelist())
 
-                # Create ID mappings for relationships
-                gears_id_mapping: dict[int, int] = {}
-                activities_id_mapping: dict[int, int] = {}
-
-                # Import data in dependency order using streaming approach
-                # Load and import gears
-                profile_utils.check_timeout(timeout_seconds, start_time, ImportTimeoutError, "Import")
-                gears_data = self._load_single_json(zipf, "data/gears.json")
-                gears_id_mapping = await self.collect_and_import_gears_data(gears_data)
-                del gears_data  # Explicit memory cleanup
-
-                # Load and import gear components
-                profile_utils.check_timeout(timeout_seconds, start_time, ImportTimeoutError, "Import")
-                gear_components_data = self._load_single_json(zipf, "data/gear_components.json")
-                await self.collect_and_import_gear_components_data(gear_components_data, gears_id_mapping)
-                del gear_components_data
-
-                # Load and import user data (includes user, default gear, integrations, goals, privacy)
+                # Import data in dependency order using streaming approach.
+                # Gear, goals and health files in older exports are ignored:
+                # Yamabiko has none of those features.
+                # Load and import user data (includes user, integrations, privacy)
                 profile_utils.check_timeout(timeout_seconds, start_time, ImportTimeoutError, "Import")
                 user_data = self._load_single_json(zipf, "data/user.json")
-                user_default_gear_data = self._load_single_json(zipf, "data/user_default_gear.json")
-                user_goals_data = self._load_single_json(zipf, "data/user_goals.json")
                 user_integrations_data = self._load_single_json(zipf, "data/user_integrations.json")
                 user_privacy_settings_data = self._load_single_json(zipf, "data/user_privacy_settings.json")
 
                 await self.collect_and_import_user_data(
                     user_data,
-                    user_default_gear_data,
-                    user_goals_data,
                     user_integrations_data,
                     user_privacy_settings_data,
-                    gears_id_mapping,
                 )
-                del user_data, user_default_gear_data, user_integrations_data
-                del user_goals_data, user_privacy_settings_data
+                del user_data, user_integrations_data, user_privacy_settings_data
 
                 # Load and import activities with their components
                 profile_utils.check_timeout(timeout_seconds, start_time, ImportTimeoutError, "Import")
@@ -257,18 +225,9 @@ class ImportService:
                 activities_id_mapping = await self.collect_and_import_activities_data_batched(
                     zipf,
                     file_list,
-                    gears_id_mapping,
                     start_time,
                     timeout_seconds,
                 )
-
-                # Load and import health data
-                profile_utils.check_timeout(timeout_seconds, start_time, ImportTimeoutError, "Import")
-                health_weight_data = self._load_single_json(zipf, "data/health_weight.json")
-                health_targets_data = self._load_single_json(zipf, "data/health_targets.json")
-
-                await self.collect_and_import_health_weight(health_weight_data, health_targets_data)
-                del health_weight_data, health_targets_data
 
                 # Import files and media
                 profile_utils.check_timeout(timeout_seconds, start_time, ImportTimeoutError, "Import")
@@ -390,83 +349,19 @@ class ImportService:
                 chunks.append(chunk)
         return b"".join(chunks)
 
-    async def collect_and_import_gears_data(self, gears_data: list[Any]) -> dict[int, int]:
-        """
-        Import gear data and create ID mappings.
-
-        Args:
-            gears_data: List of gear data dictionaries.
-
-        Returns:
-            Dictionary mapping old gear IDs to new IDs.
-        """
-        gears_id_mapping: dict[int, int] = {}
-
-        if not gears_data:
-            core_logger.print_to_log("No gears data to import", "info")
-            return gears_id_mapping
-
-        for gear_data in gears_data:
-            gear_data["user_id"] = self.user_id
-            original_id = gear_data.get("id")
-            gear_data.pop("id", None)
-
-            gear = gear_schema.GearCreate(**gear_data)
-            new_gear = gear_crud.create_gear(gear, self.user_id, self.db)
-            gears_id_mapping[original_id] = new_gear.id
-            self.counts["gears"] += 1
-
-        core_logger.print_to_log(f"Imported {self.counts['gears']} gears", "info")
-        return gears_id_mapping
-
-    async def collect_and_import_gear_components_data(
-        self, gear_components_data: list[Any], gears_id_mapping: dict[int, int]
-    ) -> None:
-        """
-        Import gear components data with ID remapping.
-
-        Args:
-            gear_components_data: List of component dicts.
-            gears_id_mapping: Mapping of old to new gear IDs.
-        """
-        if not gear_components_data:
-            core_logger.print_to_log("No gear components data to import", "info")
-            return
-
-        for gear_component_data in gear_components_data:
-            gear_component_data["gear_id"] = (
-                gears_id_mapping.get(gear_component_data["gear_id"])
-                if gear_component_data.get("gear_id") in gears_id_mapping
-                else None
-            )
-
-            gear_component_data.pop("id", None)
-
-            gear_component = gear_components_schema.GearComponentCreate(**gear_component_data)
-            gear_components_crud.create_gear_component(gear_component, self.user_id, self.db)
-            self.counts["gear_components"] += 1
-
-        core_logger.print_to_log(f"Imported {self.counts['gear_components']} gear components", "info")
-
     async def collect_and_import_user_data(
         self,
         user_data: list[Any],
-        user_default_gear_data: list[Any],
-        user_goals_data: list[Any],
         user_integrations_data: list[Any],
         user_privacy_settings_data: list[Any],
-        gears_id_mapping: dict[int, int],
     ) -> None:
         """
         Import user profile and related settings.
 
         Args:
             user_data: User profile data.
-            user_default_gear_data: Default gear settings.
-            user_goals_data: User goals data.
             user_integrations_data: Integration settings.
             user_privacy_settings_data: Privacy settings.
-            gears_id_mapping: Mapping of old to new gear IDs.
         """
         if user_data:
             # Import user profile
@@ -498,62 +393,8 @@ class ImportService:
         # Import user-related settings — always attempt, even if
         # user_data was empty, so that sub-setting data loaded from
         # the ZIP is not silently discarded.
-        await self.collect_and_import_user_default_gear(user_default_gear_data, gears_id_mapping)
-        await self.collect_and_import_user_goals(user_goals_data)
         await self.collect_and_import_user_integrations(user_integrations_data)
         await self.collect_and_import_user_privacy_settings(user_privacy_settings_data)
-
-    async def collect_and_import_user_default_gear(
-        self, user_default_gear_data: list[Any], gears_id_mapping: dict[int, int]
-    ) -> None:
-        """
-        Import user default gear settings with ID remapping.
-
-        Args:
-            user_default_gear_data: Default gear data.
-            gears_id_mapping: Mapping of old to new gear IDs.
-        """
-        if not user_default_gear_data:
-            core_logger.print_to_log("No user default gear data to import", "info")
-            return
-
-        current_user_default_gear = user_default_gear_crud.get_user_default_gear_by_user_id(self.user_id, self.db)
-
-        if current_user_default_gear is None:
-            core_logger.print_to_log("No existing user default gear, creating new record", "info")
-            current_user_default_gear = user_default_gear_crud.create_user_default_gear(self.user_id, self.db)
-
-        gear_data = user_default_gear_data[0]
-        gear_data["id"] = current_user_default_gear.id
-        gear_data["user_id"] = self.user_id
-
-        # Map gear IDs
-        gear_fields = [
-            "run_gear_id",
-            "trail_run_gear_id",
-            "virtual_run_gear_id",
-            "ride_gear_id",
-            "gravel_ride_gear_id",
-            "mtb_ride_gear_id",
-            "virtual_ride_gear_id",
-            "ows_gear_id",
-            "walk_gear_id",
-            "hike_gear_id",
-            "tennis_gear_id",
-            "alpine_ski_gear_id",
-            "nordic_ski_gear_id",
-            "snowboard_gear_id",
-            "windsurf_gear_id",
-        ]
-
-        for field in gear_fields:
-            old_gear_id = gear_data.get(field)
-            gear_data[field] = gears_id_mapping.get(old_gear_id)
-
-        user_default_gear = user_default_gear_schema.UsersDefaultGearUpdate(**gear_data)
-        user_default_gear_crud.edit_user_default_gear(user_default_gear, self.user_id, self.db)
-        core_logger.print_to_log("Imported user default gear", "info")
-        self.counts["user_default_gear"] += 1
 
     async def collect_and_import_user_integrations(self, user_integrations_data: list[Any]) -> None:
         """
@@ -574,27 +415,6 @@ class ImportService:
         user_integrations_crud.edit_user_integrations(user_integrations, self.user_id, self.db)
         core_logger.print_to_log("Imported user integrations", "info")
         self.counts["user_integrations"] += 1
-
-    async def collect_and_import_user_goals(self, user_goals_data: list[Any]) -> None:
-        """
-        Import user goals data.
-
-        Args:
-            user_goals_data: List of user goal dictionaries.
-        """
-        if not user_goals_data:
-            core_logger.print_to_log("No user goals data to import", "info")
-            return
-
-        for goal_data in user_goals_data:
-            goal_data.pop("id", None)
-            goal_data.pop("user_id", None)
-
-            goal = user_goals_schema.UsersGoalCreate(**goal_data)
-            user_goals_crud.create_user_goal(self.user_id, goal, self.db)
-            self.counts["user_goals"] += 1
-
-        core_logger.print_to_log(f"Imported {self.counts['user_goals']} user goals", "info")
 
     async def collect_and_import_user_privacy_settings(self, user_privacy_settings_data: list[Any]) -> None:
         """
@@ -768,7 +588,6 @@ class ImportService:
         self,
         zipf: zipfile.ZipFile,
         file_list: set[str],
-        gears_id_mapping: dict[int, int],
         start_time: float,
         timeout_seconds: int,
     ) -> dict[int, int]:
@@ -778,7 +597,6 @@ class ImportService:
         Args:
             zipf: ZipFile instance to read from.
             file_list: Set of file paths in ZIP.
-            gears_id_mapping: Mapping of old to new gear IDs.
             start_time: Import operation start time.
             timeout_seconds: Timeout limit in seconds.
 
@@ -844,11 +662,8 @@ class ImportService:
             # Import activities in this batch
             for activity_data in activities_batch:
                 activity_data["user_id"] = self.user_id
-                activity_data["gear_id"] = (
-                    gears_id_mapping.get(activity_data["gear_id"])
-                    if activity_data.get("gear_id") in gears_id_mapping
-                    else None
-                )
+                # Older exports carry a gear link; Yamabiko has no gear.
+                activity_data.pop("gear_id", None)
 
                 original_activity_id = activity_data.get("id")
                 activity_data.pop("id", None)
@@ -950,88 +765,6 @@ class ImportService:
                 core_logger.print_to_log(f"Error loading {filename}: {err}", "warning")
 
         return all_components
-
-    async def collect_and_import_health_weight(
-        self, health_weight_data: list[Any], health_targets_data: list[Any]
-    ) -> None:
-        """
-        Import health data and targets.
-
-        Args:
-            health_weight_data: List of health data records.
-            health_targets_data: List of health target records.
-        """
-        # Import health data
-        if health_weight_data:
-            for health_weight in health_weight_data:
-                health_weight.pop("id", None)
-                health_weight.pop("user_id", None)
-
-                # Convert string numeric values to floats
-                numeric_fields = [
-                    "weight",
-                    "bmi",
-                    "body_fat",
-                    "body_water",
-                    "bone_mass",
-                    "muscle_mass",
-                    "visceral_fat",
-                ]
-                for field in numeric_fields:
-                    if field in health_weight and isinstance(health_weight[field], str):
-                        try:
-                            health_weight[field] = float(health_weight[field])
-                        except (ValueError, TypeError):
-                            health_weight[field] = None
-
-                # Convert integer fields
-                int_fields = ["physique_rating", "metabolic_age"]
-                for field in int_fields:
-                    if field in health_weight and isinstance(health_weight[field], str):
-                        try:
-                            health_weight[field] = int(health_weight[field])
-                        except (ValueError, TypeError):
-                            health_weight[field] = None
-
-                data = health_weight_schema.HealthWeightCreate(**health_weight)
-                health_weight_crud.create_health_weight(self.user_id, data, self.db)
-                self.counts["health_weight"] += 1
-            core_logger.print_to_log(f"Imported {self.counts['health_weight']} health weight records", "info")
-        else:
-            core_logger.print_to_log("No health weight data to import", "debug")
-
-        # Import health targets
-        if health_targets_data:
-            for target_data in health_targets_data:
-                current_health_target = health_targets_crud.get_health_targets_by_user_id(self.user_id, self.db)
-
-                # Convert string numeric values to floats/ints
-                if isinstance(target_data.get("weight"), str):
-                    try:
-                        target_data["weight"] = float(target_data["weight"])
-                    except (ValueError, TypeError):
-                        target_data["weight"] = None
-
-                int_fields = ["steps", "sleep"]
-                for field in int_fields:
-                    if isinstance(target_data.get(field), str):
-                        try:
-                            target_data[field] = int(target_data[field])
-                        except (ValueError, TypeError):
-                            target_data[field] = None
-
-                target_data["user_id"] = self.user_id
-                if current_health_target is not None:
-                    target_data["id"] = current_health_target.id
-                else:
-                    target_data.pop("id", None)
-
-                target = health_targets_schema.HealthTargetsUpdate(**target_data)
-                health_targets_crud.edit_health_target(target, self.user_id, self.db)
-                self.counts["health_targets"] += 1
-            core_logger.print_to_log(f"Imported {self.counts['health_targets']} health targets", "info")
-        else:
-            core_logger.print_to_log("No health targets to import", "debug")
 
     async def add_activity_files_from_zip(
         self,
