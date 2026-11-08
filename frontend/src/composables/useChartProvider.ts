@@ -51,6 +51,13 @@ export interface ChartSeries {
    * without support draw the series in {@link ChartSeries.color}.
    */
   bands?: readonly ChartBand[]
+  /**
+   * Leaves out the tinted area under a line, for charts that lay several lines over each other (one
+   * year against the others). Defaults to filled.
+   */
+  fill?: boolean
+  /** Line width in pixels; providers pick their own default. */
+  width?: number
 }
 
 /** Options controlling a single chart render. */
@@ -88,6 +95,8 @@ export interface ChartRenderOptions {
    * pinch on touch). Providers without zoom support ignore this.
    */
   zoom?: boolean
+  /** The tooltip lists every series at the hovered x, not just the nearest point. */
+  hoverAll?: boolean
 }
 
 /** Imperative handle to a mounted chart, returned by {@link ChartProvider.mount}. */

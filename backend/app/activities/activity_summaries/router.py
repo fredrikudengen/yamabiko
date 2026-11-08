@@ -16,6 +16,7 @@ from sqlalchemy.orm import Session
 
 import activities.activity_summaries.crud as summary_crud
 import activities.activity_summaries.dependencies as summary_deps
+import activities.activity_summaries.progress as summary_progress
 import activities.activity_summaries.schema as summary_schema
 import auth.dependencies as auth_dependencies
 import core.database as core_database
@@ -50,6 +51,44 @@ def _parse_target_date(
             status_code=(status.HTTP_400_BAD_REQUEST),
             detail=("Invalid date format. Use YYYY-MM-DD."),
         ) from None
+
+
+# Two path segments, so the single-segment ``/{view_type}`` below never matches it.
+@router.get("/progress/days", response_model=list[summary_schema.ProgressDay])
+def read_daily_progress(
+    _check_scopes: Annotated[
+        Callable,
+        Security(auth_dependencies.check_scopes, scopes=["activities:read"]),
+    ],
+    token_user_id: Annotated[int, Depends(auth_dependencies.get_sub_from_access_token)],
+    db: Annotated[Session, Depends(core_database.get_db)],
+    activity_type: Annotated[
+        int | None,
+        Query(alias="type", description="Only tours of this activity type code."),
+    ] = None,
+) -> list[summary_schema.ProgressDay]:
+    """The user's totals per day over their whole history, for the year-over-year chart.
+
+    Args:
+        _check_scopes: Dependency that checks required scopes.
+        token_user_id: Authenticated user ID.
+        db: Database session.
+        activity_type: Optional activity type code.
+
+    Returns:
+        One row per day with at least one tour, oldest first.
+    """
+    return [
+        summary_schema.ProgressDay(
+            day=day.day,
+            distance=day.distance,
+            duration=day.duration,
+            elevation_gain=day.elevation_gain,
+            activity_count=day.activity_count,
+            new_cells=day.new_cells,
+        )
+        for day in summary_progress.daily_progress(token_user_id, activity_type, db)
+    ]
 
 
 @router.get(

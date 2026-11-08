@@ -15,7 +15,7 @@ import type { SummaryViewType } from '@/features/summary/types'
 
 import { queryKeys } from '@/services/queryKeys'
 import { useAuthStore } from '@/features/auth/stores/auth'
-import { fetchActivitySummary } from '@/features/summary/services/summary'
+import { fetchActivitySummary, fetchDailyProgress } from '@/features/summary/services/summary'
 
 /**
  * The authenticated user's aggregated activity summary for a view type, period,
@@ -39,5 +39,27 @@ export function useActivitySummaryQuery(
     queryFn: ({ signal }) => fetchActivitySummary(toValue(viewType), toValue(params), signal),
     placeholderData: keepPreviousData,
     enabled: isAuthenticated,
+  })
+}
+
+/**
+ * The user's totals per day over their whole history, for the year-over-year
+ * chart. One fetch serves every year and metric; only the type filter refetches.
+ *
+ * @param typeCode - Reactive activity type code, or `null` for every type.
+ * @param enabled - Whether to fetch (the chart shows only in the year view).
+ */
+export function useDailyProgressQuery(
+  typeCode: MaybeRefOrGetter<number | null>,
+  enabled: MaybeRefOrGetter<boolean>,
+) {
+  const { isAuthenticated } = storeToRefs(useAuthStore())
+
+  return useQuery({
+    queryKey: computed(() => queryKeys.activities.progress(toValue(typeCode))),
+    queryFn: ({ signal }) => fetchDailyProgress(toValue(typeCode), signal),
+    placeholderData: keepPreviousData,
+    enabled: computed(() => isAuthenticated.value && toValue(enabled)),
+    staleTime: 10 * 60 * 1000,
   })
 }

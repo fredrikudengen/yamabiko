@@ -239,7 +239,7 @@ export function buildChartConfiguration(
     }
     // Line/area charts get a flat translucent fill below the line (a calm tint,
     // not a gradient — per the design system); bars stay solid.
-    const filled = type === 'line'
+    const filled = type === 'line' && series.fill !== false
     // A series coloured by value (heart rate in its zones) paints line and fill with the bands.
     const banded = filled && series.bands && series.bands.length > 0 ? series.bands : null
     return {
@@ -251,7 +251,7 @@ export function buildChartConfiguration(
         : filled
           ? hexToRgba(color, AREA_FILL_ALPHA)
           : color,
-      borderWidth: 2,
+      borderWidth: series.width ?? 2,
       // On an inverted axis the default fill runs to the top edge (where the axis minimum now is), so
       // fill to the bottom edge of the chart instead ('start' is the bottom edge, whichever way the
       // axis points) and keep the tint under the line.
@@ -309,7 +309,7 @@ export function buildChartConfiguration(
       },
       // With a backdrop the tooltip shows every series at the hovered position (the pace and the height
       // there), not only the one nearest the pointer. Other charts keep Chart.js's default.
-      interaction: backdrop ? { mode: 'index', intersect: false } : undefined,
+      interaction: backdrop || options.hoverAll ? { mode: 'index', intersect: false } : undefined,
       scales: {
         x: { display: true },
         y: {

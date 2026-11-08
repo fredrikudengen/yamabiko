@@ -45,5 +45,19 @@
     "title": "Couldn’t load summary",
     "description": "Something went wrong loading your stats. Check your connection and try again.",
     "retry": "Try again"
+  },
+  "progress": {
+    "title": "Year against year",
+    "metricLabel": "What to add up",
+    "metric": {
+      "distance": "Distance",
+      "elevationGain": "Elevation gain",
+      "duration": "Time",
+      "activityCount": "Activities",
+      "newCells": "New cells"
+    },
+    "hours": "{value} h",
+    "comparison": "By {date}: {mine} in {selected}, against {theirs} in {year}.",
+    "empty": "No activities in {year}."
   }
 }

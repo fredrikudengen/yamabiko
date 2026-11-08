@@ -45,5 +45,19 @@
     "title": "Kunne ikke laste sammendrag",
     "description": "Noe gikk galt under lasting av statistikken din. Sjekk tilkoblingen din og prøv igjen.",
     "retry": "Prøv igjen"
+  },
+  "progress": {
+    "title": "År mot år",
+    "metricLabel": "Hva som summeres",
+    "metric": {
+      "distance": "Distanse",
+      "elevationGain": "Stigning",
+      "duration": "Tid",
+      "activityCount": "Aktiviteter",
+      "newCells": "Nye celler"
+    },
+    "hours": "{value} t",
+    "comparison": "Per {date}: {mine} i {selected}, mot {theirs} i {year}.",
+    "empty": "Ingen aktiviteter i {year}."
   }
 }

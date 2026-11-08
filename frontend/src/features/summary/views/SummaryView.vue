@@ -31,6 +31,7 @@ import {
 import SummaryBreakdownTable from '@/features/summary/components/SummaryBreakdownTable.vue'
 import SummaryTotals from '@/features/summary/components/SummaryTotals.vue'
 import SummaryTypeBreakdownTable from '@/features/summary/components/SummaryTypeBreakdownTable.vue'
+import SummaryYearProgress from '@/features/summary/components/SummaryYearProgress.vue'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { EmptyState } from '@/components/ui/empty-state'
@@ -477,6 +478,12 @@ function refetchList(): void {
 
     <template v-else-if="summary">
       <SummaryTotals :totals="summary.totals" :units="units" />
+      <SummaryYearProgress
+        v-if="viewType === 'year'"
+        :year="year"
+        :type-code="typeFilter > 0 ? typeFilter : null"
+        :units="units"
+      />
       <SummaryBreakdownTable :view-type="viewType" :rows="summary.breakdown" :units="units" />
       <SummaryTypeBreakdownTable
         v-if="showTypeBreakdown"

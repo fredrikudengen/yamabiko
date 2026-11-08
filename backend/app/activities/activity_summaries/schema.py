@@ -1,5 +1,7 @@
 """Pydantic schemas for activity summary responses."""
 
+from datetime import date
+
 from pydantic import (
     BaseModel,
     ConfigDict,
@@ -200,3 +202,23 @@ class LifetimeSummaryResponse(SummaryMetrics):
         default=None,
         description=("Optional breakdown by activity type"),
     )
+
+
+class ProgressDay(BaseModel):
+    """What the user did on one day, for the year-over-year chart.
+
+    Attributes:
+        day: The day.
+        distance: Distance in metres.
+        duration: Timer time in seconds.
+        elevation_gain: Elevation gain in metres.
+        activity_count: Number of tours.
+        new_cells: Coverage cells first visited that day.
+    """
+
+    day: date
+    distance: float
+    duration: float
+    elevation_gain: float
+    activity_count: int
+    new_cells: int

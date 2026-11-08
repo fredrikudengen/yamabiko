@@ -86,6 +86,13 @@ export const queryKeys = {
      */
     summary: (params: Record<string, unknown> = {}) => ['activities', 'summary', params] as const,
     /**
+     * The day-by-day totals behind the year-over-year chart, per type filter.
+     * Under the `activities` prefix so an upload or delete refetches them.
+     *
+     * @param typeCode - Activity type code, or `null` for every type.
+     */
+    progress: (typeCode: number | null) => ['activities', 'progress', typeCode] as const,
+    /**
      * The home dashboard's infinite feed of a user's own activities. Under the
      * `list` prefix so an `all()` invalidation (e.g. after upload/delete)
      * refetches it.

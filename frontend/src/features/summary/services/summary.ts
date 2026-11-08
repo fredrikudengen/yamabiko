@@ -13,6 +13,7 @@ import { apiFetch } from '@/services/http'
 
 import type {
   ActivitySummary,
+  ProgressDay,
   SummaryBreakdownRow,
   SummaryTotals,
   SummaryTypeBreakdownRow,
@@ -168,4 +169,41 @@ export async function fetchActivitySummary(
 
   const dto = await apiFetch<SummaryResponseDto | null>(path, { signal })
   return mapActivitySummary(viewType, dto ?? EMPTY_RESPONSE)
+}
+
+/** One day as the progress endpoint sends it. */
+interface ProgressDayDto {
+  day: string
+  distance: number
+  duration: number
+  elevation_gain: number
+  activity_count: number
+  new_cells: number
+}
+
+/**
+ * The user's totals per day over their whole history, oldest first: the
+ * year-over-year chart adds them up per year.
+ *
+ * @param typeCode - Only tours of this activity type, or every tour when `null`.
+ * @param signal - Optional abort signal.
+ * @returns One row per day with at least one tour.
+ */
+export async function fetchDailyProgress(
+  typeCode: number | null,
+  signal?: AbortSignal,
+): Promise<ProgressDay[]> {
+  const path =
+    typeCode === null
+      ? '/activities_summaries/progress/days'
+      : `/activities_summaries/progress/days?type=${typeCode}`
+  const rows = await apiFetch<ProgressDayDto[]>(path, { signal })
+  return rows.map((row) => ({
+    day: row.day,
+    distance: row.distance,
+    duration: row.duration,
+    elevationGain: row.elevation_gain,
+    activityCount: row.activity_count,
+    newCells: row.new_cells,
+  }))
 }

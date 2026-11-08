@@ -508,6 +508,35 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/activities_summaries/progress/days": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Read Daily Progress
+         * @description The user's totals per day over their whole history, for the year-over-year chart.
+         *
+         *     Args:
+         *         _check_scopes: Dependency that checks required scopes.
+         *         token_user_id: Authenticated user ID.
+         *         db: Database session.
+         *         activity_type: Optional activity type code.
+         *
+         *     Returns:
+         *         One row per day with at least one tour, oldest first.
+         */
+        get: operations["read_daily_progress_api_v1_activities_summaries_progress_days_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/activities_summaries/{view_type}": {
         parameters: {
             query?: never;
@@ -3765,6 +3794,35 @@ export interface components {
             username?: string | null;
         };
         /**
+         * ProgressDay
+         * @description What the user did on one day, for the year-over-year chart.
+         *
+         *     Attributes:
+         *         day: The day.
+         *         distance: Distance in metres.
+         *         duration: Timer time in seconds.
+         *         elevation_gain: Elevation gain in metres.
+         *         activity_count: Number of tours.
+         *         new_cells: Coverage cells first visited that day.
+         */
+        ProgressDay: {
+            /** Activity Count */
+            activity_count: number;
+            /**
+             * Day
+             * Format: date
+             */
+            day: string;
+            /** Distance */
+            distance: number;
+            /** Duration */
+            duration: number;
+            /** Elevation Gain */
+            elevation_gain: number;
+            /** New Cells */
+            new_cells: number;
+        };
+        /**
          * RefreshOut
          * @description The result of rebuilding the coverage grid.
          */
@@ -5902,6 +5960,38 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ActivityStreamsRead"] | null;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    read_daily_progress_api_v1_activities_summaries_progress_days_get: {
+        parameters: {
+            query?: {
+                /** @description Only tours of this activity type code. */
+                type?: number | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProgressDay"][];
                 };
             };
             /** @description Validation Error */

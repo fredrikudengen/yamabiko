@@ -58,3 +58,22 @@ export interface ActivitySummary {
    */
   typeBreakdown: SummaryTypeBreakdownRow[]
 }
+
+/** What the user did on one day, for the year-over-year chart. */
+export interface ProgressDay {
+  /** The day, `YYYY-MM-DD`. */
+  day: string
+  /** Distance in metres. */
+  distance: number
+  /** Timer time in seconds. */
+  duration: number
+  /** Elevation gain in metres. */
+  elevationGain: number
+  activityCount: number
+  /** Coverage cells first visited that day. */
+  newCells: number
+}
+
+/** What the year-over-year chart adds up. */
+export type ProgressMetric =
+  'distance' | 'elevationGain' | 'duration' | 'activityCount' | 'newCells'
