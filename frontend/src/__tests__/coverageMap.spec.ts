@@ -62,15 +62,20 @@ vi.mock('leaflet', async (importOriginal) => {
 })
 
 const CELLS: CoverageCell[] = [
-  { x: 34_000, y: 19_000, count: 1 },
-  { x: 34_001, y: 19_000, count: 3 },
-  { x: 34_002, y: 19_000, count: 20 },
+  { x: 34_000, y: 19_000, count: 1, firstVisit: '2026-05-01T08:00:00Z' },
+  { x: 34_001, y: 19_000, count: 3, firstVisit: '2025-05-01T08:00:00Z' },
+  { x: 34_002, y: 19_000, count: 20, firstVisit: '2024-05-01T08:00:00Z' },
 ]
 
-function mountMap(cells: CoverageCell[] = CELLS, zoom = 16, selected: CellRef | null = null) {
+function mountMap(
+  cells: CoverageCell[] = CELLS,
+  zoom = 16,
+  selected: CellRef | null = null,
+  color?: (cell: CoverageCell) => string,
+) {
   drawn.length = 0
   return mount(CoverageMap, {
-    props: { cells, zoom, tooltip: (count: number) => `${count}`, selected },
+    props: { cells, zoom, tooltip: (cell: CoverageCell) => `${cell.count}`, selected, color },
     attachTo: document.body,
     global: { plugins: [i18n] },
   })
@@ -103,6 +108,15 @@ describe('CoverageMap', () => {
       colorOf(3),
       colorOf(20),
     ])
+    wrapper.unmount()
+  })
+
+  it('colours by the function it is given instead, when there is one', () => {
+    const wrapper = mountMap(CELLS, 16, null, (cell) =>
+      cell.firstVisit.startsWith('2026') ? 'new' : 'old',
+    )
+
+    expect(drawn.map((shape) => shape.options.fillColor)).toEqual(['new', 'old', 'old'])
     wrapper.unmount()
   })
 

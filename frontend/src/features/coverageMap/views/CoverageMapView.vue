@@ -1,7 +1,8 @@
 <script setup lang="ts">
 /**
  * Where the user has been: every cell their tours have passed through, red and
- * darker where more tours went.
+ * darker where more tours went. The map can instead show one year's new
+ * ground: the cells first visited that year, with the rest greyed out.
  *
  * The grid is counted on the server, so the page fetches one small list of
  * cells rather than every tour's GPS track.
@@ -28,10 +29,19 @@ import {
   DEFAULT_CELL_ZOOM,
   type CellRef,
   type CellSizeChoice,
+  type CoverageCell,
+  type CoverageMode,
 } from '@/features/coverageMap/types'
+import {
+  NEW_CELL_COLOR,
+  OLD_CELL_COLOR,
+  colorOf,
+  firstVisitYears,
+  yearOf,
+} from '@/features/coverageMap/utils/scale'
 import { autoCellZoom, roundedCellSizeM } from '@/features/coverageMap/utils/tiles'
 
-const { t, n } = useI18n()
+const { t, n, locale } = useI18n()
 
 /**
  * "Auto" follows the map: zoomed out, the cells get coarser so they stay
@@ -63,6 +73,32 @@ const maxCount = computed(() => query.data.value?.maxCount ?? 0)
 const loading = computed(() => query.isPending.value)
 const failed = computed(() => query.isError.value)
 const empty = computed(() => !loading.value && !failed.value && cells.value.length === 0)
+
+/** Tour counts, or the year whose new cells stand out. */
+const mode = ref<CoverageMode>('tours')
+/** The years the map can show new cells for, newest first. */
+const years = computed(() => firstVisitYears(cells.value.map((cell) => cell.firstVisit)))
+/** The year shown, or `null` when the map shows tour counts. */
+const shownYear = computed(() => (typeof mode.value === 'number' ? mode.value : null))
+/** How many cells were first visited in the shown year. */
+const newInYear = computed(() =>
+  shownYear.value === null
+    ? 0
+    : cells.value.filter((cell) => yearOf(cell.firstVisit) === shownYear.value).length,
+)
+
+/**
+ * A new function only when the mode changes, so the map redraws on a switch
+ * and not on every render.
+ */
+const cellColor = computed(() => {
+  const year = shownYear.value
+  if (year === null) {
+    return (cell: CoverageCell) => colorOf(cell.count)
+  }
+  return (cell: CoverageCell) =>
+    yearOf(cell.firstVisit) === year ? NEW_CELL_COLOR : OLD_CELL_COLOR
+})
 
 /**
  * Cell sizes are quoted at the middle of the drawn area. A cell is constant in
@@ -97,11 +133,16 @@ const autoLabel = computed(() =>
 )
 
 /**
- * @param count - How many tours passed through a cell.
- * @returns The tooltip for one cell.
+ * @param cell - A cell on the map.
+ * @returns The tooltip for it: how many tours, and when the first was.
  */
-function cellTooltip(count: number): string {
-  return t('activities.coverage.cellTooltip', count, { named: { count: n(count) } })
+function cellTooltip(cell: CoverageCell): string {
+  return t('activities.coverage.cellTooltip', cell.count, {
+    named: {
+      count: n(cell.count),
+      first: new Date(cell.firstVisit).toLocaleDateString(locale.value, { dateStyle: 'medium' }),
+    },
+  })
 }
 </script>
 
@@ -114,8 +155,20 @@ function cellTooltip(count: number): string {
       </div>
       <div class="flex flex-wrap items-center gap-2">
         <Select
+          v-model.number="mode"
+          class="w-auto"
+          :aria-label="t('activities.coverage.mode.label')"
+          data-testid="coverage-mode"
+        >
+          <option value="tours">{{ t('activities.coverage.mode.tours') }}</option>
+          <option v-for="year in years" :key="year" :value="year">
+            {{ t('activities.coverage.mode.newIn', { year }) }}
+          </option>
+        </Select>
+        <Select
           v-model.number="sizeChoice"
           class="w-auto"
+          data-testid="coverage-cell-size"
           :aria-label="t('activities.coverage.cellSize.label')"
         >
           <option value="auto">{{ autoLabel }}</option>
@@ -157,6 +210,7 @@ function cellTooltip(count: number): string {
           :cells="cells"
           :zoom="shownZoom"
           :tooltip="cellTooltip"
+          :color="cellColor"
           :selected="selectedCell"
           @zoom="mapZoom = $event"
           @select="selectedCell = $event"
@@ -169,7 +223,7 @@ function cellTooltip(count: number): string {
         />
       </Card>
       <div class="flex flex-wrap items-center justify-between gap-2">
-        <CoverageLegend :max-count="maxCount" />
+        <CoverageLegend :max-count="maxCount" :year="shownYear" />
         <Button variant="ghost" size="sm" @click="mapRef?.fitAll()">
           <Maximize2 aria-hidden="true" />
           {{ t('activities.coverage.fitAll') }}
@@ -182,6 +236,13 @@ function cellTooltip(count: number): string {
             metres: n(roundedCellSizeM(middleLatitude, shownZoom)),
           })
         }}
+        <template v-if="shownYear !== null">
+          {{
+            t('activities.coverage.newSummary', newInYear, {
+              named: { count: n(newInYear), year: shownYear },
+            })
+          }}
+        </template>
       </p>
     </template>
   </section>

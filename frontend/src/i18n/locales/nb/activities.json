@@ -359,7 +359,7 @@
     "loadError": "Klarte ikke å laste kartet ditt.",
     "refresh": "Bygg opp igjen",
     "fitAll": "Vis alt",
-    "cellTooltip": "1 tur | {count} turer",
+    "cellTooltip": "1 tur, første {first} | {count} turer, første {first}",
     "summary": "{cells} celler på rundt {metres} m.",
     "cellSize": {
       "label": "Cellestørrelse",
@@ -374,7 +374,9 @@
     },
     "legend": {
       "title": "Turer:",
-      "andUp": "{from}+"
+      "andUp": "{from}+",
+      "newIn": "Første gang i {year}",
+      "otherYears": "Andre år"
     },
     "map": {
       "label": "Kart over hvor du har gått"
@@ -382,6 +384,17 @@
     "empty": {
       "title": "Ingenting på kartet ennå",
       "description": "Turer med GPS-spor dukker opp her. Er turene dine importert fra filer, trykk Bygg opp igjen."
+    },
+    "newSummary": "{count} av dem første gang i {year}. | {count} av dem første gang i {year}.",
+    "mode": {
+      "label": "Vis",
+      "tours": "Antall turer",
+      "newIn": "Nye i {year}"
+    },
+    "activity": {
+      "new": "Første gang i 1 av {cells} celler (rundt {metres} m). | Første gang i {count} av {cells} celler (rundt {metres} m).",
+      "none": "Ingenting nytt: du hadde vært i den ene cellen før. | Ingenting nytt: du hadde vært i alle {cells} cellene før.",
+      "link": "Se kartet"
     }
   }
 }

@@ -21,6 +21,7 @@ import ActivityMetricsGrid from '@/features/activities/components/ActivityMetric
 import ActivityPrivacyAlerts from '@/features/activities/components/ActivityPrivacyAlerts.vue'
 import ActivityStreamChart from '@/features/activities/components/ActivityStreamChart.vue'
 import ActivityWorkoutSets from '@/features/activities/components/ActivityWorkoutSets.vue'
+import ActivityNewCells from '@/features/coverageMap/components/ActivityNewCells.vue'
 import {
   useActivityExerciseTitlesQuery,
   useActivityOwnerQuery,
@@ -285,8 +286,15 @@ const notFound = computed(() => !isPending.value && !isError.value && activity.v
       <ActivityPrivacyAlerts :activity="activity" :current-user-id="currentUserId" />
 
       <!-- The map and the photos are separate cards: the photos used to be slides after the map. -->
-      <div v-if="showMap" class="h-72 overflow-hidden rounded-card border border-border lg:h-150">
-        <ActivityMap :points="trackPoints" />
+      <div v-if="showMap" class="flex flex-col gap-1.5">
+        <div class="h-72 overflow-hidden rounded-card border border-border lg:h-150">
+          <ActivityMap :points="trackPoints" />
+        </div>
+        <ActivityNewCells
+          v-if="isOwner"
+          :activity-id="activity.id"
+          :latitude="trackPoints[0]?.lat ?? 60"
+        />
       </div>
 
       <ActivityMediaCard :activity-id="activity.id" :is-owner="isOwner" />

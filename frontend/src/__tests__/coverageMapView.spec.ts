@@ -2,11 +2,12 @@ import { describe, expect, it, vi } from 'vitest'
 import { defineComponent, ref, toValue, type MaybeRefOrGetter } from 'vue'
 import { mount } from '@vue/test-utils'
 
-import type { Coverage } from '@/features/coverageMap/types'
+import type { Coverage, CoverageCell } from '@/features/coverageMap/types'
 
 import i18n from '@/i18n'
 import CoverageMapView from '@/features/coverageMap/views/CoverageMapView.vue'
 import { AUTO_ZOOM_OFFSET } from '@/features/coverageMap/utils/tiles'
+import { NEW_CELL_COLOR, OLD_CELL_COLOR, colorOf } from '@/features/coverageMap/utils/scale'
 
 /**
  * The query is replaced by a ref the test fills by hand, so it can hold the
@@ -32,7 +33,7 @@ vi.mock('@/features/coverageMap/composables/useCoverage', () => ({
 /** Stands in for the Leaflet map: records what it is given and can report a zoom. */
 const MapStub = defineComponent({
   name: 'CoverageMap',
-  props: { cells: Array, zoom: Number, tooltip: Function, selected: Object },
+  props: { cells: Array, zoom: Number, tooltip: Function, color: Function, selected: Object },
   emits: ['zoom', 'select'],
   setup: () => ({ fitAll: () => undefined }),
   template: '<div />',
@@ -47,7 +48,15 @@ const ToursStub = defineComponent({
 })
 
 function grid(zoom: number): Coverage {
-  return { zoom, cells: [{ x: 1, y: 1, count: 1 }], maxCount: 1 }
+  return {
+    zoom,
+    cells: [
+      { x: 1, y: 1, count: 1, firstVisit: '2025-06-01T08:00:00' },
+      { x: 2, y: 1, count: 3, firstVisit: '2026-03-14T08:00:00' },
+      { x: 3, y: 1, count: 2, firstVisit: '2026-07-01T08:00:00' },
+    ],
+    maxCount: 3,
+  }
 }
 
 function mountView() {
@@ -88,7 +97,7 @@ describe('CoverageMapView', () => {
     data.value = grid(16)
     const wrapper = mountView()
 
-    await wrapper.find('select').setValue('17')
+    await wrapper.find('[data-testid="coverage-cell-size"]').setValue('17')
     wrapper.findComponent(MapStub).vm.$emit('zoom', 9)
     await wrapper.vm.$nextTick()
 
@@ -100,7 +109,7 @@ describe('CoverageMapView', () => {
     data.value = grid(16)
     const wrapper = mountView()
 
-    const select = wrapper.find('select').element as HTMLSelectElement
+    const select = wrapper.find('[data-testid="coverage-cell-size"]').element as HTMLSelectElement
     expect(select.options[0]?.value).toBe('auto')
     expect(select.value).toBe('auto')
     wrapper.unmount()
@@ -123,6 +132,34 @@ describe('CoverageMapView', () => {
 
     expect(wrapper.findComponent(ToursStub).exists()).toBe(false)
     expect(wrapper.findComponent(MapStub).props('selected')).toBeNull()
+    wrapper.unmount()
+  })
+
+  it('offers tour counts first, then each year cells were first visited in, newest first', () => {
+    data.value = grid(16)
+    const wrapper = mountView()
+
+    const select = wrapper.find('[data-testid="coverage-mode"]').element as HTMLSelectElement
+    expect([...select.options].map((option) => option.value)).toEqual(['tours', '2026', '2025'])
+    expect(select.value).toBe('tours')
+    wrapper.unmount()
+  })
+
+  it('colours by tour count until a year is picked, then by whether a cell was new that year', async () => {
+    data.value = grid(16)
+    const wrapper = mountView()
+    const cells = data.value.cells
+    const colors = () =>
+      cells.map((cell) =>
+        (wrapper.findComponent(MapStub).props('color') as (cell: CoverageCell) => string)(cell),
+      )
+
+    expect(colors()).toEqual([colorOf(1), colorOf(3), colorOf(2)])
+    await wrapper.find('[data-testid="coverage-mode"]').setValue('2026')
+
+    expect(colors()).toEqual([OLD_CELL_COLOR, NEW_CELL_COLOR, NEW_CELL_COLOR])
+    expect(wrapper.text()).toContain('2026')
+    expect(wrapper.text()).toMatch(/\b2\b.*2026/)
     wrapper.unmount()
   })
 })

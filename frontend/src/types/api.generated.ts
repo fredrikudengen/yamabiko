@@ -772,6 +772,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/coverage/activities/{activity_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Activity Cells
+         * @description How many cells a tour passed through, and in how many none of the user's earlier tours had been.
+         */
+        get: operations["get_activity_cells_api_v1_coverage_activities__activity_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/coverage/cells/{x}/{y}": {
         parameters: {
             query?: never;
@@ -2591,6 +2611,18 @@ export interface components {
             workout_rpe?: number | null;
         };
         /**
+         * ActivityCellsOut
+         * @description How many cells one tour passed through, and in how many it was the user's first.
+         */
+        ActivityCellsOut: {
+            /** Cells */
+            cells: number;
+            /** New Cells */
+            new_cells: number;
+            /** Zoom */
+            zoom: number;
+        };
+        /**
          * ActivityEdit
          * @description Schema for partial updates to an activity.
          *
@@ -2919,11 +2951,16 @@ export interface components {
         };
         /**
          * CellOut
-         * @description One cell and how many of the user's tours passed through it.
+         * @description One cell, how many of the user's tours passed through it, and when the first did.
          */
         CellOut: {
             /** Count */
             count: number;
+            /**
+             * First Visit
+             * Format: date-time
+             */
+            first_visit: string;
             /** X */
             x: number;
             /** Y */
@@ -6071,6 +6108,39 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["CoverageOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_activity_cells_api_v1_coverage_activities__activity_id__get: {
+        parameters: {
+            query?: {
+                zoom?: number;
+            };
+            header?: never;
+            path: {
+                activity_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ActivityCellsOut"];
                 };
             };
             /** @description Validation Error */

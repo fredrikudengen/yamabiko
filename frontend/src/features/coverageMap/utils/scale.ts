@@ -74,3 +74,28 @@ export function legendBuckets(maxCount: number): CoverageBucket[] {
   const last = COVERAGE_BUCKETS.indexOf(bucketOf(maxCount))
   return COVERAGE_BUCKETS.slice(0, last + 1)
 }
+
+/** Cells first visited in the year the map shows: the red of a well-walked cell. */
+export const NEW_CELL_COLOR = '#dc2626'
+
+/** Every other cell when the map shows one year: there, but in the background. */
+export const OLD_CELL_COLOR = '#94a3b8'
+
+/**
+ * @param iso - An ISO time.
+ * @returns Its year in the browser's time zone, the one the user lives in.
+ */
+export function yearOf(iso: string): number {
+  return new Date(iso).getFullYear()
+}
+
+/**
+ * The years cells were first visited in, newest first: the years the map can
+ * show as "new in".
+ *
+ * @param firstVisits - The first visit of each cell.
+ * @returns Each year once.
+ */
+export function firstVisitYears(firstVisits: readonly string[]): number[] {
+  return [...new Set(firstVisits.map(yearOf))].sort((a, b) => b - a)
+}

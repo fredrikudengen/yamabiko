@@ -8,11 +8,12 @@ from pydantic import BaseModel
 
 
 class CellOut(BaseModel):
-    """One cell and how many of the user's tours passed through it."""
+    """One cell, how many of the user's tours passed through it, and when the first did."""
 
     x: int
     y: int
     count: int
+    first_visit: datetime
 
 
 class CoverageOut(BaseModel):
@@ -34,6 +35,14 @@ class CellTourOut(BaseModel):
     id: int
     name: str | None
     start_time: datetime
+
+
+class ActivityCellsOut(BaseModel):
+    """How many cells one tour passed through, and in how many it was the user's first."""
+
+    zoom: int
+    cells: int
+    new_cells: int
 
 
 class RefreshOut(BaseModel):
