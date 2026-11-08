@@ -45,7 +45,10 @@ def get_coverage(
         raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_CONTENT, detail=str(err)) from err
     return coverage_schema.CoverageOut(
         zoom=zoom,
-        cells=[coverage_schema.CellOut(x=cell.x, y=cell.y, count=cell.count) for cell in counts],
+        cells=[
+            coverage_schema.CellOut(x=cell.x, y=cell.y, count=cell.count, first_visit=cell.first_visit)
+            for cell in counts
+        ],
         max_count=max((cell.count for cell in counts), default=0),
     )
 
@@ -66,6 +69,25 @@ def get_cell_tours(
     except ValueError as err:
         raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_CONTENT, detail=str(err)) from err
     return [coverage_schema.CellTourOut(id=tour.id, name=tour.name, start_time=tour.start_time) for tour in tours]
+
+
+@router.get("/activities/{activity_id}", response_model=coverage_schema.ActivityCellsOut)
+def get_activity_cells(
+    activity_id: int,
+    _validate_access_token: _Validated,
+    _check_scopes: _CanRead,
+    token_user_id: _UserId,
+    db: _Db,
+    zoom: Annotated[int, Query(ge=coverage_tiles.MIN_ZOOM, le=coverage_tiles.MAX_ZOOM)] = DEFAULT_ZOOM,
+) -> coverage_schema.ActivityCellsOut:
+    """How many cells a tour passed through, and in how many none of the user's earlier tours had been."""
+    try:
+        counts = coverage_crud.new_cells_of_activity(token_user_id, activity_id, zoom, db)
+    except ValueError as err:
+        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_CONTENT, detail=str(err)) from err
+    if counts is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Activity not found")
+    return coverage_schema.ActivityCellsOut(zoom=zoom, cells=counts.cells, new_cells=counts.new_cells)
 
 
 @router.post("/refresh", response_model=coverage_schema.RefreshOut)

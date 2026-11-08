@@ -360,7 +360,7 @@
     "loadError": "Could not load your map.",
     "refresh": "Rebuild",
     "fitAll": "Show everything",
-    "cellTooltip": "1 tour | {count} tours",
+    "cellTooltip": "1 tour, first {first} | {count} tours, first {first}",
     "summary": "{cells} cells of about {metres} m.",
     "cellSize": {
       "label": "Cell size",
@@ -375,7 +375,9 @@
     },
     "legend": {
       "title": "Tours:",
-      "andUp": "{from}+"
+      "andUp": "{from}+",
+      "newIn": "First visited in {year}",
+      "otherYears": "Other years"
     },
     "map": {
       "label": "Map of where you have been"
@@ -383,6 +385,17 @@
     "empty": {
       "title": "Nothing on the map yet",
       "description": "Tours with a GPS track show up here. If yours were imported from files, press Rebuild."
+    },
+    "newSummary": "{count} of them first visited in {year}. | {count} of them first visited in {year}.",
+    "mode": {
+      "label": "Show",
+      "tours": "Number of tours",
+      "newIn": "New in {year}"
+    },
+    "activity": {
+      "new": "First time in 1 of {cells} cells (about {metres} m). | First time in {count} of {cells} cells (about {metres} m).",
+      "none": "No new ground: you had been in the 1 cell before. | No new ground: you had been in all {cells} cells before.",
+      "link": "See the map"
     }
   }
 }

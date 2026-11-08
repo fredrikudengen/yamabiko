@@ -5,6 +5,7 @@ import type { CellRef } from '@/features/coverageMap/types'
 
 import { useInvalidatingMutation } from '@/composables/useInvalidatingMutation'
 import {
+  fetchActivityCells,
   fetchCellTours,
   fetchCoverage,
   refreshCoverage,
@@ -45,6 +46,27 @@ export function useCellToursQuery(cell: MaybeRefOrGetter<CellRef | null>) {
     }),
     queryFn: ({ signal }) => fetchCellTours(toValue(cell) as CellRef, signal),
     enabled: computed(() => toValue(cell) !== null),
+    staleTime: 10 * 60 * 1000,
+  })
+}
+
+/**
+ * How many cells a tour passed through, and how many of them were new. Idle
+ * until `enabled` holds, so it is not asked for tours the viewer does not own.
+ *
+ * @param activityId - The tour.
+ * @param zoom - The grid to count at.
+ * @param enabled - Whether to fetch.
+ */
+export function useActivityCellsQuery(
+  activityId: MaybeRefOrGetter<number>,
+  zoom: MaybeRefOrGetter<number>,
+  enabled: MaybeRefOrGetter<boolean>,
+) {
+  return useQuery({
+    queryKey: computed(() => queryKeys.coverage.activity(toValue(activityId), toValue(zoom))),
+    queryFn: ({ signal }) => fetchActivityCells(toValue(activityId), toValue(zoom), signal),
+    enabled: computed(() => toValue(enabled)),
     staleTime: 10 * 60 * 1000,
   })
 }

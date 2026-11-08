@@ -1,4 +1,6 @@
 import type {
+  ActivityCells,
+  ActivityCellsDto,
   CellRef,
   CellTour,
   CellTourDto,
@@ -16,7 +18,12 @@ import { apiFetch } from '@/services/http'
 export function mapCoverage(dto: CoverageDto): Coverage {
   return {
     zoom: dto.zoom,
-    cells: dto.cells.map((cell) => ({ x: cell.x, y: cell.y, count: cell.count })),
+    cells: dto.cells.map((cell) => ({
+      x: cell.x,
+      y: cell.y,
+      count: cell.count,
+      firstVisit: cell.first_visit,
+    })),
     maxCount: dto.max_count,
   }
 }
@@ -45,6 +52,26 @@ export async function fetchCellTours(cell: CellRef, signal?: AbortSignal): Promi
     { signal },
   )
   return tours.map((tour) => ({ id: tour.id, name: tour.name, startTime: tour.start_time }))
+}
+
+/**
+ * How many cells a tour passed through, and in how many none of the user's
+ * earlier tours had been.
+ *
+ * @param activityId - The tour; must be the user's own.
+ * @param zoom - The grid to count at.
+ * @param signal - Optional abort signal.
+ * @returns The counts.
+ */
+export async function fetchActivityCells(
+  activityId: number,
+  zoom: number,
+  signal?: AbortSignal,
+): Promise<ActivityCells> {
+  const dto = await apiFetch<ActivityCellsDto>(`/coverage/activities/${activityId}?zoom=${zoom}`, {
+    signal,
+  })
+  return { zoom: dto.zoom, cells: dto.cells, newCells: dto.new_cells }
 }
 
 /**

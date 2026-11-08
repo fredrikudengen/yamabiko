@@ -176,3 +176,99 @@ class TestCellTours:
     @pytest.mark.parametrize(("x", "y", "zoom"), [(-1, 0, ZOOM), (0, 2**ZOOM, ZOOM), (2**8, 0, 8), (0, 0, 7)])
     def test_a_cell_off_the_grid_is_refused(self, client, x, y, zoom):
         assert client.get(f"/coverage/cells/{x}/{y}?zoom={zoom}").status_code == 422
+
+
+class TestFirstVisit:
+    def test_each_cell_carries_the_start_of_the_earliest_tour_through_it(self, client, db, add_activity):
+        service.refresh_activity_cells(add_activity(build_route(ASCENT), day=3), db)
+        service.refresh_activity_cells(add_activity(build_route([("walk", (0, 600))]), day=1), db)
+
+        body = client.get(f"/coverage?zoom={ZOOM}").json()
+        first = {(cell["x"], cell["y"]): cell["first_visit"][:10] for cell in body["cells"]}
+        short = service.cells_of_track(build_route([("walk", (0, 600))]).points, ZOOM)
+
+        assert {first[key] for key in short} == {"2026-10-15"}
+        assert {first[key] for key in set(first) - short} == {"2026-10-17"}
+
+
+LONGER = [("walk", (0, 1800)), ("walk", (0, 3600))]
+
+
+class TestActivityCells:
+    def _get(self, client, activity_id, zoom=ZOOM):
+        return client.get(f"/coverage/activities/{activity_id}?zoom={zoom}")
+
+    def test_the_first_tour_is_first_in_every_cell(self, client, db, add_activity):
+        activity_id = add_activity(build_route(ASCENT))
+        service.refresh_activity_cells(activity_id, db)
+
+        body = self._get(client, activity_id).json()
+
+        assert body["zoom"] == ZOOM
+        assert body["cells"] == len(service.cells_of_track(build_route(ASCENT).points, ZOOM))
+        assert body["new_cells"] == body["cells"]
+
+    def test_walking_the_same_way_again_finds_nothing_new(self, client, db, add_activity):
+        service.refresh_activity_cells(add_activity(build_route(ASCENT), day=0), db)
+        again = add_activity(build_route(ASCENT), day=1)
+        service.refresh_activity_cells(again, db)
+
+        assert self._get(client, again).json()["new_cells"] == 0
+
+    @pytest.mark.parametrize("zoom", [ZOOM, ZOOM - 1, ZOOM - 3])
+    def test_going_further_counts_only_the_cells_beyond(self, client, db, add_activity, zoom):
+        service.refresh_activity_cells(add_activity(build_route(ASCENT), day=0), db)
+        further = add_activity(build_route(LONGER), day=1)
+        service.refresh_activity_cells(further, db)
+
+        long_cells = service.cells_of_track(build_route(LONGER).points, zoom)
+        short_cells = service.cells_of_track(build_route(ASCENT).points, zoom)
+        body = self._get(client, further, zoom).json()
+
+        assert body["cells"] == len(long_cells)
+        assert body["new_cells"] == len(long_cells - short_cells)
+        assert 0 < body["new_cells"] < body["cells"]
+
+    def test_earlier_is_by_start_time_not_by_when_it_was_imported(self, client, db, add_activity):
+        later = add_activity(build_route(ASCENT), day=5)
+        earlier = add_activity(build_route(ASCENT), day=1)
+        for activity_id in (later, earlier):
+            service.refresh_activity_cells(activity_id, db)
+
+        assert self._get(client, later).json()["new_cells"] == 0
+        assert self._get(client, earlier).json()["new_cells"] > 0
+
+    def test_of_two_tours_starting_together_the_first_stored_gets_the_cells(self, client, db, add_activity):
+        first = add_activity(build_route(ASCENT))
+        second = add_activity(build_route(ASCENT))
+        for activity_id in (first, second):
+            service.refresh_activity_cells(activity_id, db)
+
+        assert self._get(client, first).json()["new_cells"] > 0
+        assert self._get(client, second).json()["new_cells"] == 0
+
+    def test_another_users_earlier_tour_takes_nothing_away(self, client, db, add_activity):
+        service.refresh_activity_cells(add_activity(build_route(ASCENT), user_id=8, day=0), db)
+        mine = add_activity(build_route(ASCENT), day=1)
+        service.refresh_activity_cells(mine, db)
+
+        body = self._get(client, mine).json()
+
+        assert body["new_cells"] == body["cells"] > 0
+
+    def test_a_tour_without_gps_has_no_cells(self, client, db, add_activity):
+        activity_id = add_activity(None)
+
+        assert self._get(client, activity_id).json() == {"zoom": ZOOM, "cells": 0, "new_cells": 0}
+
+    def test_another_users_tour_is_not_found(self, client, db, add_activity):
+        theirs = add_activity(build_route(ASCENT), user_id=8)
+        service.refresh_activity_cells(theirs, db)
+
+        assert self._get(client, theirs).status_code == 404
+        assert self._get(client, 9999).status_code == 404
+
+    def test_a_zoom_outside_the_grid_is_refused(self, client, db, add_activity):
+        activity_id = add_activity(build_route(ASCENT))
+
+        assert self._get(client, activity_id, zoom=ZOOM + 1).status_code == 422

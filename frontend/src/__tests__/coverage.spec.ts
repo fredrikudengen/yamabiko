@@ -9,12 +9,17 @@ import nbActivities from '@/i18n/locales/nb/activities.json'
 import { apiFetch } from '@/services/http'
 import CoverageLegend from '@/features/coverageMap/components/CoverageLegend.vue'
 import {
+  fetchActivityCells,
   fetchCellTours,
   fetchCoverage,
   mapCoverage,
   refreshCoverage,
 } from '@/features/coverageMap/services/coverage'
-import { COVERAGE_BUCKETS } from '@/features/coverageMap/utils/scale'
+import {
+  COVERAGE_BUCKETS,
+  NEW_CELL_COLOR,
+  OLD_CELL_COLOR,
+} from '@/features/coverageMap/utils/scale'
 import { queryKeys } from '@/services/queryKeys'
 
 vi.mock('@/services/http', () => ({
@@ -26,8 +31,8 @@ const mocked = vi.mocked(apiFetch)
 const DTO: CoverageDto = {
   zoom: 16,
   cells: [
-    { x: 34_000, y: 19_000, count: 1 },
-    { x: 34_001, y: 19_000, count: 7 },
+    { x: 34_000, y: 19_000, count: 1, first_visit: '2025-06-01T08:00:00Z' },
+    { x: 34_001, y: 19_000, count: 7, first_visit: '2026-03-14T07:00:00Z' },
   ],
   max_count: 7,
 }
@@ -51,9 +56,18 @@ describe('the coverage service', () => {
     expect(coverage.zoom).toBe(16)
     expect(coverage.maxCount).toBe(7)
     expect(coverage.cells).toEqual([
-      { x: 34_000, y: 19_000, count: 1 },
-      { x: 34_001, y: 19_000, count: 7 },
+      { x: 34_000, y: 19_000, count: 1, firstVisit: '2025-06-01T08:00:00Z' },
+      { x: 34_001, y: 19_000, count: 7, firstVisit: '2026-03-14T07:00:00Z' },
     ])
+  })
+
+  it("asks for one tour's cells at a grid and reads the counts", async () => {
+    mocked.mockResolvedValue({ zoom: 16, cells: 85, new_cells: 12 })
+
+    const counts = await fetchActivityCells(4, 16)
+
+    expect(mocked.mock.calls[0]?.[0]).toBe('/coverage/activities/4?zoom=16')
+    expect(counts).toEqual({ zoom: 16, cells: 85, newCells: 12 })
   })
 
   it('reads an empty map without inventing a highest count', () => {
@@ -151,6 +165,20 @@ describe('the legend', () => {
   it('disappears entirely on an empty map', () => {
     expect(mountLegend(0).text()).toBe('')
   })
+
+  it('shows new that year against the rest when the map shows a year', () => {
+    const legend = mount(CoverageLegend, {
+      props: { maxCount: 12, year: 2026 },
+      global: { plugins: [i18n] },
+    })
+    const swatches = legend.findAll('span[aria-hidden="true"]')
+
+    expect(legend.text()).toContain('2026')
+    expect(legend.text()).not.toContain('10+')
+    expect(swatches).toHaveLength(2)
+    expect(swatches[0]?.attributes('style')).toContain(rgbOf(NEW_CELL_COLOR))
+    expect(swatches[1]?.attributes('style')).toContain(rgbOf(OLD_CELL_COLOR))
+  })
 })
 
 describe('the Norwegian texts', () => {
@@ -165,7 +193,9 @@ describe('the cell tooltip', () => {
   it('says one tour in the singular and counts in the plural', () => {
     const t = i18n.global.t.bind(i18n.global)
 
-    expect(t('activities.coverage.cellTooltip', 1, { named: { count: '1' } })).toContain('1 tour')
-    expect(t('activities.coverage.cellTooltip', 7, { named: { count: '7' } })).toContain('7 tours')
+    const named = (count: string) => ({ named: { count, first: '14 Oct 2026' } })
+
+    expect(t('activities.coverage.cellTooltip', 1, named('1'))).toBe('1 tour, first 14 Oct 2026')
+    expect(t('activities.coverage.cellTooltip', 7, named('7'))).toBe('7 tours, first 14 Oct 2026')
   })
 })

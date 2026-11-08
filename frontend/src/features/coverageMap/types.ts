@@ -5,6 +5,7 @@ export interface CoverageCellDto {
   x: number
   y: number
   count: number
+  first_visit: string
 }
 
 /** The coverage grid as the API sends it. */
@@ -22,6 +23,8 @@ export interface CoverageCell {
   y: number
   /** How many separate tours passed through. */
   count: number
+  /** ISO start time of the earliest tour through the cell. */
+  firstVisit: string
 }
 
 /** The user's coverage at one zoom. */
@@ -54,6 +57,28 @@ export interface CellRef {
   y: number
   zoom: number
 }
+
+/** How many cells one tour passed through, as the API sends it. */
+export interface ActivityCellsDto {
+  zoom: number
+  cells: number
+  new_cells: number
+}
+
+/** How many cells one tour passed through, and in how many it was the user's first. */
+export interface ActivityCells {
+  /** The grid the cells are counted at. */
+  zoom: number
+  cells: number
+  /** Cells none of the user's earlier tours had passed through. */
+  newCells: number
+}
+
+/**
+ * What the map colours by: how many tours went through each cell, or which
+ * cells were first visited in a given year.
+ */
+export type CoverageMode = 'tours' | number
 
 /** The result of rebuilding the grid. */
 export interface CoverageRefresh {

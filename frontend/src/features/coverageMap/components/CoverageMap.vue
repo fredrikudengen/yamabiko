@@ -35,8 +35,10 @@ const props = defineProps<{
   cells: CoverageCell[]
   /** The grid the cells are counted at. */
   zoom: number
-  /** Text for a cell's tooltip, given its count. */
-  tooltip: (count: number) => string
+  /** Text for a cell's tooltip. */
+  tooltip: (cell: CoverageCell) => string
+  /** Fill colour of a cell; by default the red scale over its tour count. */
+  color?: (cell: CoverageCell) => string
   /** The picked cell, outlined; it may belong to another grid than `zoom`. */
   selected?: CellRef | null
 }>()
@@ -112,7 +114,7 @@ function drawCells(): void {
   cellLayer.clearLayers()
   for (const cell of props.cells) {
     const box = cellBounds(cell.x, cell.y, props.zoom)
-    const color = colorOf(cell.count)
+    const color = props.color ? props.color(cell) : colorOf(cell.count)
     rectangle(
       [
         [box.south, box.west],
@@ -129,7 +131,7 @@ function drawCells(): void {
         interactive: true,
       },
     )
-      .bindTooltip(props.tooltip(cell.count), { sticky: true })
+      .bindTooltip(props.tooltip(cell), { sticky: true })
       .on('click', () => emit('select', { x: cell.x, y: cell.y, zoom: props.zoom }))
       .addTo(cellLayer)
   }
@@ -222,7 +224,7 @@ onBeforeUnmount(() => {
 })
 
 watch(
-  () => [props.cells, props.zoom],
+  () => [props.cells, props.zoom, props.color],
   () => {
     drawCells()
     // One canvas paints in the order shapes were added, so new cells would

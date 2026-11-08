@@ -4,6 +4,7 @@ import {
   COVERAGE_BUCKETS,
   bucketOf,
   colorOf,
+  firstVisitYears,
   legendBuckets,
 } from '@/features/coverageMap/utils/scale'
 
@@ -70,5 +71,22 @@ describe('the legend', () => {
       const shown = legendBuckets(maxCount)
       expect(shown[shown.length - 1]?.color).toBe(colorOf(maxCount))
     }
+  })
+})
+
+describe('firstVisitYears', () => {
+  it('gives each year once, newest first', () => {
+    expect(
+      firstVisitYears([
+        '2025-06-01T08:00:00',
+        '2026-03-14T08:00:00',
+        '2025-09-01T08:00:00',
+        '2024-01-02T08:00:00',
+      ]),
+    ).toEqual([2026, 2025, 2024])
+  })
+
+  it('is empty for no cells', () => {
+    expect(firstVisitYears([])).toEqual([])
   })
 })
