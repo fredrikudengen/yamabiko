@@ -43,8 +43,14 @@ const DEFAULT_MAX_ZOOM = 19
 const DEFAULT_TRACK_COLOR = themeColor('--color-brand')
 /** Start-marker fill — the `--color-goal` design token (green). */
 const START_MARKER_COLOR = themeColor('--color-goal')
-/** Highlighted stretches: amber, which stands out from the indigo track on every tile style. */
-const HIGHLIGHT_COLOR = '#f59e0b'
+/**
+ * With stretches highlighted, the track and the stretches stay in the brand's indigo family: the
+ * rest of the track recedes to a light indigo and the stretches are the darkest, a little thicker.
+ * Fixed values rather than theme tokens, since they are drawn over map tiles, which are light in
+ * both themes. They are the light and dark ends of the brand scale in `assets/main.css`.
+ */
+const MUTED_TRACK_COLOR = '#8fb3dc'
+const HIGHLIGHT_COLOR = '#18344f'
 /** Finish-marker fill — the `--color-hr` design token (red). */
 const FINISH_MARKER_COLOR = themeColor('--color-hr')
 
@@ -160,7 +166,13 @@ export function createLeafletMapProvider(config: LeafletMapProviderConfig = {}):
 
         const linePoints = toLatLngs(track.points)
         if (linePoints.length > 0) {
-          overlays.push(polyline(linePoints, { color: trackColor, weight: 4 }).addTo(map))
+          const muted = (track.highlights?.length ?? 0) > 0
+          overlays.push(
+            polyline(linePoints, {
+              color: muted ? MUTED_TRACK_COLOR : trackColor,
+              weight: 4,
+            }).addTo(map),
+          )
         }
         for (const highlight of track.highlights ?? []) {
           const stretch = toLatLngs(highlight.points)
@@ -169,7 +181,7 @@ export function createLeafletMapProvider(config: LeafletMapProviderConfig = {}):
             continue
           }
           overlays.push(
-            polyline(stretch, { color: HIGHLIGHT_COLOR, weight: 6, opacity: 0.9 })
+            polyline(stretch, { color: HIGHLIGHT_COLOR, weight: 6 })
               .bindTooltip(highlight.label, { sticky: true })
               .addTo(map),
           )

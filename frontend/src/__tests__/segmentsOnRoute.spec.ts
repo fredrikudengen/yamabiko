@@ -172,8 +172,29 @@ describe('the Leaflet provider', () => {
     const lines = drawn.filter((layer) => layer.kind === 'polyline')
     const markers = drawn.filter((layer) => layer.kind === 'circleMarker')
     expect(lines).toHaveLength(2)
+    // The rest of the track recedes to light indigo; the segment is the dark brand indigo.
+    expect(lines[0]?.options.color).toBe('#8fb3dc')
+    expect(lines[1]?.options.color).toBe('#18344f')
     expect(lines[1]?.tooltip).toBe('Løvstakken · PR, of 8')
     expect(markers.some((marker) => marker.options.fillColor === '#eab308')).toBe(true)
+    map.destroy()
+  })
+
+  it('keeps the track in the brand colour when nothing is highlighted', () => {
+    drawn.length = 0
+    const target = document.createElement('div')
+    document.body.append(target)
+
+    const map = createLeafletMapProvider({ trackColor: '#2f5d8c' }).mount(target, {
+      track: {
+        points: [
+          { lat: 60, lng: 5 },
+          { lat: 60.01, lng: 5.01 },
+        ],
+      },
+    })
+
+    expect(drawn.filter((layer) => layer.kind === 'polyline')[0]?.options.color).toBe('#2f5d8c')
     map.destroy()
   })
 })
