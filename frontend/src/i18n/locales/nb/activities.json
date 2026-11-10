@@ -266,7 +266,8 @@
     "milestone": {
       "pr": "PR, av {count}",
       "rank": "{rank}. av {count}",
-      "tooltip": "Plassering blant alle passeringer av dette segmentet, fra alle kilder. Endres når en raskere tur kommer til."
+      "tooltip": "Plassering blant alle passeringer av dette segmentet, fra alle kilder. Endres når en raskere tur kommer til.",
+      "prDoubtful": "PR?, av {count}"
     },
     "source": {
       "label": "Kilde",
@@ -351,6 +352,14 @@
       "deleteError": "Kunne ikke slette segmentet.",
       "deleteTitle": "Slette segmentet?",
       "deleteDescription": "«{name}» og tidene fjernes. Turene dine røres ikke."
+    },
+    "doubt": {
+      "label": "Usikker",
+      "reason": {
+        "gps_gap": "GPS-signalet falt ut inne i segmentet, så tiden kan være for rask.",
+        "start_edge": "Sporet var bare innom kanten av startsirkelen, så starten flytter seg med GPS-støyen.",
+        "end_edge": "Sporet var bare innom kanten av målsirkelen, så målgangen flytter seg med GPS-støyen."
+      }
     }
   },
   "coverage": {

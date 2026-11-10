@@ -247,6 +247,7 @@ const effort = (id: number, startTime: string, movingS: number, extra = {}): Seg
   rankMoving: 1,
   rankTotal: 1,
   segmentEffortCount: 1,
+  doubts: [],
   ...extra,
 })
 

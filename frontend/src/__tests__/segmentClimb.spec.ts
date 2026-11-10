@@ -32,6 +32,7 @@ const effort = (id: number, extra: Partial<SegmentEffort> = {}): SegmentEffort =
   rankMoving: 1,
   rankTotal: 1,
   segmentEffortCount: 1,
+  doubts: [],
   ...extra,
 })
 

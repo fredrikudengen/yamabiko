@@ -549,3 +549,35 @@ def test_the_routes_are_registered_and_need_a_login(method, path):
     response = getattr(TestClient(app), method)(core_config.ROOT_PATH + path)
 
     assert response.status_code in (401, 403), response.text
+
+
+class TestDoubts:
+    """Each effort says why its time may be off, so a doubtful one is not taken at face value."""
+
+    def test_a_pass_through_both_centres_has_no_doubts(self, client, db):
+        _add_activity(db, build_route(ASCENT))
+        segment = _create(client)
+
+        (effort,) = client.get(f"/segments/{segment['id']}/efforts").json()
+
+        assert effort["doubts"] == []
+        assert effort["details"]["start_depth_m"] > 40
+
+    def test_a_pass_that_only_touches_the_start_circle_is_doubted_but_keeps_its_rank(self, client, db):
+        _add_activity(db, build_route(ASCENT))
+        start = node(47, 0)
+        segment = _create(client, start={"lat": start.lat, "lon": start.lon})
+
+        (effort,) = client.get(f"/segments/{segment['id']}/efforts").json()
+
+        assert effort["doubts"] == ["start_edge"]
+        assert effort["rank_moving"] == 1
+
+    def test_a_gps_gap_inside_the_segment_is_a_doubt(self, client, db):
+        _add_activity(db, build_route([("walk", (0, 600)), ("pause", 120), ("walk", (0, 1800))]))
+        segment = _create(client)
+
+        (effort,) = client.get(f"/segments/{segment['id']}/efforts").json()
+
+        assert effort["gap_s"] > 0
+        assert "gps_gap" in effort["doubts"]

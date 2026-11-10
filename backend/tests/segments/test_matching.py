@@ -302,3 +302,34 @@ def test_visit_times_are_reported_for_both_nodes():
     assert len(result.end_visit_s) == result.end_visits == 2
     assert result.end_visit_s[0] == pytest.approx(result.end_s)
     assert result.end_visit_s[0] < result.end_visit_s[1]
+
+
+def test_a_route_through_the_centres_goes_deep_into_both_circles():
+    result = _match(build_route([("walk", (0, 1800))]))
+
+    assert result is not None
+    assert result.start_depth_m == pytest.approx(50, abs=2)
+    assert result.end_depth_m == pytest.approx(50, abs=2)
+
+
+def test_a_route_along_the_edge_of_the_start_circle_barely_goes_in():
+    # The path runs 47 m from the start node's centre: inside its 50 m circle, but only just. GPS noise
+    # can break the pass up into short visits, and the last of them may go in less than the 3 m.
+    result = _match(build_route([("walk", (0, 1800))]), start=node(47, 0))
+
+    assert result is not None
+    assert 0 <= result.start_depth_m <= 3.5
+    assert result.end_depth_m == pytest.approx(50, abs=2)
+
+
+def test_the_depth_is_of_the_chosen_pass_not_the_deepest_visit():
+    # Through the start's centre, out and back along its edge, then up: the last pass is the edge one.
+    route = build_route(
+        [("walk", (0, 0)), ("walk", (0, -150)), ("walk", (47, -150)), ("walk", (47, 1800)), ("walk", (0, 1800))]
+    )
+
+    result = _match(route)
+
+    assert result is not None
+    assert result.start_visits >= 2
+    assert 0 <= result.start_depth_m <= 3.5

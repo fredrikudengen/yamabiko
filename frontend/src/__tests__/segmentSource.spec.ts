@@ -102,6 +102,7 @@ describe('mapEffort', () => {
       rank_moving: 1,
       rank_total: 1,
       segment_effort_count: 1,
+      doubts: [],
       matcher_version: 1,
       details: null,
     })
@@ -132,6 +133,7 @@ describe('EffortsTable and sources', () => {
     rankMoving: 1,
     rankTotal: 1,
     segmentEffortCount: 1,
+    doubts: [],
   })
   const mountTable = (efforts: SegmentEffort[]) =>
     mount(EffortsTable, {
