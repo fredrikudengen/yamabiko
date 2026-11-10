@@ -22,6 +22,10 @@ import ActivityPrivacyAlerts from '@/features/activities/components/ActivityPriv
 import ActivityStreamChart from '@/features/activities/components/ActivityStreamChart.vue'
 import ActivityWorkoutSets from '@/features/activities/components/ActivityWorkoutSets.vue'
 import ActivityNewCells from '@/features/coverageMap/components/ActivityNewCells.vue'
+import { useActivityEffortsQuery } from '@/features/segments/composables/useSegments'
+import { formatSeconds } from '@/features/segments/utils/geo'
+import { milestoneOf, milestoneText } from '@/features/segments/utils/milestone'
+import { segmentHighlights, timedTrackPoints } from '@/features/segments/utils/onRoute'
 import {
   useActivityExerciseTitlesQuery,
   useActivityOwnerQuery,
@@ -99,6 +103,25 @@ const showMap = computed(
     canViewField(activity.value, 'hideMap', currentUserId.value) &&
     trackPoints.value.length > 0,
 )
+
+// The segments the tour passed, drawn on its route with their standing. Only the owner has segments;
+// for anyone else the query stays idle (a NaN id disables it).
+const effortsQuery = useActivityEffortsQuery(() =>
+  isOwner.value && activity.value ? activity.value.id : Number.NaN,
+)
+const segmentLines = computed(() => {
+  const efforts = effortsQuery.data.value ?? []
+  if (!isOwner.value || efforts.length === 0) {
+    return []
+  }
+  return segmentHighlights(timedTrackPoints(streams.value ?? []), efforts, (effort) => {
+    const milestone = milestoneOf(effort, 'moving')
+    const standing = milestone
+      ? t(milestoneText(milestone).key, milestoneText(milestone).values)
+      : null
+    return [effort.segmentName, standing, formatSeconds(effort.movingS)].filter(Boolean).join(' · ')
+  })
+})
 
 const streamCharts = computed(() => {
   if (!activity.value) {
@@ -288,7 +311,7 @@ const notFound = computed(() => !isPending.value && !isError.value && activity.v
       <!-- The map and the photos are separate cards: the photos used to be slides after the map. -->
       <div v-if="showMap" class="flex flex-col gap-1.5">
         <div class="h-72 overflow-hidden rounded-card border border-border lg:h-150">
-          <ActivityMap :points="trackPoints" />
+          <ActivityMap :points="trackPoints" :highlights="segmentLines" />
         </div>
         <ActivityNewCells
           v-if="isOwner"

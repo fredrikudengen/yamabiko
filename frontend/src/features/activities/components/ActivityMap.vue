@@ -2,7 +2,7 @@
 import { onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { LocateFixed } from '@lucide/vue'
 
-import type { GeoPoint, MapInstance } from '@/composables/useMapProvider'
+import type { GeoPoint, MapHighlight, MapInstance } from '@/composables/useMapProvider'
 
 import { useMapProvider } from '@/composables/useMapProvider'
 import { useRenderProvidersReady } from '@/providers'
@@ -13,8 +13,10 @@ const props = withDefaults(
     points: GeoPoint[]
     /** Whether the map responds to pan/zoom. */
     interactive?: boolean
+    /** Stretches drawn over the route, such as the segments the tour passed. */
+    highlights?: MapHighlight[]
   }>(),
-  { interactive: true },
+  { interactive: true, highlights: () => [] },
 )
 
 const ready = useRenderProvidersReady()
@@ -35,7 +37,7 @@ function mountMap(): void {
   }
   const { provider } = useMapProvider()
   instance = provider.mount(container.value, {
-    track: { points: props.points, ...endpoints(props.points) },
+    track: { points: props.points, ...endpoints(props.points), highlights: props.highlights },
     interactive: props.interactive,
   })
 }
@@ -48,14 +50,14 @@ function recenter(): void {
 onMounted(mountMap)
 watch(ready, mountMap)
 watch(
-  () => props.points,
-  (points) => {
+  () => [props.points, props.highlights] as const,
+  ([points, highlights]) => {
     if (!instance) {
       mountMap()
       return
     }
     instance.update({
-      track: { points, ...endpoints(points) },
+      track: { points, ...endpoints(points), highlights },
       interactive: props.interactive,
     })
   },

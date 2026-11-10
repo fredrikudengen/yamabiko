@@ -43,6 +43,8 @@ const DEFAULT_MAX_ZOOM = 19
 const DEFAULT_TRACK_COLOR = themeColor('--color-brand')
 /** Start-marker fill — the `--color-goal` design token (green). */
 const START_MARKER_COLOR = themeColor('--color-goal')
+/** Highlighted stretches: amber, which stands out from the indigo track on every tile style. */
+const HIGHLIGHT_COLOR = '#f59e0b'
 /** Finish-marker fill — the `--color-hr` design token (red). */
 const FINISH_MARKER_COLOR = themeColor('--color-hr')
 
@@ -159,6 +161,29 @@ export function createLeafletMapProvider(config: LeafletMapProviderConfig = {}):
         const linePoints = toLatLngs(track.points)
         if (linePoints.length > 0) {
           overlays.push(polyline(linePoints, { color: trackColor, weight: 4 }).addTo(map))
+        }
+        for (const highlight of track.highlights ?? []) {
+          const stretch = toLatLngs(highlight.points)
+          const end = highlight.points[highlight.points.length - 1]
+          if (stretch.length < 2 || !end) {
+            continue
+          }
+          overlays.push(
+            polyline(stretch, { color: HIGHLIGHT_COLOR, weight: 6, opacity: 0.9 })
+              .bindTooltip(highlight.label, { sticky: true })
+              .addTo(map),
+          )
+          overlays.push(
+            circleMarker([end.lat, end.lng], {
+              radius: 6,
+              color: '#ffffff',
+              weight: 2,
+              fillColor: highlight.markerColor ?? HIGHLIGHT_COLOR,
+              fillOpacity: 1,
+            })
+              .bindTooltip(highlight.label)
+              .addTo(map),
+          )
         }
         if (track.start) {
           overlays.push(emphasisMarker(track.start, START_MARKER_COLOR).addTo(map))
