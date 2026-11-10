@@ -135,6 +135,19 @@ class EffortOut(BaseModel):
     details: dict[str, Any] | None
 
 
+class EffortProfileOut(BaseModel):
+    """The clock along one pass at every hundredth of its path (101 values, both ends included).
+
+    Compare two passes share by share: their GPS paths differ a little in length, so the
+    same metre is not the same place. ``moving_s`` leaves out long stops and GPS gaps.
+    """
+
+    effort_id: int
+    distance_m: float
+    elapsed_s: list[float]
+    moving_s: list[float]
+
+
 class PreviewMatchOut(BaseModel):
     activity_id: int
     activity_name: str | None

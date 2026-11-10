@@ -2083,6 +2083,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/segments/{segment_id}/efforts/{effort_id}/profile": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Effort Profile
+         * @description The clock along one pass, for showing where on the way it gained or lost against another.
+         */
+        get: operations["get_effort_profile_api_v1_segments__segment_id__efforts__effort_id__profile_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/segments/{segment_id}/refresh": {
         parameters: {
             query?: never;
@@ -3142,6 +3162,23 @@ export interface components {
             start_time: string;
             /** Stopped S */
             stopped_s: number;
+        };
+        /**
+         * EffortProfileOut
+         * @description The clock along one pass at every hundredth of its path (101 values, both ends included).
+         *
+         *     Compare two passes share by share: their GPS paths differ a little in length, so the
+         *     same metre is not the same place. ``moving_s`` leaves out long stops and GPS gaps.
+         */
+        EffortProfileOut: {
+            /** Distance M */
+            distance_m: number;
+            /** Effort Id */
+            effort_id: number;
+            /** Elapsed S */
+            elapsed_s: number[];
+            /** Moving S */
+            moving_s: number[];
         };
         /**
          * Gender
@@ -7603,6 +7640,38 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["EffortOut"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_effort_profile_api_v1_segments__segment_id__efforts__effort_id__profile_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                segment_id: number;
+                effort_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EffortProfileOut"];
                 };
             };
             /** @description Validation Error */

@@ -361,6 +361,17 @@
         "start_edge": "The track only touched the edge of the start circle, so the start moves with GPS noise.",
         "end_edge": "The track only touched the edge of the end circle, so the finish moves with GPS noise."
       }
+    },
+    "split": {
+      "title": "Against the best time",
+      "pick": "Tour to compare",
+      "against": "against the best, {best}",
+      "behind": "Behind the best",
+      "atFinish": "At the finish: {time}.",
+      "mostLost": "Most lost: {time} between {from} % and {to} % of the way.",
+      "mostWon": "Most won: {time} between {from} % and {to} % of the way.",
+      "hint": "Along the way in percent, since the GPS path of each tour is a little longer or shorter. Up is time lost, down is time won.",
+      "loadError": "Could not load the times along the way."
     }
   },
   "coverage": {

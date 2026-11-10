@@ -11,6 +11,7 @@ import { EmptyState } from '@/components/ui/empty-state'
 import { ErrorState } from '@/components/ui/error-state'
 import { Skeleton } from '@/components/ui/skeleton'
 import { useToasts } from '@/composables/useToasts'
+import EffortSplitCard from '@/features/segments/components/EffortSplitCard.vue'
 import EffortsTable from '@/features/segments/components/EffortsTable.vue'
 import {
   useDeleteSegmentMutation,
@@ -112,6 +113,8 @@ function remove(): void {
         />
         <EffortsTable v-else :efforts="efforts" link-activities />
       </Card>
+
+      <EffortSplitCard v-if="efforts.length > 1" :segment-id="segment.id" :efforts="efforts" />
 
       <ConfirmDialog
         v-model:open="confirmOpen"

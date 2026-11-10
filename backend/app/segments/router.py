@@ -295,6 +295,31 @@ def get_segment_efforts(
     ]
 
 
+@router.get("/{segment_id}/efforts/{effort_id}/profile", response_model=segments_schema.EffortProfileOut)
+def get_effort_profile(
+    segment_id: int,
+    effort_id: int,
+    _validate_access_token: _Validated,
+    _check_scopes: _CanRead,
+    token_user_id: _UserId,
+    db: _Db,
+) -> segments_schema.EffortProfileOut:
+    """The clock along one pass, for showing where on the way it gained or lost against another."""
+    segment = _own_segment(segment_id, token_user_id, db)
+    effort = db.get(segments_models.SegmentEffort, effort_id)
+    if effort is None or effort.segment_id != segment.id:
+        raise _not_found("Effort")
+    profile = segments_service.effort_profile(segment, effort, db)
+    if profile is None:
+        raise _not_found("Effort track")
+    return segments_schema.EffortProfileOut(
+        effort_id=effort.id,
+        distance_m=round(profile.distance_m, 1),
+        elapsed_s=[round(value, 1) for value in profile.elapsed_s],
+        moving_s=[round(value, 1) for value in profile.moving_s],
+    )
+
+
 @router.post("/{segment_id}/refresh", response_model=segments_schema.SegmentOut)
 def refresh_segment(
     segment_id: int, _validate_access_token: _Validated, _check_scopes: _CanWrite, token_user_id: _UserId, db: _Db

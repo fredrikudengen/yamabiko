@@ -360,6 +360,17 @@
         "start_edge": "Sporet var bare innom kanten av startsirkelen, så starten flytter seg med GPS-støyen.",
         "end_edge": "Sporet var bare innom kanten av målsirkelen, så målgangen flytter seg med GPS-støyen."
       }
+    },
+    "split": {
+      "title": "Mot beste tid",
+      "pick": "Tur å sammenligne",
+      "against": "mot beste, {best}",
+      "behind": "Bak beste",
+      "atFinish": "Ved målgang: {time}.",
+      "mostLost": "Mest tapt: {time} mellom {from} % og {to} % av veien.",
+      "mostWon": "Mest vunnet: {time} mellom {from} % og {to} % av veien.",
+      "hint": "Langs veien i prosent, siden GPS-sporet på hver tur er litt lengre eller kortere. Opp er tid tapt, ned er tid vunnet.",
+      "loadError": "Kunne ikke hente tidene langs veien."
     }
   },
   "coverage": {

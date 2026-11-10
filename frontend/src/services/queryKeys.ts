@@ -192,6 +192,9 @@ export const queryKeys = {
     activityEfforts: (activityId: number) => ['segments', 'activity-efforts', activityId] as const,
     /** @param activityId - Activity identifier. */
     track: (activityId: number) => ['segments', 'track', activityId] as const,
+    /** The clock along one pass; under `all()` so a recompute refetches it. */
+    profile: (segmentId: number, effortId: number) =>
+      ['segments', 'profile', segmentId, effortId] as const,
   },
 
   /**
