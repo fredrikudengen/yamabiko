@@ -226,3 +226,25 @@ export interface TrackLine {
   activityId: number
   points: [number, number][]
 }
+
+/** The clock along one pass, as the API sends it. */
+export interface EffortProfileDto {
+  effort_id: number
+  distance_m: number
+  elapsed_s: number[]
+  moving_s: number[]
+}
+
+/**
+ * The clock along one pass at every hundredth of its path (101 values, both ends
+ * included). Two passes are compared share by share, since their GPS paths differ
+ * a little in length.
+ */
+export interface EffortProfile {
+  effortId: number
+  /** The path without the wander during long stops. */
+  distanceM: number
+  elapsedS: number[]
+  /** Without long stops and GPS gaps, as the pass's moving time. */
+  movingS: number[]
+}

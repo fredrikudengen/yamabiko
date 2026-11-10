@@ -1,4 +1,6 @@
 import type {
+  EffortProfile,
+  EffortProfileDto,
   NearMiss,
   NearMissDto,
   PreviewMatch,
@@ -347,4 +349,30 @@ export async function fetchActivityTrack(
     }
   }
   return { activityId, points: thinTrack(points) }
+}
+
+/**
+ * The clock along one pass of a segment, for showing where it gained or lost
+ * against another.
+ *
+ * @param segmentId - The segment.
+ * @param effortId - One of its passes.
+ * @param signal - Optional abort signal.
+ * @returns The profile.
+ */
+export async function fetchEffortProfile(
+  segmentId: number,
+  effortId: number,
+  signal?: AbortSignal,
+): Promise<EffortProfile> {
+  const dto = await apiFetch<EffortProfileDto>(
+    `/segments/${segmentId}/efforts/${effortId}/profile`,
+    { signal },
+  )
+  return {
+    effortId: dto.effort_id,
+    distanceM: dto.distance_m,
+    elapsedS: dto.elapsed_s,
+    movingS: dto.moving_s,
+  }
 }

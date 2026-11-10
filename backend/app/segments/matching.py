@@ -160,7 +160,7 @@ def choose_passes(
     return None
 
 
-def _position_at(points: list[google_health_stops.TrackPoint], times: list[float], t: float) -> tuple[float, float]:
+def position_at(points: list[google_health_stops.TrackPoint], times: list[float], t: float) -> tuple[float, float]:
     """Position at time ``t``, interpolated between points unless a long gap lies between them."""
     i = bisect_right(times, t) - 1
     if i < 0:
@@ -177,9 +177,9 @@ def _position_at(points: list[google_health_stops.TrackPoint], times: list[float
 def _path_m(points: list[google_health_stops.TrackPoint], start_s: float, end_s: float) -> float:
     """Length of the GPS path between two moments (the same kind of distance as for an activity)."""
     times = [p.t for p in points]
-    path = [_position_at(points, times, start_s)]
+    path = [position_at(points, times, start_s)]
     path += [(p.lat, p.lon) for p in points if start_s < p.t < end_s]
-    path.append(_position_at(points, times, end_s))
+    path.append(position_at(points, times, end_s))
     return sum(segments_geo.distance_m(a[0], a[1], b[0], b[1]) for a, b in pairwise(path))
 
 

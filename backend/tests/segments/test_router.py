@@ -581,3 +581,42 @@ class TestDoubts:
 
         assert effort["gap_s"] > 0
         assert "gps_gap" in effort["doubts"]
+
+
+class TestEffortProfile:
+    """The clock along a pass, for showing where it gained or lost against another."""
+
+    def _effort(self, client, segment_id):
+        (effort,) = client.get(f"/segments/{segment_id}/efforts").json()
+        return effort
+
+    def test_gives_the_clock_at_every_hundredth_of_the_way(self, client, db):
+        _add_activity(db, build_route(ASCENT))
+        segment = _create(client)
+        effort = self._effort(client, segment["id"])
+
+        body = client.get(f"/segments/{segment['id']}/efforts/{effort['id']}/profile").json()
+
+        assert body["effort_id"] == effort["id"]
+        assert len(body["elapsed_s"]) == len(body["moving_s"]) == 101
+        assert body["elapsed_s"][0] == 0
+        assert body["elapsed_s"][-1] == pytest.approx(effort["elapsed_s"], abs=1)
+        assert body["moving_s"][-1] == pytest.approx(effort["moving_s"], abs=1)
+
+    def test_an_effort_of_another_segment_is_not_found(self, client, db):
+        _add_activity(db, build_route(ASCENT))
+        first = _create(client, name="Fjellet")
+        mid = node(0, 900)
+        second = _create(client, name="Halvveis", end={"lat": mid.lat, "lon": mid.lon})
+        effort = self._effort(client, first["id"])
+
+        assert client.get(f"/segments/{second['id']}/efforts/{effort['id']}/profile").status_code == 404
+        assert client.get(f"/segments/{first['id']}/efforts/99999/profile").status_code == 404
+
+    def test_another_users_segment_is_not_found(self, client, db, current_user):
+        _add_activity(db, build_route(ASCENT))
+        segment = _create(client)
+        effort = self._effort(client, segment["id"])
+        current_user["id"] = 8
+
+        assert client.get(f"/segments/{segment['id']}/efforts/{effort['id']}/profile").status_code == 404

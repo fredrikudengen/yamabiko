@@ -9,6 +9,7 @@ import {
   deleteSegment,
   fetchActivityEfforts,
   fetchActivityTrack,
+  fetchEffortProfile,
   fetchSegment,
   fetchSegmentEfforts,
   fetchSegments,
@@ -174,4 +175,25 @@ export function useTrackLines(activityIds: MaybeRefOrGetter<number[]>) {
   return computed<TrackLine[]>(() =>
     results.value.flatMap((r) => (r.data && r.data.points.length > 1 ? [r.data] : [])),
   )
+}
+
+/**
+ * The clock along one pass of a segment. Idle while no pass is picked.
+ *
+ * @param segmentId - The segment.
+ * @param effortId - The pass, or `null`.
+ */
+export function useEffortProfileQuery(
+  segmentId: MaybeRefOrGetter<number>,
+  effortId: MaybeRefOrGetter<number | null>,
+) {
+  return useQuery({
+    queryKey: computed(() =>
+      queryKeys.segments.profile(toValue(segmentId), toValue(effortId) ?? 0),
+    ),
+    queryFn: ({ signal }) =>
+      fetchEffortProfile(toValue(segmentId), toValue(effortId) as number, signal),
+    enabled: computed(() => toValue(effortId) !== null),
+    staleTime: 10 * 60 * 1000,
+  })
 }

@@ -19,6 +19,7 @@ import segments.crud as segments_crud
 import segments.geo as segments_geo
 import segments.matching as segments_matching
 import segments.models as segments_models
+import segments.profile as segments_profile
 import segments.source as segments_source
 
 _STREAM_TYPES = (
@@ -130,6 +131,25 @@ def match_track(
     return segments_matching.match_segment(
         track.points, start, end, heart_rate=track.heart_rate, elevation=track.elevation, stops=stops
     )
+
+
+def effort_profile(
+    segment: segments_models.Segment, effort: segments_models.SegmentEffort, db: Session
+) -> segments_profile.Profile | None:
+    """The clock along a stored pass, from its activity's track.
+
+    The pass is found again in the track rather than read from the stored row,
+    so the profile is cut exactly where the stored times were. None when the
+    track is gone or no longer passes the segment (the row is then stale until
+    the segment is recomputed).
+    """
+    track = load_track(effort.activity_id, db)
+    if track is None:
+        return None
+    match = match_track(track, segment)
+    if match is None:
+        return None
+    return segments_profile.effort_profile(track.points, match)
 
 
 def build_effort(
