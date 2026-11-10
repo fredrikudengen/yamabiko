@@ -18,6 +18,19 @@ export interface GeoPoint {
   lng: number
 }
 
+/**
+ * A stretch of the track drawn on top of it, such as a segment the tour passed,
+ * with a marker where it ends.
+ */
+export interface MapHighlight {
+  /** Ordered coordinates of the stretch. */
+  points: GeoPoint[]
+  /** Text for the stretch and its end marker, shown on hover. */
+  label: string
+  /** Colour of the end marker, e.g. gold for a record. Providers may fall back to the line colour. */
+  markerColor?: string
+}
+
 /** A polyline track plus optional start/finish emphasis markers. */
 export interface MapTrack {
   /** Ordered coordinates forming the route polyline. */
@@ -26,6 +39,8 @@ export interface MapTrack {
   start?: GeoPoint
   /** Optional finish point, emphasised with a distinct (red) marker. */
   finish?: GeoPoint
+  /** Stretches drawn over the track, under the start and finish markers. */
+  highlights?: MapHighlight[]
 }
 
 /** Options controlling a single map render. */
