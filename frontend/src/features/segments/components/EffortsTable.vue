@@ -6,6 +6,7 @@ import type { SegmentEffort } from '@/features/segments/types'
 
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
+import EffortDoubtBadge from '@/features/segments/components/EffortDoubtBadge.vue'
 import { beatsPer100mOf, climbRateOf } from '@/features/segments/utils/climb'
 import { compareEfforts, type EffortBasis } from '@/features/segments/utils/efforts'
 import { formatSeconds } from '@/features/segments/utils/geo'
@@ -149,6 +150,7 @@ function signed(seconds: number): string {
                 {{ t(milestoneText(row.milestone).key, milestoneText(row.milestone).values) }}
               </span>
               <span v-else>–</span>
+              <EffortDoubtBadge :doubts="row.effort.doubts" class="ml-1.5" />
             </td>
             <td class="py-1.5 pr-3 tabular-nums" :class="{ 'font-medium': basis === 'moving' }">
               {{ formatSeconds(row.effort.movingS) }}

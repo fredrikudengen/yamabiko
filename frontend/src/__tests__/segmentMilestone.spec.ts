@@ -3,7 +3,7 @@ import { ref } from 'vue'
 
 import { mount } from '@vue/test-utils'
 
-import type { SegmentEffort } from '@/features/segments/types'
+import type { SegmentEffort, SegmentEffortDto } from '@/features/segments/types'
 
 import i18n from '@/i18n'
 import ActivitySegments from '@/features/segments/components/ActivitySegments.vue'
@@ -39,6 +39,7 @@ const effort = (id: number, extra: Partial<SegmentEffort> = {}): SegmentEffort =
   rankMoving: 1,
   rankTotal: 1,
   segmentEffortCount: 1,
+  doubts: [],
   ...extra,
 })
 
@@ -46,8 +47,24 @@ describe('milestoneOf', () => {
   const ranked = effort(1, { rankMoving: 1, rankTotal: 3, segmentEffortCount: 8 })
 
   it('reads the rank for the chosen basis', () => {
-    expect(milestoneOf(ranked, 'moving')).toEqual({ rank: 1, count: 8, isPr: true })
-    expect(milestoneOf(ranked, 'total')).toEqual({ rank: 3, count: 8, isPr: false })
+    expect(milestoneOf(ranked, 'moving')).toEqual({
+      rank: 1,
+      count: 8,
+      isPr: true,
+      doubtful: false,
+    })
+    expect(milestoneOf(ranked, 'total')).toEqual({
+      rank: 3,
+      count: 8,
+      isPr: false,
+      doubtful: false,
+    })
+  })
+
+  it('marks the standing of a pass whose time may be off', () => {
+    const doubted = effort(1, { rankMoving: 1, segmentEffortCount: 8, doubts: ['start_edge'] })
+
+    expect(milestoneOf(doubted, 'moving')?.doubtful).toBe(true)
   })
 
   it('says nothing when the segment has a single pass', () => {
@@ -56,20 +73,56 @@ describe('milestoneOf', () => {
   })
 
   it('words a record as "PR, of 8" and the rest as "2 of 8"', () => {
-    expect(milestoneText({ rank: 1, count: 8, isPr: true })).toEqual({
+    expect(milestoneText({ rank: 1, count: 8, isPr: true, doubtful: false })).toEqual({
       key: 'activities.segments.milestone.pr',
       values: { count: 8 },
     })
-    expect(milestoneText({ rank: 2, count: 8, isPr: false })).toEqual({
+    expect(milestoneText({ rank: 2, count: 8, isPr: false, doubtful: true })).toEqual({
       key: 'activities.segments.milestone.rank',
       values: { rank: 2, count: 8 },
     })
+    expect(milestoneText({ rank: 1, count: 8, isPr: true, doubtful: true })).toEqual({
+      key: 'activities.segments.milestone.prDoubtful',
+      values: { count: 8 },
+    })
     expect(i18n.global.t('activities.segments.milestone.pr', { count: 8 })).toBe('PR, of 8')
+    expect(i18n.global.t('activities.segments.milestone.prDoubtful', { count: 8 })).toBe(
+      'PR?, of 8',
+    )
     expect(i18n.global.t('activities.segments.milestone.rank', { rank: 2, count: 8 })).toBe(
       '2 of 8',
     )
   })
 })
+
+function dtoOf(): SegmentEffortDto {
+  return {
+    id: 1,
+    segment_id: 2,
+    segment_name: 'Top',
+    activity_id: 3,
+    activity_name: 'Hike',
+    source: 'strava',
+    start_time: '2026-10-01T08:00:00',
+    end_time: '2026-10-01T08:30:00',
+    elapsed_s: 1800,
+    moving_s: 1700,
+    stopped_s: 0,
+    gap_s: 0,
+    distance_m: 2000,
+    elevation_gain_m: 250,
+    elevation_loss_m: 0,
+    net_elevation_m: 250,
+    average_hr: 170,
+    max_hr: 190,
+    rank_moving: 2,
+    rank_total: 4,
+    segment_effort_count: 8,
+    doubts: [],
+    matcher_version: 2,
+    details: null,
+  }
+}
 
 describe('mapEffort', () => {
   it('carries the server ranks', () => {
@@ -95,10 +148,18 @@ describe('mapEffort', () => {
       rank_moving: 2,
       rank_total: 4,
       segment_effort_count: 8,
+      doubts: [],
       matcher_version: 1,
       details: null,
     })
     expect([mapped.rankMoving, mapped.rankTotal, mapped.segmentEffortCount]).toEqual([2, 4, 8])
+    expect(mapped.doubts).toEqual([])
+  })
+
+  it('carries the reasons to doubt a time, leaving out any it does not know', () => {
+    const mapped = mapEffort({ ...dtoOf(), doubts: ['gps_gap', 'from_the_future', 'end_edge'] })
+
+    expect(mapped.doubts).toEqual(['gps_gap', 'end_edge'])
   })
 })
 
@@ -133,6 +194,26 @@ describe('EffortsTable ranks', () => {
     await wrapper.find('[data-testid="basis-total"]').trigger('click')
     expect(ranks()).toEqual(['PR, of 3', '3 of 3', '2 of 3'])
   })
+
+  it('marks a doubtful pass in its rank cell, and only that one', () => {
+    const wrapper = mount(EffortsTable, {
+      props: {
+        efforts: [
+          effort(1, { rankMoving: 1, segmentEffortCount: 2, doubts: ['gps_gap'] }),
+          effort(2, { rankMoving: 2, segmentEffortCount: 2 }),
+        ],
+      },
+      global: { plugins: [i18n], stubs: { 'router-link': true } },
+    })
+    const cells = wrapper.findAll('[data-testid="effort-rank"]')
+
+    // Newest first: effort 2, then effort 1.
+    expect(cells[0]?.find('[data-testid="effort-doubt"]').exists()).toBe(false)
+    expect(cells[1]?.text()).toContain('PR?, of 2')
+    expect(cells[1]?.find('[data-testid="effort-doubt"]').attributes('title')).toContain(
+      'GPS signal dropped out',
+    )
+  })
 })
 
 describe('ActivitySegments card', () => {
@@ -153,6 +234,21 @@ describe('ActivitySegments card', () => {
       .map((m) => m.text())
 
     expect(texts).toEqual(['PR, of 8', '3 of 5'])
+  })
+
+  it('marks a doubtful pass and asks whether its record holds', () => {
+    cardEfforts.value = [
+      effort(1, { rankMoving: 1, segmentEffortCount: 8, doubts: ['start_edge'] }),
+      effort(2, { segmentName: 'Halfway', rankMoving: 3, segmentEffortCount: 5 }),
+    ]
+
+    const wrapper = mountCard()
+    const badges = wrapper.findAll('[data-testid="effort-doubt"]')
+
+    expect(wrapper.find('[data-testid="activity-milestone"]').text()).toBe('PR?, of 8')
+    expect(badges).toHaveLength(1)
+    expect(badges[0]?.text()).toBe('Uncertain')
+    expect(badges[0]?.attributes('title')).toContain('edge of the start circle')
   })
 
   it('shows no standing for a segment with a single pass', () => {

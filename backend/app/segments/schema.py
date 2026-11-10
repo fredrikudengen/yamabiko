@@ -129,6 +129,8 @@ class EffortOut(BaseModel):
     rank_moving: int
     rank_total: int
     segment_effort_count: int
+    # Why the time may be off (``segments.quality``): gps_gap, start_edge, end_edge. Empty when trusted.
+    doubts: list[str]
     matcher_version: int
     details: dict[str, Any] | None
 

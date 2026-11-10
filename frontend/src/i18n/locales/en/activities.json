@@ -267,7 +267,8 @@
     "milestone": {
       "pr": "PR, of {count}",
       "rank": "{rank} of {count}",
-      "tooltip": "Standing among all passes of this segment, from every source. Updates when a faster pass is added."
+      "tooltip": "Standing among all passes of this segment, from every source. Updates when a faster pass is added.",
+      "prDoubtful": "PR?, of {count}"
     },
     "source": {
       "label": "Source",
@@ -352,6 +353,14 @@
       "deleteError": "Could not delete the segment.",
       "deleteTitle": "Delete segment?",
       "deleteDescription": "\"{name}\" and its times are removed. Your tours are not touched."
+    },
+    "doubt": {
+      "label": "Uncertain",
+      "reason": {
+        "gps_gap": "The GPS signal dropped out inside the segment, so the time can be too fast.",
+        "start_edge": "The track only touched the edge of the start circle, so the start moves with GPS noise.",
+        "end_edge": "The track only touched the edge of the end circle, so the finish moves with GPS noise."
+      }
     }
   },
   "coverage": {

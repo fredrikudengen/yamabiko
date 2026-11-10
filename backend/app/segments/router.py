@@ -17,6 +17,7 @@ import core.database as core_database
 import segments.coordinates as segments_coordinates
 import segments.crud as segments_crud
 import segments.models as segments_models
+import segments.quality as segments_quality
 import segments.ranking as segments_ranking
 import segments.schema as segments_schema
 import segments.service as segments_service
@@ -93,6 +94,7 @@ def _effort_out(
         rank_moving=standing.rank_moving,
         rank_total=standing.rank_total,
         segment_effort_count=standing.count,
+        doubts=segments_quality.effort_doubts(effort),
         matcher_version=effort.matcher_version,
         details=effort.details,
     )

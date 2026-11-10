@@ -9,6 +9,8 @@ export interface Milestone {
   count: number
   /** The fastest pass: a personal record. */
   isPr: boolean
+  /** The time may be off (see `SegmentEffort.doubts`), so a record is shown with a question mark. */
+  doubtful: boolean
 }
 
 /**
@@ -26,18 +28,29 @@ export function milestoneOf(effort: SegmentEffort, basis: EffortBasis): Mileston
     return null
   }
   const rank = basis === 'total' ? effort.rankTotal : effort.rankMoving
-  return { rank, count: effort.segmentEffortCount, isPr: rank === 1 }
+  return {
+    rank,
+    count: effort.segmentEffortCount,
+    isPr: rank === 1,
+    doubtful: effort.doubts.length > 0,
+  }
 }
 
-/** The i18n key and values for a standing, such as "PR, of 8" or "2 of 8". */
+/** The i18n key and values for a standing, such as "PR, of 8", "PR?, of 8" or "2 of 8". */
 export function milestoneText(milestone: Milestone): {
   key: string
   values: Record<string, number>
 } {
-  return milestone.isPr
-    ? { key: 'activities.segments.milestone.pr', values: { count: milestone.count } }
-    : {
-        key: 'activities.segments.milestone.rank',
-        values: { rank: milestone.rank, count: milestone.count },
-      }
+  if (milestone.isPr) {
+    return {
+      key: milestone.doubtful
+        ? 'activities.segments.milestone.prDoubtful'
+        : 'activities.segments.milestone.pr',
+      values: { count: milestone.count },
+    }
+  }
+  return {
+    key: 'activities.segments.milestone.rank',
+    values: { rank: milestone.rank, count: milestone.count },
+  }
 }

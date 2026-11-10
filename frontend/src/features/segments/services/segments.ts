@@ -18,6 +18,8 @@ import type {
   TrackLine,
 } from '@/features/segments/types'
 
+import type { EffortDoubt } from '@/features/segments/types'
+
 import { toActivitySource } from '@/features/segments/utils/source'
 import { apiFetch } from '@/services/http'
 
@@ -25,6 +27,12 @@ import { apiFetch } from '@/services/http'
  * @param dto - A node from the API.
  * @returns The node in UI shape.
  */
+const EFFORT_DOUBTS: ReadonlySet<string> = new Set<EffortDoubt>([
+  'gps_gap',
+  'start_edge',
+  'end_edge',
+])
+
 export function mapNode(dto: SegmentNodeDto): SegmentNode {
   return { lat: dto.lat, lon: dto.lon, radiusM: dto.radius_m }
 }
@@ -88,6 +96,8 @@ export function mapEffort(dto: SegmentEffortDto): SegmentEffort {
     rankMoving: dto.rank_moving,
     rankTotal: dto.rank_total,
     segmentEffortCount: dto.segment_effort_count,
+    // A reason the server adds later is left out rather than shown as a raw key.
+    doubts: (dto.doubts ?? []).filter((doubt): doubt is EffortDoubt => EFFORT_DOUBTS.has(doubt)),
   }
 }
 

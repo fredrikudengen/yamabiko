@@ -172,6 +172,8 @@ def build_effort(
             "start_visits": match.start_visits,
             "end_visits": match.end_visits,
             "hr_samples": match.hr_samples,
+            "start_depth_m": None if match.start_depth_m is None else round(match.start_depth_m, 1),
+            "end_depth_m": None if match.end_depth_m is None else round(match.end_depth_m, 1),
         },
     )
 

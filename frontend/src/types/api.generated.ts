@@ -3098,6 +3098,8 @@ export interface components {
             } | null;
             /** Distance M */
             distance_m: number;
+            /** Doubts */
+            doubts: string[];
             /** Elapsed S */
             elapsed_s: number;
             /** Elevation Gain M */

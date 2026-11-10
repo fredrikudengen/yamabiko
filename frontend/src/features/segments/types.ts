@@ -58,6 +58,8 @@ export interface SegmentEffortDto {
   rank_moving: number
   rank_total: number
   segment_effort_count: number
+  /** Why the time may be off (`segments/quality.py`); empty when it is trusted. */
+  doubts: string[]
   matcher_version: number
   details: Record<string, unknown> | null
 }
@@ -169,7 +171,16 @@ export interface SegmentEffort {
   rankMoving: number
   rankTotal: number
   segmentEffortCount: number
+  /** Why the time may be off; empty when there is no reason to doubt it. See `EffortDoubt`. */
+  doubts: EffortDoubt[]
 }
+
+/**
+ * A reason a pass's time may be off: a GPS gap inside the segment (the time can
+ * be too fast by the gap), or a track that only touched the edge of the start or
+ * end circle (the crossing, and so the time, moves with GPS noise).
+ */
+export type EffortDoubt = 'gps_gap' | 'start_edge' | 'end_edge'
 
 export interface PreviewMatch {
   activityId: number

@@ -42,7 +42,8 @@ import google_health.stops as google_health_stops
 import segments.geo as segments_geo
 
 # Bump when the way an effort is derived changes, so old rows can be told apart.
-MATCHER_VERSION = 1
+# 2: the effort's details record how deep the track went into each node (``*_depth_m``).
+MATCHER_VERSION = 2
 
 DEFAULT_NODE_RADIUS_M = 50.0
 # A wrist-worn GPS is only good to about this much; a smaller circle would miss a
@@ -93,6 +94,10 @@ class SegmentMatch:
     # When each visit to a node began (seconds since the first GPS point), in time order.
     start_visit_s: tuple[float, ...] = field(default_factory=tuple)
     end_visit_s: tuple[float, ...] = field(default_factory=tuple)
+    # How far inside each circle the chosen pass came (radius minus closest approach to the centre).
+    # Near zero, the track only touched the edge, where GPS noise moves the crossing time.
+    start_depth_m: float | None = None
+    end_depth_m: float | None = None
 
 
 # A track counts as a near miss when it came this far outside both circles (m) or closer.
@@ -191,6 +196,16 @@ def _gap_seconds(points: list[google_health_stops.TrackPoint], start_s: float, e
     )
 
 
+def _depth_m(points: list[google_health_stops.TrackPoint], visit: segments_geo.Interval, node: Node) -> float | None:
+    """How far inside the circle one visit came: the radius minus the visit's closest approach to the centre."""
+    times = [p.t for p in points]
+    # The points of the visit, plus one each side so the lines that cross the edge count too.
+    first = max(bisect_right(times, visit.enter) - 1, 0)
+    last = min(bisect_right(times, visit.exit) + 1, len(points))
+    closest = segments_geo.closest_approach_m(points[first:last], node.lat, node.lon)
+    return None if closest is None else max(node.radius_m - closest, 0.0)
+
+
 def _elevation_near(samples: Sequence[Sample], t: float) -> float | None:
     near = [s.value for s in samples if abs(s.t - t) <= ELEVATION_NEAR_S]
     return statistics.median(near) if near else None
@@ -273,4 +288,6 @@ def match_segment(
         end_visits=len(end_visits),
         start_visit_s=tuple(visit.enter for visit in start_visits),
         end_visit_s=tuple(visit.enter for visit in end_visits),
+        start_depth_m=_depth_m(points, start_visit, start),
+        end_depth_m=_depth_m(points, end_visit, end),
     )

@@ -7,6 +7,7 @@ import { Badge } from '@/components/ui/badge'
 import { Card } from '@/components/ui/card'
 import { useActivityEffortsQuery } from '@/features/segments/composables/useSegments'
 import { formatSeconds } from '@/features/segments/utils/geo'
+import EffortDoubtBadge from '@/features/segments/components/EffortDoubtBadge.vue'
 import { milestoneOf, milestoneText } from '@/features/segments/utils/milestone'
 import { sourceLabelKey } from '@/features/segments/utils/source'
 
@@ -58,6 +59,7 @@ const source = computed(() => efforts.value[0]?.source ?? 'other')
               )
             }}
           </span>
+          <EffortDoubtBadge :doubts="effort.doubts" />
         </span>
         <span class="text-meta tabular-nums">
           {{ formatSeconds(effort.movingS) }}
