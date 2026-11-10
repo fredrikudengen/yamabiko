@@ -30,6 +30,32 @@ describe('buildChartConfiguration', () => {
     expect(dataset?.tension).toBe(0.3)
   })
 
+  it('leaves out the fill and sets the width for a series that asks', () => {
+    const config = buildChartConfiguration({
+      kind: 'line',
+      series: [{ label: '2025', data: [1, 2], fill: false, width: 1.5 }],
+    })
+
+    const dataset = config.data.datasets[0] as Record<string, unknown> | undefined
+    expect(dataset?.fill).toBe(false)
+    expect(dataset?.borderWidth).toBe(1.5)
+  })
+
+  it('lists every series in the tooltip when asked, and only then', () => {
+    const series = [
+      { label: '2025', data: [1] },
+      { label: '2026', data: [2] },
+    ]
+
+    expect(
+      buildChartConfiguration({ kind: 'line', series, hoverAll: true }).options?.interaction,
+    ).toEqual({
+      mode: 'index',
+      intersect: false,
+    })
+    expect(buildChartConfiguration({ kind: 'line', series }).options?.interaction).toBeUndefined()
+  })
+
   it('fills the area for area charts while staying a line type', () => {
     const config = buildChartConfiguration({
       kind: 'area',

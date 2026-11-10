@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { apiFetch } from '@/services/http'
-import { fetchActivitySummary } from '@/features/summary/services/summary'
+import { fetchActivitySummary, fetchDailyProgress } from '@/features/summary/services/summary'
 import {
   formatPeriodDate,
   monthEnd,
@@ -218,5 +218,40 @@ describe('summary formatters', () => {
   it('combines a metric value and unit, omitting an empty unit', () => {
     expect(combineSummaryMetric({ value: '12.50', unit: 'km' })).toBe('12.50 km')
     expect(combineSummaryMetric({ value: '5', unit: '' })).toBe('5')
+  })
+})
+
+describe('fetchDailyProgress', () => {
+  it('asks for every type, or one type by its code, and reads the rows', async () => {
+    vi.mocked(apiFetch).mockResolvedValueOnce([
+      {
+        day: '2026-03-14',
+        distance: 5000,
+        duration: 7200,
+        elevation_gain: 300,
+        activity_count: 1,
+        new_cells: 4,
+      },
+    ])
+
+    const days = await fetchDailyProgress(null)
+
+    expect(vi.mocked(apiFetch).mock.calls[0]?.[0]).toBe('/activities_summaries/progress/days')
+    expect(days).toEqual([
+      {
+        day: '2026-03-14',
+        distance: 5000,
+        duration: 7200,
+        elevationGain: 300,
+        activityCount: 1,
+        newCells: 4,
+      },
+    ])
+
+    vi.mocked(apiFetch).mockResolvedValueOnce([])
+    await fetchDailyProgress(12)
+    expect(vi.mocked(apiFetch).mock.calls[1]?.[0]).toBe(
+      '/activities_summaries/progress/days?type=12',
+    )
   })
 })
