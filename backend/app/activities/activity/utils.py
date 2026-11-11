@@ -1169,13 +1169,16 @@ def refresh_derived_data(activity: activities_schema.Activity, db: Session) -> N
     Every importer stores through :func:`store_activity` (a manual upload, the
     bulk import, the Strava and Garmin exports, Google Health), so this is the
     one place they all get segment times and map cells. Neither call raises: a
-    failure is logged, and both can be rebuilt from the GPS stream.
+    failure is logged, and both can be rebuilt from the GPS stream. Last, the
+    written feedback is queued (when it is switched on): it builds on the
+    other two, and it runs in the background so the import never waits for it.
 
     Args:
         activity: The activity just stored.
         db: Database session.
     """
     # Imported here rather than at the top: segments.matching imports this module.
+    import activity_feedback.service as feedback_service
     import coverage_map.service as coverage_service
     import segments.service as segments_service
 
@@ -1183,6 +1186,8 @@ def refresh_derived_data(activity: activities_schema.Activity, db: Session) -> N
         return
     segments_service.refresh_efforts_after_import([activity], activity.user_id, db)
     coverage_service.refresh_cells_after_import([activity], activity.user_id, db)
+    if activity.id is not None:
+        feedback_service.write_after_import(activity.id)
 
 
 def parse_activity_streams_from_file(parsed_info: dict, activity_id: int):

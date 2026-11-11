@@ -416,5 +416,14 @@
       "none": "Ingenting nytt: du hadde vært i den ene cellen før. | Ingenting nytt: du hadde vært i alle {cells} cellene før.",
       "link": "Se kartet"
     }
+  },
+  "feedback": {
+    "title": "Tilbakemelding",
+    "write": "Lag tilbakemelding",
+    "rewrite": "Lag på nytt",
+    "none": "Det er ikke skrevet noen tilbakemelding på denne turen.",
+    "writing": "Skriver …",
+    "caption": "Skrevet av Claude {date}, ut fra tallene slik de var da.",
+    "error": "Kunne ikke lage tilbakemeldingen. Prøv igjen senere."
   }
 }

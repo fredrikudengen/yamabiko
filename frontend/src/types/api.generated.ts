@@ -864,6 +864,30 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/feedback/activities/{activity_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Activity Feedback
+         * @description The stored feedback on one of the user's tours, and whether the feature is on.
+         */
+        get: operations["get_activity_feedback_api_v1_feedback_activities__activity_id__get"];
+        put?: never;
+        /**
+         * Write Activity Feedback
+         * @description Write the feedback on a tour now, replacing any earlier text. Costs one API call.
+         */
+        post: operations["write_activity_feedback_api_v1_feedback_activities__activity_id__post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/googlehealth/auth-url": {
         parameters: {
             query?: never;
@@ -3179,6 +3203,26 @@ export interface components {
             elapsed_s: number[];
             /** Moving S */
             moving_s: number[];
+        };
+        /**
+         * FeedbackOut
+         * @description The feedback on one tour, or why there is none.
+         *
+         *     ``enabled`` is false when no API key is configured: the page then shows
+         *     nothing at all. ``pending`` is true for a short while after import when the
+         *     text is being written on its own, so the page knows to look again.
+         */
+        FeedbackOut: {
+            /** Created At */
+            created_at: string | null;
+            /** Enabled */
+            enabled: boolean;
+            /** Model */
+            model: string | null;
+            /** Pending */
+            pending: boolean;
+            /** Text */
+            text: string | null;
         };
         /**
          * Gender
@@ -6333,6 +6377,68 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["RefreshOut"];
+                };
+            };
+        };
+    };
+    get_activity_feedback_api_v1_feedback_activities__activity_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                activity_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FeedbackOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    write_activity_feedback_api_v1_feedback_activities__activity_id__post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                activity_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FeedbackOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
                 };
             };
         };

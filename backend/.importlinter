@@ -4,6 +4,7 @@ root_packages =
     auth
     users
     activities
+    activity_feedback
     core
     coverage_map
     google_health
@@ -19,6 +20,7 @@ allow_indirect_imports = True
 source_modules =
     users
     activities
+    activity_feedback
     core
     coverage_map
     google_health
@@ -38,6 +40,7 @@ allow_indirect_imports = True
 source_modules =
     users
     activities
+    activity_feedback
     core
     coverage_map
     google_health

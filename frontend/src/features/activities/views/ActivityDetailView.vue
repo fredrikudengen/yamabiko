@@ -22,6 +22,7 @@ import ActivityPrivacyAlerts from '@/features/activities/components/ActivityPriv
 import ActivityStreamChart from '@/features/activities/components/ActivityStreamChart.vue'
 import ActivityWorkoutSets from '@/features/activities/components/ActivityWorkoutSets.vue'
 import ActivityNewCells from '@/features/coverageMap/components/ActivityNewCells.vue'
+import ActivityFeedbackCard from '@/features/feedback/components/ActivityFeedbackCard.vue'
 import { useActivityEffortsQuery } from '@/features/segments/composables/useSegments'
 import { formatSeconds } from '@/features/segments/utils/geo'
 import { milestoneOf, milestoneText } from '@/features/segments/utils/milestone'
@@ -360,6 +361,9 @@ const notFound = computed(() => !isPending.value && !isError.value && activity.v
           :exercise-titles="exerciseTitles ?? []"
         />
       </Card>
+
+      <!-- Last on the page, after the numbers it is written from. Only the owner has one. -->
+      <ActivityFeedbackCard v-if="isOwner" :activity-id="activity.id" />
     </template>
   </div>
 </template>
