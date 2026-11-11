@@ -157,7 +157,10 @@ async function submit(): Promise<void> {
         </template>
       </FormField>
 
-      <FormField :label="t('activities.edit.privateNotes')">
+      <FormField
+        :label="t('activities.edit.privateNotes')"
+        :hint="t('activities.edit.privateNotesHint')"
+      >
         <template #default="{ fieldId }">
           <MarkdownEditor
             :id="fieldId"

@@ -112,6 +112,8 @@ class EffortOut(BaseModel):
     segment_name: str
     activity_id: int
     activity_name: str | None
+    # The owner's private notes on the tour, such as its conditions; None when there are none.
+    activity_notes: str | None = None
     source: str
     start_time: datetime
     end_time: datetime

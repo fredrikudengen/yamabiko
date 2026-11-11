@@ -620,3 +620,34 @@ class TestEffortProfile:
         current_user["id"] = 8
 
         assert client.get(f"/segments/{segment['id']}/efforts/{effort['id']}/profile").status_code == 404
+
+
+class TestNotes:
+    """The owner's notes on a tour come with its passes, so a slow time can be read beside them."""
+
+    def test_efforts_carry_the_notes_of_their_tour(self, client, db):
+        with_note = _add_activity(db, build_route(ASCENT), day=0, private_notes="  Snø over 400 m  ")
+        without = _add_activity(db, build_route(ASCENT), day=1)
+        segment = _create(client)
+
+        efforts = {
+            e["activity_id"]: e["activity_notes"] for e in client.get(f"/segments/{segment['id']}/efforts").json()
+        }
+
+        assert efforts == {with_note: "Snø over 400 m", without: None}
+
+    def test_the_efforts_of_one_tour_carry_its_notes(self, client, db):
+        activity_id = _add_activity(db, build_route(ASCENT), private_notes="Med Clara")
+        _create(client)
+
+        (effort,) = client.get(f"/segments/activities/{activity_id}/efforts").json()
+
+        assert effort["activity_notes"] == "Med Clara"
+
+    def test_a_blank_note_is_no_note(self, client, db):
+        _add_activity(db, build_route(ASCENT), private_notes="   ")
+        segment = _create(client)
+
+        (effort,) = client.get(f"/segments/{segment['id']}/efforts").json()
+
+        assert effort["activity_notes"] is None

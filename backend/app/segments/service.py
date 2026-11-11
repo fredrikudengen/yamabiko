@@ -222,6 +222,21 @@ def activity_names(activity_ids: list[int], db: Session) -> dict[int, str | None
     return {row.id: row.name for row in db.execute(stmt)}
 
 
+def activity_notes(activity_ids: list[int], db: Session) -> dict[int, str]:
+    """The owner's private notes on the given activities, where there are any.
+
+    The notes are where the user writes down the conditions of a tour (snow, a
+    heavy pack, company), so a slow time can be read with them beside it.
+    """
+    if not activity_ids:
+        return {}
+    model = activities_models.Activity
+    stmt = select(model.id, model.private_notes).where(model.id.in_(activity_ids))
+    return {
+        row.id: row.private_notes.strip() for row in db.execute(stmt) if row.private_notes and row.private_notes.strip()
+    }
+
+
 def activity_sources(activity_ids: list[int], db: Session) -> dict[int, str]:
     """The source (see ``segments.source``) of each of the given activities."""
     if not activity_ids:

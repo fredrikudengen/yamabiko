@@ -20,7 +20,8 @@ MODEL = "claude-sonnet-5-5"
 # 3: no reasons read into the tour, no talk of missing data, one paragraph.
 # 4: heart-rate counts only where comparable, no source fields; never more than four sentences.
 # 5: time lost per half given outright.
-PROMPT_VERSION = 5
+# 6: the user's own notes, as the one source of reasons.
+PROMPT_VERSION = 6
 
 # The text is a few sentences; the rest is room for the model's own thinking.
 MAX_TOKENS = 8000
@@ -68,9 +69,16 @@ touched the edge of the start or finish circle). If you mention that time, or a 
 sets, say briefly that it is uncertain. Earlier passes have time_uncertain the same way.
 - Squares are a grid of about 300 m used for the map of where they have been.
 
-Use only what is in the JSON, and do not work out new numbers beyond simple differences. Never \
-explain why something went the way it did: not from the weather, the company, the tour's name \
-or anything else you might read between the lines. Say what happened, not why. Do not mention \
+The one source of reasons is their own notes (tour.your_notes, and your_notes on earlier \
+passes): conditions, a heavy pack, company, how they felt. When a note explains a time, use \
+it, briefly and in your own words: "with snow over the top, that time holds up well". \
+A note on an earlier pass can explain why that pass was slow or fast. Do not quote notes at \
+length or comment on them otherwise.
+
+Use only what is in the JSON, and do not work out new numbers beyond simple differences. Apart \
+from the notes, never explain why something went the way it did: not from the weather, the \
+company, the tour's name or anything else you might read between the lines. Say what \
+happened, not why. Do not mention \
 what is missing or what cannot be compared (no heart rate, a different heart-rate source): \
 just leave that topic out. Nothing about health, and no training advice. If nothing stands \
 out, one plain, friendly sentence saying it was a solid, ordinary tour is better than \

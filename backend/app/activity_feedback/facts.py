@@ -96,6 +96,18 @@ MIN_NET_CLIMB_M = 20
 # How many earlier passes of a segment the model sees.
 EARLIER_PASSES = 5
 
+# How much of the user's own notes the model gets: the whole note on this tour,
+# the start of it on earlier ones (enough for "snow above 400 m", not a diary).
+NOTES_CHARS = 1000
+EARLIER_NOTES_CHARS = 200
+
+
+def _clip(text: str | None, limit: int) -> str | None:
+    if not text:
+        return None
+    text = text.strip()
+    return text if len(text) <= limit else text[: limit - 1].rstrip() + "…"
+
 
 def _beats_per_100m(effort: segments_models.SegmentEffort) -> int | None:
     """Heart beats spent per 100 m climbed: lower is fitter, at a comparable effort.
@@ -124,6 +136,7 @@ def _segments(activity_id: int, db: Session) -> list[dict[str, Any]]:
         ]
         earlier = [other for other in upto if other.id != effort.id]
         sources = segments_service.activity_sources([other.activity_id for other in upto], db)
+        notes = segments_service.activity_notes([other.activity_id for other in earlier], db)
         standing = segments_ranking.rank_efforts(upto)[effort.id]
         best = min(upto, key=lambda other: (round(other.moving_s), other.id))
         same_year = [other for other in upto if other.start_time.year == effort.start_time.year]
@@ -154,6 +167,7 @@ def _segments(activity_id: int, db: Session) -> list[dict[str, Any]]:
                     if sources.get(other.activity_id) == sources.get(effort.activity_id)
                     else None,
                     "time_uncertain": bool(segments_quality.effort_doubts(other)),
+                    "your_notes": _clip(notes.get(other.activity_id), EARLIER_NOTES_CHARS),
                 }
                 for other in reversed(earlier[-EARLIER_PASSES:])
             ],
@@ -281,6 +295,8 @@ def build_facts(activity: activities_models.Activity, db: Session) -> dict[str, 
             "elevation_loss_m": _rounded(activity.elevation_loss),
             "average_heart_rate": _rounded(activity.average_hr),
             "max_heart_rate": _rounded(activity.max_hr),
+            # The user's own words about the tour: conditions, load, company.
+            "your_notes": _clip(activity.private_notes, NOTES_CHARS),
         },
         "compared_with_your_other_tours": _tour_context(activity, db),
         "long_stops": _long_stops(activity.id, db),

@@ -186,7 +186,8 @@
     "hidePace": "Hide pace",
     "hideWorkoutSetsSteps": "Hide workout sets & steps",
     "success": "Activity updated",
-    "error": "Couldn't update the activity"
+    "error": "Couldn't update the activity",
+    "privateNotesHint": "Only you see these. Write the conditions here, such as snow, a heavy pack or company: they show beside your segment times, and the feedback uses them."
   },
   "alerts": {
     "hidden": "This activity is hidden. Only you can see it.",
