@@ -11,6 +11,7 @@ import activities.activity_sets.public_router as activity_sets_public_router
 import activities.activity_sets.router as activity_sets_router
 import activities.activity_streams.router as activity_streams_router
 import activities.activity_summaries.router as activity_summaries_router
+import activity_feedback.router as activity_feedback_router
 import auth.api_keys.router as auth_api_keys_router
 import auth.dependencies as auth_dependencies
 import auth.password_reset_tokens.router as password_reset_tokens_router
@@ -140,6 +141,11 @@ router.include_router(
     coverage_map_router.router,
     prefix=core_config.ROOT_PATH + "/coverage",
     tags=["coverage"],
+)
+router.include_router(
+    activity_feedback_router.router,
+    prefix=core_config.ROOT_PATH + "/feedback",
+    tags=["feedback"],
 )
 router.include_router(
     strava_router.router,

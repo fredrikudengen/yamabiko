@@ -417,5 +417,14 @@
       "none": "No new ground: you had been in the 1 cell before. | No new ground: you had been in all {cells} cells before.",
       "link": "See the map"
     }
+  },
+  "feedback": {
+    "title": "Feedback",
+    "write": "Write feedback",
+    "rewrite": "Write again",
+    "none": "No feedback has been written for this tour.",
+    "writing": "Writing…",
+    "caption": "Written by Claude on {date}, from the numbers as they stood then.",
+    "error": "Could not write the feedback. Try again later."
   }
 }

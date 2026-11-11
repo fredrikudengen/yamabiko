@@ -71,6 +71,12 @@ On an iPhone, open the address in Safari and choose Share → Add to Home Screen
 
 Create an OAuth client in the Google Cloud Console, put its ID and secret in `GOOGLE_HEALTH_CLIENT_ID` and `GOOGLE_HEALTH_CLIENT_SECRET`, and register `<ENDURAIN_HOST>/api/v1/googlehealth/callback` as an authorized redirect URI. Then link your account under Settings → Integrations.
 
+### Feedback from Claude
+
+Optional. With `ANTHROPIC_API_KEY` in `.env`, your own tours get a "Feedback" card at the bottom of the page: a few sentences in Norwegian, written by Claude Sonnet 5.5 from numbers the app has computed (times, segment standings, new map cells, the year against last year). The tour's name and segment names are sent; coordinates and the raw GPS and heart-rate streams are not. Each text is one API call, a few cents.
+
+Without the key the feature is off and nothing is shown. By default a text is written when you ask for one on a tour. Set `ACTIVITY_FEEDBACK_AUTO=true` to have every new tour get its text on its own after import.
+
 ## Development
 
 Backend, from `backend/` (needs [uv](https://docs.astral.sh/uv/)):

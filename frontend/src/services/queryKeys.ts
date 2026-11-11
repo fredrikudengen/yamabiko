@@ -197,6 +197,14 @@ export const queryKeys = {
       ['segments', 'profile', segmentId, effortId] as const,
   },
 
+  /** The written feedback on tours. */
+  feedback: {
+    /** Broad prefix; invalidating this refetches every tour's feedback. */
+    all: () => ['feedback'] as const,
+    /** @param activityId - Activity identifier. */
+    activity: (activityId: number) => ['feedback', 'activity', activityId] as const,
+  },
+
   /**
    * The coverage map: which cells the user's tours have passed through. One
    * entry per cell size; `all()` is the broad prefix the rebuild invalidates,
