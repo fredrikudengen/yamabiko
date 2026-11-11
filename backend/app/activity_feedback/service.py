@@ -13,6 +13,7 @@ import activity_feedback.client as feedback_client
 import activity_feedback.facts as feedback_facts
 import activity_feedback.models as feedback_models
 import core.logger as core_logger
+import users.users.models as users_models
 from core.database import SessionLocal
 
 # How long after import a tour without a text counts as "being written", so the
@@ -26,6 +27,13 @@ _executor = ThreadPoolExecutor(max_workers=1, thread_name_prefix="activity-feedb
 def get_feedback(activity_id: int, db: Session) -> feedback_models.ActivityFeedback | None:
     """The stored text for a tour, if one has been written."""
     return db.get(feedback_models.ActivityFeedback, activity_id)
+
+
+def _language_of(user_id: int, db: Session) -> str:
+    """The app language the user has chosen, which the text is written in."""
+    user = db.get(users_models.Users, user_id)
+    language = getattr(user, "preferred_language", None) or feedback_client.DEFAULT_LANGUAGE
+    return language if language in feedback_client.LANGUAGES else feedback_client.DEFAULT_LANGUAGE
 
 
 def is_pending(activity: activities_models.Activity, has_text: bool) -> bool:
@@ -55,12 +63,13 @@ def generate(
         FeedbackUnavailableError: When the model gave no usable text; nothing is changed.
     """
     facts: dict[str, Any] = feedback_facts.build_facts(activity, db)
-    digest = feedback_client.facts_hash(facts)
+    language = _language_of(activity.user_id, db)
+    digest = feedback_client.facts_hash(facts, language)
     stored = get_feedback(activity.id, db)
     if stored is not None and stored.facts_hash == digest and not force:
         return stored
 
-    text = feedback_client.write_feedback(facts)
+    text = feedback_client.write_feedback(facts, language)
     if stored is None:
         stored = feedback_models.ActivityFeedback(activity_id=activity.id)
         db.add(stored)

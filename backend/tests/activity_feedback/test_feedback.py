@@ -66,7 +66,7 @@ def written(monkeypatch):
     """Stands in for Claude: records the facts it was given and answers with a fixed text."""
     calls: list[dict] = []
 
-    def fake(facts):
+    def fake(facts, language="nb"):
         calls.append(facts)
         return f"Tekst nummer {len(calls)}."
 
@@ -151,24 +151,26 @@ class TestFacts:
         (segment,) = feedback_facts.build_facts(db.get(activities_models.Activity, slower), db)["segments"]
 
         assert segment["name"] == "Til toppen"
-        assert segment["passes_of_this_segment"] == 2
-        assert segment["rank_by_moving_time"] == 2
-        assert segment["is_personal_record"] is False
-        against = segment["against_fastest_pass"]
+        assert segment["passes_so_far_including_this"] == 2
+        assert segment["rank_by_moving_time_on_the_day"] == 2
+        assert segment["was_personal_record_on_the_day"] is False
+        against = segment["against_fastest_pass_so_far"]
         assert against["best_date"] == "2026-10-14"
         assert against["behind_at_finish_seconds"] == segment["moving_seconds"] - against["best_moving_seconds"]
         assert against["behind_at_finish_seconds"] > 300
         assert 0 < against["behind_halfway_seconds"] < against["behind_at_finish_seconds"]
+        halves = against["lost_in_first_half_seconds"] + against["lost_in_second_half_seconds"]
+        assert abs(halves - against["behind_at_finish_seconds"]) <= 1
 
     def test_the_fastest_pass_is_a_record_with_nothing_to_compare_against(self, db):
-        faster = add_tour(db, day=0, speed=1.4)
-        add_tour(db, day=1, speed=1.0)
+        add_tour(db, day=0, speed=1.0)
+        faster = add_tour(db, day=1, speed=1.4)
         add_segment(db)
 
         (segment,) = feedback_facts.build_facts(db.get(activities_models.Activity, faster), db)["segments"]
 
-        assert segment["is_personal_record"] is True
-        assert "against_fastest_pass" not in segment
+        assert segment["was_personal_record_on_the_day"] is True
+        assert "against_fastest_pass_so_far" not in segment
 
     def test_the_only_pass_of_a_segment_has_no_rank(self, db):
         only = add_tour(db)
@@ -176,8 +178,9 @@ class TestFacts:
 
         (segment,) = feedback_facts.build_facts(db.get(activities_models.Activity, only), db)["segments"]
 
-        assert segment["rank_by_moving_time"] is None
-        assert segment["is_personal_record"] is False
+        assert segment["rank_by_moving_time_on_the_day"] is None
+        assert segment["was_personal_record_on_the_day"] is False
+        assert segment["earlier_passes_newest_first"] == []
 
     def test_new_ground_counts_the_cells_no_earlier_tour_passed(self, db):
         add_tour(db, day=0)
@@ -187,8 +190,12 @@ class TestFacts:
         def new_ground(activity_id):
             return feedback_facts.build_facts(db.get(activities_models.Activity, activity_id), db)["new_ground"]
 
-        assert new_ground(again)["map_cells_never_visited_before"] == 0
-        assert 0 < new_ground(further)["map_cells_never_visited_before"] < new_ground(further)["map_cells_passed"]
+        assert new_ground(again)["of_them_never_visited_before"] == 0
+        assert (
+            0
+            < new_ground(further)["of_them_never_visited_before"]
+            < new_ground(further)["squares_of_about_300m_passed"]
+        )
 
     def test_the_year_runs_through_the_tour_and_not_past_it(self, db):
         first = add_tour(db, day=0)
@@ -196,14 +203,85 @@ class TestFacts:
 
         year = feedback_facts.build_facts(db.get(activities_models.Activity, first), db)["year"]
 
-        assert year["through_this_tour"] == {
-            "year": 2026,
-            "tours": 1,
-            "distance_km": 1.7,
-            "elevation_gain_m": 320,
-            "new_map_cells": year["through_this_tour"]["new_map_cells"],
-        }
+        assert year["this_year_through_this_tour"]["tours"] == 1
+        assert year["this_year_through_this_tour"]["distance_km"] == 1.7
         assert year["last_year_by_same_date"]["tours"] == 0
+
+    def test_milestones_name_the_round_number_this_tour_crossed(self, db):
+        for day in range(-30, -21):  # nine earlier tours this year
+            add_tour(db, day=day)
+        add_tour(db, day=-400)  # one tour last year
+        tenth = add_tour(db, day=0)
+
+        year = feedback_facts.build_facts(db.get(activities_models.Activity, tenth), db)["year"]
+
+        assert year["milestones"] == ["passed 10 tours this year"]
+
+    def test_milestones_name_last_years_total_when_it_is_overtaken(self, db):
+        add_tour(db, day=-400)
+        add_tour(db, day=-390)  # two tours last year
+        add_tour(db, day=-5)
+        add_tour(db, day=-3)
+        third = add_tour(db, day=0)
+
+        milestones = feedback_facts.build_facts(db.get(activities_models.Activity, third), db)["year"]["milestones"]
+
+        assert "overtook last year's full-year tours (2)" in milestones
+
+    def test_an_ordinary_tour_has_no_milestones(self, db):
+        add_tour(db, day=-3)
+        second = add_tour(db, day=0)
+
+        assert feedback_facts.build_facts(db.get(activities_models.Activity, second), db)["year"]["milestones"] == []
+
+    def test_a_pass_is_judged_as_it_stood_on_its_day(self, db):
+        old = add_tour(db, day=0, speed=1.1)
+        add_tour(db, day=5, speed=1.5)  # faster, but walked later
+        add_segment(db)
+
+        (segment,) = feedback_facts.build_facts(db.get(activities_models.Activity, old), db)["segments"]
+
+        assert segment["passes_so_far_including_this"] == 1
+        assert segment["rank_by_moving_time_on_the_day"] is None
+        assert "against_fastest_pass_so_far" not in segment
+
+    def test_earlier_passes_come_newest_first_with_the_days_between(self, db):
+        first = add_tour(db, day=0, speed=1.0)
+        second = add_tour(db, day=3, speed=1.2)
+        third = add_tour(db, day=10, speed=1.4)
+        add_segment(db)
+
+        (segment,) = feedback_facts.build_facts(db.get(activities_models.Activity, third), db)["segments"]
+
+        dates = [p["date"] for p in segment["earlier_passes_newest_first"]]
+        assert dates == ["2026-10-17", "2026-10-14"]
+        assert segment["days_since_previous_pass"] == 7
+        assert segment["fastest_this_year"] is True
+        assert segment["was_personal_record_on_the_day"] is True
+        assert first and second
+
+    def test_heart_beats_per_100m_climbed_need_a_climb_and_a_heart_rate(self, db):
+        effort = SimpleNamespace(net_elevation_m=300, average_hr=150, moving_s=1800)
+
+        assert feedback_facts._beats_per_100m(effort) == 1500
+        assert (
+            feedback_facts._beats_per_100m(SimpleNamespace(net_elevation_m=10, average_hr=150, moving_s=1800)) is None
+        )
+        assert (
+            feedback_facts._beats_per_100m(SimpleNamespace(net_elevation_m=300, average_hr=None, moving_s=1800)) is None
+        )
+
+    def test_the_tour_is_placed_among_this_years_tours_and_after_the_last_one(self, db):
+        add_tour(db, day=-9)
+        latest = add_tour(db, day=0)
+
+        context = feedback_facts.build_facts(db.get(activities_models.Activity, latest), db)[
+            "compared_with_your_other_tours"
+        ]
+
+        assert context["days_since_previous_tour"] == 9
+        assert context["same_type_tours_this_year_so_far"] == 2
+        assert context["rank_this_year_by_distance"] == 1
 
     def test_the_same_tour_gives_the_same_hash_and_new_numbers_another(self, db):
         activity = db.get(activities_models.Activity, add_tour(db))
@@ -250,7 +328,7 @@ class TestApi:
         activity_id = add_tour(db)
         client.post(f"/feedback/activities/{activity_id}")
 
-        def fail(_facts):
+        def fail(_facts, _language="nb"):
             raise feedback_client.FeedbackUnavailableError("rate limited")
 
         monkeypatch.setattr(feedback_client, "write_feedback", fail)
@@ -311,7 +389,7 @@ class TestAfterImport:
         monkeypatch.setenv("ACTIVITY_FEEDBACK_AUTO", "true")
         activity_id = add_tour(db)
 
-        def fail(_facts):
+        def fail(_facts, _language="nb"):
             raise RuntimeError("boom")
 
         monkeypatch.setattr(feedback_client, "write_feedback", fail)
@@ -356,10 +434,21 @@ class TestClaudeCall:
 
         assert text == "Fin tur."
         assert sent["model"] == "claude-sonnet-5-5"
-        assert sent["output_config"] == {"effort": "low"}
+        assert sent["output_config"] == {"effort": "medium"}
         assert "thinking" not in sent
         assert '"Ulriken"' in sent["messages"][0]["content"]
-        assert "norsk" in sent["system"]
+        assert "Write in Norwegian Bokmål" in sent["system"]
+
+    def test_writes_in_the_app_language(self, monkeypatch):
+        sent = self._client(monkeypatch, self._response())
+
+        feedback_client.write_feedback({}, "en")
+
+        assert "Write in English" in sent["system"]
+        assert "{language}" not in sent["system"]
+
+    def test_the_language_is_part_of_what_a_text_was_made_from(self):
+        assert feedback_client.facts_hash({"a": 1}, "en") != feedback_client.facts_hash({"a": 1}, "nb")
 
     @pytest.mark.parametrize("stop_reason", ["refusal", "max_tokens"])
     def test_a_declined_or_cut_off_answer_is_no_text(self, monkeypatch, stop_reason):
