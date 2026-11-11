@@ -71,6 +71,7 @@ def _effort_out(
     activity_name: str | None,
     source: str,
     standing: segments_ranking.Standing,
+    activity_notes: str | None = None,
 ) -> segments_schema.EffortOut:
     return segments_schema.EffortOut(
         id=effort.id,
@@ -78,6 +79,7 @@ def _effort_out(
         segment_name=segment_name,
         activity_id=effort.activity_id,
         activity_name=activity_name,
+        activity_notes=activity_notes,
         source=source,
         start_time=effort.start_time,
         end_time=effort.end_time,
@@ -212,6 +214,7 @@ def get_activity_efforts(
     if segments_service.activity_owner(activity_id, db) != token_user_id:
         raise _not_found("Activity")
     names = segments_service.activity_names([activity_id], db)
+    notes = segments_service.activity_notes([activity_id], db)
     sources = segments_service.activity_sources([activity_id], db)
     segment_names = {s.id: s.name for s in segments_crud.get_user_segments(token_user_id, db)}
     # The rank needs every pass of the segment, not just this activity's.
@@ -227,6 +230,7 @@ def get_activity_efforts(
             names.get(activity_id),
             sources.get(activity_id, segments_source.SOURCE_OTHER),
             standings[effort.segment_id][effort.id],
+            notes.get(activity_id),
         )
         for effort in segments_crud.get_efforts_for_activity(activity_id, db)
         if effort.segment_id in segment_names
@@ -281,6 +285,7 @@ def get_segment_efforts(
     efforts = segments_crud.get_efforts_for_segment(segment.id, db)
     activity_ids = [e.activity_id for e in efforts]
     names = segments_service.activity_names(activity_ids, db)
+    notes = segments_service.activity_notes(activity_ids, db)
     sources = segments_service.activity_sources(activity_ids, db)
     standings = segments_ranking.rank_efforts(efforts)
     return [
@@ -290,6 +295,7 @@ def get_segment_efforts(
             names.get(effort.activity_id),
             sources.get(effort.activity_id, segments_source.SOURCE_OTHER),
             standings[effort.id],
+            notes.get(effort.activity_id),
         )
         for effort in efforts
     ]

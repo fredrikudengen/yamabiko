@@ -3134,6 +3134,8 @@ export interface components {
             activity_id: number;
             /** Activity Name */
             activity_name: string | null;
+            /** Activity Notes */
+            activity_notes?: string | null;
             /** Average Hr */
             average_hr: number | null;
             /** Details */

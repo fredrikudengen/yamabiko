@@ -40,6 +40,8 @@ export interface SegmentEffortDto {
   segment_name: string
   activity_id: number
   activity_name: string | null
+  /** The owner's private notes on the tour, such as its conditions. */
+  activity_notes?: string | null
   /** Where the tour was imported from; see `utils/source.ts`. */
   source: string
   start_time: string
@@ -153,6 +155,8 @@ export interface SegmentEffort {
   segmentName: string
   activityId: number
   activityName: string | null
+  /** The owner's notes on the tour (conditions, load, company), shown beside its time. */
+  activityNotes?: string | null
   source: ActivitySource
   startTime: string
   endTime: string

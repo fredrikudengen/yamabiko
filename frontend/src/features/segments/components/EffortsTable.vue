@@ -131,6 +131,15 @@ function signed(seconds: number): string {
                 {{ dateOf(row.effort.startTime) }}
               </router-link>
               <span v-else>{{ dateOf(row.effort.startTime) }}</span>
+              <!-- The owner's note on the tour (snow, a heavy pack, company): why a time is what it is. -->
+              <p
+                v-if="row.effort.activityNotes"
+                class="max-w-48 truncate text-meta"
+                :title="row.effort.activityNotes"
+                data-testid="effort-notes"
+              >
+                {{ row.effort.activityNotes }}
+              </p>
             </td>
             <td class="py-1.5 pr-3">
               <Badge

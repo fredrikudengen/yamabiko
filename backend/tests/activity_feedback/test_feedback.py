@@ -74,7 +74,7 @@ def written(monkeypatch):
     return calls
 
 
-def add_tour(db, legs=ASCENT, day=0, user_id=7, speed=1.2, name="Løvstakken", created=None) -> int:
+def add_tour(db, legs=ASCENT, day=0, user_id=7, speed=1.2, name="Løvstakken", created=None, notes=None) -> int:
     route = build_route(legs, speed=speed)
     start = T0 + timedelta(days=day)
     activity = activities_models.Activity(
@@ -92,6 +92,7 @@ def add_tour(db, legs=ASCENT, day=0, user_id=7, speed=1.2, name="Løvstakken", c
         average_hr=140,
         max_hr=171,
         created_at=created or start,
+        private_notes=notes,
         **{c.name: False for c in activities_models.Activity.__table__.columns if c.name.startswith("hide_")},
     )
     db.add(activity)
@@ -283,6 +284,24 @@ class TestFacts:
         assert context["same_type_tours_this_year_so_far"] == 2
         assert context["rank_this_year_by_distance"] == 1
 
+    def test_the_users_notes_come_with_the_tour_and_its_earlier_passes(self, db):
+        add_tour(db, day=0, notes="Snø over 400 m. " + "Lang dag. " * 40)
+        latest = add_tour(db, day=3, notes="Med Clara, tung sekk")
+        add_segment(db)
+
+        facts = feedback_facts.build_facts(db.get(activities_models.Activity, latest), db)
+        (earlier,) = facts["segments"][0]["earlier_passes_newest_first"]
+
+        assert facts["tour"]["your_notes"] == "Med Clara, tung sekk"
+        assert earlier["your_notes"].startswith("Snø over 400 m.")
+        assert len(earlier["your_notes"]) <= feedback_facts.EARLIER_NOTES_CHARS
+        assert earlier["your_notes"].endswith("…")
+
+    def test_a_tour_without_notes_has_none(self, db):
+        activity = db.get(activities_models.Activity, add_tour(db))
+
+        assert feedback_facts.build_facts(activity, db)["tour"]["your_notes"] is None
+
     def test_the_same_tour_gives_the_same_hash_and_new_numbers_another(self, db):
         activity = db.get(activities_models.Activity, add_tour(db))
         before = feedback_client.facts_hash(feedback_facts.build_facts(activity, db))
@@ -438,6 +457,7 @@ class TestClaudeCall:
         assert "thinking" not in sent
         assert '"Ulriken"' in sent["messages"][0]["content"]
         assert "Write in Norwegian Bokmål" in sent["system"]
+        assert "your_notes" in sent["system"]
 
     def test_writes_in_the_app_language(self, monkeypatch):
         sent = self._client(monkeypatch, self._response())

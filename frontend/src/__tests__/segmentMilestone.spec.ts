@@ -260,3 +260,27 @@ describe('ActivitySegments card', () => {
     expect(wrapper.find('[data-testid="activity-milestone"]').exists()).toBe(false)
   })
 })
+
+describe('notes beside the times', () => {
+  it('shows the tour note under its date in the table, and nothing for a tour without one', () => {
+    const wrapper = mount(EffortsTable, {
+      props: {
+        efforts: [
+          effort(1, { activityNotes: 'Snø over 400 m, tung sekk' }),
+          effort(2, { activityNotes: null }),
+        ],
+      },
+      global: { plugins: [i18n], stubs: { 'router-link': true } },
+    })
+
+    const notes = wrapper.findAll('[data-testid="effort-notes"]')
+    expect(notes).toHaveLength(1)
+    expect(notes[0]?.text()).toBe('Snø over 400 m, tung sekk')
+    expect(notes[0]?.attributes('title')).toBe('Snø over 400 m, tung sekk')
+  })
+
+  it('reads the note from the API, and no note when the field is missing', () => {
+    expect(mapEffort({ ...dtoOf(), activity_notes: 'Med Clara' }).activityNotes).toBe('Med Clara')
+    expect(mapEffort(dtoOf()).activityNotes).toBeNull()
+  })
+})

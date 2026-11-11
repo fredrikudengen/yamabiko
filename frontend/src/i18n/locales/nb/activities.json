@@ -186,7 +186,8 @@
     "hidePace": "Skjul tempo",
     "hideWorkoutSetsSteps": "Skjul treningssett og -trinn",
     "success": "Aktivitet oppdatert",
-    "error": "Kunne ikke oppdatere aktiviteten"
+    "error": "Kunne ikke oppdatere aktiviteten",
+    "privateNotesHint": "Bare du ser dette. Skriv forholdene her, for eksempel snø, tung sekk eller selskap: de vises ved segmenttidene, og tilbakemeldingen bruker dem."
   },
   "alerts": {
     "hidden": "Denne aktiviteten er skjult. Bare du kan se den.",

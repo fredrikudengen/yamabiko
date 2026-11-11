@@ -82,6 +82,7 @@ export function mapEffort(dto: SegmentEffortDto): SegmentEffort {
     segmentName: dto.segment_name,
     activityId: dto.activity_id,
     activityName: dto.activity_name,
+    activityNotes: dto.activity_notes ?? null,
     source: toActivitySource(dto.source),
     startTime: dto.start_time,
     endTime: dto.end_time,
