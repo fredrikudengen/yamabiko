@@ -1259,6 +1259,30 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/profile/hr_zones": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Zone Limits
+         * @description The user's zone limits, or the defaults when none are set.
+         */
+        get: operations["get_zone_limits_api_v1_profile_hr_zones_get"];
+        /**
+         * Put Zone Limits
+         * @description Store new zone limits, or go back to the defaults with ``null``.
+         */
+        put: operations["put_zone_limits_api_v1_profile_hr_zones_put"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/profile/image": {
         parameters: {
             query?: never;
@@ -5387,6 +5411,24 @@ export interface components {
              */
             type_breakdown?: components["schemas"]["TypeBreakdownItem"][] | null;
         };
+        /**
+         * ZoneLimitsIn
+         * @description New limits; ``null`` goes back to the defaults.
+         */
+        ZoneLimitsIn: {
+            /** Limits */
+            limits: number[] | null;
+        };
+        /**
+         * ZoneLimitsOut
+         * @description The limits in use, and whether they are the defaults.
+         */
+        ZoneLimitsOut: {
+            /** Is Default */
+            is_default: boolean;
+            /** Limits */
+            limits: number[];
+        };
     };
     responses: never;
     parameters: never;
@@ -6814,6 +6856,59 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content?: never;
+            };
+        };
+    };
+    get_zone_limits_api_v1_profile_hr_zones_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ZoneLimitsOut"];
+                };
+            };
+        };
+    };
+    put_zone_limits_api_v1_profile_hr_zones_put: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ZoneLimitsIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ZoneLimitsOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
             };
         };
     };

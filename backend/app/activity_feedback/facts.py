@@ -24,12 +24,14 @@ import activities.activity.utils as activities_utils
 import activities.activity_summaries.progress as summary_progress
 import coverage_map.crud as coverage_crud
 import google_health.stops as google_health_stops
+import hr_zones.zones as hr_zones
 import segments.crud as segments_crud
 import segments.models as segments_models
 import segments.profile as segments_profile
 import segments.quality as segments_quality
 import segments.ranking as segments_ranking
 import segments.service as segments_service
+import users.users.models as users_models
 
 # A stretch is a tenth of the way, as in the segment page's "against the best" card.
 _STRETCH_STEPS = 10
@@ -178,16 +180,40 @@ def _segments(activity_id: int, db: Session) -> list[dict[str, Any]]:
     return facts
 
 
-def _long_stops(activity_id: int, db: Session) -> dict[str, Any] | None:
-    track = segments_service.load_track(activity_id, db)
+def _stops_and_zones(activity: activities_models.Activity, db: Session) -> tuple[dict | None, dict | None]:
+    """The tour's long stops, and its moving time in each of the user's heart-rate zones.
+
+    Both come from the same GPS track: the zones leave the long stops out, as the
+    zone card on the tour's page does.
+    """
+    track = segments_service.load_track(activity.id, db)
     if track is None:
-        return None
+        return None, None
     stops = google_health_stops.detect_long_stops(track.points)
-    return {
+    stop_facts = {
         "count": len(stops),
         "total_seconds": round(sum(stop.trimmed_duration for stop in stops)),
         "longest_seconds": round(max((stop.trimmed_duration for stop in stops), default=0)),
     }
+    if not track.heart_rate:
+        return stop_facts, None
+    user = db.get(users_models.Users, activity.user_id)
+    stored = user.hr_zone_limits if user is not None else None
+    limits = hr_zones.limits_of(stored)
+    time = hr_zones.zone_seconds(
+        [(sample.t, sample.value) for sample in track.heart_rate],
+        limits,
+        [(stop.trimmed_start, stop.trimmed_duration) for stop in stops],
+    )
+    if time.counted_s <= 0:
+        return stop_facts, None
+    zone_facts = {
+        "zone_limits_bpm": list(limits),
+        "user_set_their_own_limits": hr_zones.is_valid(stored),
+        "moving_minutes_in_zones_1_to_5": [round(seconds / 60) for seconds in time.seconds],
+        "share_percent_in_zones_1_to_5": [round(seconds / time.counted_s * 100) for seconds in time.seconds],
+    }
+    return stop_facts, zone_facts
 
 
 def _year(user_id: int, day: date, db: Session) -> dict[str, Any]:
@@ -280,6 +306,7 @@ def build_facts(activity: activities_models.Activity, db: Session) -> dict[str, 
         A JSON-serialisable dict; the same tour and data give the same dict.
     """
     start = _local_start(activity)
+    long_stops, heart_rate_zones = _stops_and_zones(activity, db)
     cells = coverage_crud.new_cells_of_activity(activity.user_id, activity.id, summary_progress.NEW_CELL_ZOOM, db)
     return {
         "tour": {
@@ -299,7 +326,8 @@ def build_facts(activity: activities_models.Activity, db: Session) -> dict[str, 
             "your_notes": _clip(activity.private_notes, NOTES_CHARS),
         },
         "compared_with_your_other_tours": _tour_context(activity, db),
-        "long_stops": _long_stops(activity.id, db),
+        "long_stops": long_stops,
+        "heart_rate_zones": heart_rate_zones,
         "segments": _segments(activity.id, db),
         "new_ground": None
         if cells is None or cells.cells == 0

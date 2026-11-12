@@ -1,5 +1,6 @@
-import { beforeEach, describe, expect, it } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { mount } from '@vue/test-utils'
+import { createPinia, setActivePinia } from 'pinia'
 
 import type { HrZoneBucket } from '@/features/activities/types'
 
@@ -9,6 +10,9 @@ import i18n from '@/i18n'
 import ActivityHrZones from '@/features/activities/components/ActivityHrZones.vue'
 import { useHrZoneLimits } from '@/features/activities/composables/useHrZoneLimits'
 import { DEFAULT_HR_ZONE_LIMITS, toZoneBuckets } from '@/features/activities/utils/hrZoneTime'
+
+// Not logged in: the limits stay in the page and nothing is sent.
+vi.mock('@/services/http', () => ({ apiFetch: vi.fn<() => Promise<unknown>>() }))
 
 const BUCKETS: HrZoneBucket[] = toZoneBuckets(
   { seconds: [3600, 1200, 600, 300, 60], countedS: 5760, stoppedS: 0, gapS: 0 },
@@ -29,6 +33,7 @@ const button = (wrapper: ReturnType<typeof mountCard>, label: string) =>
 
 describe('ActivityHrZones with computed zones', () => {
   beforeEach(() => {
+    setActivePinia(createPinia())
     useHrZoneLimits().resetLimits()
   })
 

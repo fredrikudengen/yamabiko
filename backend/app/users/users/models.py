@@ -3,7 +3,7 @@
 from datetime import date as date_type
 from typing import TYPE_CHECKING
 
-from sqlalchemy import String
+from sqlalchemy import JSON, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from core.database import Base
@@ -30,6 +30,7 @@ class Users(Base):
         units: Measurement units (metric, imperial).
         height: User's height in centimeters.
         max_heart_rate: User maximum heart rate (bpm).
+        hr_zone_limits: Heart-rate zone limits (four bpm values), or None for the defaults.
         access_type: User type (regular, admin).
         photo_path: Path to user's photo.
         active: Whether the user is active.
@@ -103,6 +104,11 @@ class Users(Base):
     max_heart_rate: Mapped[int | None] = mapped_column(
         nullable=True,
         comment="User maximum heart rate (bpm)",
+    )
+    hr_zone_limits: Mapped[list[int] | None] = mapped_column(
+        JSON,
+        nullable=True,
+        comment="Heart-rate zone limits, four increasing bpm values; null for the defaults",
     )
     access_type: Mapped[str] = mapped_column(
         String(20),
