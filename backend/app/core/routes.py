@@ -21,6 +21,7 @@ import core.config as core_config
 import core.router as core_router
 import coverage_map.router as coverage_map_router
 import google_health.router as google_health_router
+import hr_zones.router as hr_zones_router
 import segments.router as segments_router
 import server_settings.public_router as server_settings_public_router
 import server_settings.router as server_settings_router
@@ -151,6 +152,15 @@ router.include_router(
     strava_router.router,
     prefix=core_config.ROOT_PATH + "/strava",
     tags=["strava"],
+)
+router.include_router(
+    hr_zones_router.router,
+    prefix=core_config.ROOT_PATH + "/profile/hr_zones",
+    tags=["hr_zones"],
+    dependencies=[
+        Depends(auth_dependencies.validate_access_token),
+        Security(auth_dependencies.check_scopes, scopes=["profile"]),
+    ],
 )
 router.include_router(
     auth_api_keys_router.router,

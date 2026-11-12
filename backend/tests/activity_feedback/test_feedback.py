@@ -22,6 +22,7 @@ import segments.crud as segments_crud
 import segments.service as segments_service
 from tests._helpers.db import create_sqlite_session
 from tests._helpers.segments import build_route, node
+from tests._helpers.users import make_user
 
 T0 = datetime(2026, 10, 14, 7, 0, 0, tzinfo=UTC)
 ASCENT = [("walk", (0, 1800))]
@@ -301,6 +302,37 @@ class TestFacts:
         activity = db.get(activities_models.Activity, add_tour(db))
 
         assert feedback_facts.build_facts(activity, db)["tour"]["your_notes"] is None
+
+    def test_heart_rate_zones_use_the_users_own_limits_on_moving_time(self, db):
+        activity_id = add_tour(db)
+        start = T0
+        db.add(
+            streams_models.ActivityStreams(
+                activity_id=activity_id,
+                stream_type=streams_constants.STREAM_TYPE_HR,
+                stream_waypoints=[
+                    {
+                        "time": (start + timedelta(seconds=t)).strftime("%Y-%m-%dT%H:%M:%S"),
+                        "hr": 110 if t < 600 else 150,
+                    }
+                    for t in range(0, 1200, 5)
+                ],
+            )
+        )
+        db.add(make_user(hr_zone_limits=[100, 120, 140, 160]))
+        db.commit()
+
+        zones = feedback_facts.build_facts(db.get(activities_models.Activity, activity_id), db)["heart_rate_zones"]
+
+        assert zones["zone_limits_bpm"] == [100, 120, 140, 160]
+        assert zones["user_set_their_own_limits"] is True
+        assert zones["moving_minutes_in_zones_1_to_5"] == [0, 10, 0, 10, 0]
+        assert zones["share_percent_in_zones_1_to_5"] == [0, 50, 0, 50, 0]
+
+    def test_a_tour_without_heart_rate_has_no_zones(self, db):
+        activity = db.get(activities_models.Activity, add_tour(db))
+
+        assert feedback_facts.build_facts(activity, db)["heart_rate_zones"] is None
 
     def test_the_same_tour_gives_the_same_hash_and_new_numbers_another(self, db):
         activity = db.get(activities_models.Activity, add_tour(db))

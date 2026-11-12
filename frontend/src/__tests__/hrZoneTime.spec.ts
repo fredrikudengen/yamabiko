@@ -1,8 +1,15 @@
-import { beforeEach, describe, expect, it } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { flushPromises } from '@vue/test-utils'
+import { createPinia, setActivePinia } from 'pinia'
 
 import type { ActivityStream, StreamWaypoint } from '@/features/activities/types'
 
-import { useHrZoneLimits } from '@/features/activities/composables/useHrZoneLimits'
+import {
+  forgetHrZoneLimits,
+  useHrZoneLimits,
+} from '@/features/activities/composables/useHrZoneLimits'
+import { useAuthStore } from '@/features/auth/stores/auth'
+import { apiFetch } from '@/services/http'
 import {
   computeZoneSeconds,
   DEFAULT_HR_ZONE_LIMITS,
@@ -16,9 +23,11 @@ import {
 } from '@/features/activities/utils/hrZoneTime'
 import { hrZoneColor } from '@/features/activities/utils/hrZones'
 import { buildMovingHrZones } from '@/features/activities/utils/streams'
-import { clearUserScopedStorage, getStorageItem } from '@/lib/storage'
+import { getStorageItem, setStorageItem } from '@/lib/storage'
 
 import { makeActivity } from './fixtures/activity'
+
+vi.mock('@/services/http', () => ({ apiFetch: vi.fn<typeof apiFetch>() }))
 
 const LIMITS: HrZoneLimits = [100, 120, 140, 160]
 
@@ -470,35 +479,108 @@ describe('buildMovingHrZones', () => {
 })
 
 describe('useHrZoneLimits', () => {
+  const served = (limits: readonly number[], isDefault: boolean) => ({
+    limits: [...limits],
+    is_default: isDefault,
+  })
+
+  /** Logs in against a server that answers with `responses` in turn, the last one from then on. */
+  async function loggedIn(...responses: unknown[]) {
+    vi.mocked(apiFetch).mockResolvedValue(responses[responses.length - 1])
+    for (const response of responses.slice(0, -1)) {
+      vi.mocked(apiFetch).mockResolvedValueOnce(response)
+    }
+    useAuthStore().isAuthenticated = true
+    const zones = useHrZoneLimits()
+    await flushPromises()
+    return zones
+  }
+
+  const lastCall = () => {
+    const calls = vi.mocked(apiFetch).mock.calls
+    return calls[calls.length - 1]
+  }
+
   beforeEach(() => {
     localStorage.clear()
-    useHrZoneLimits().resetLimits()
+    setActivePinia(createPinia())
+    vi.mocked(apiFetch).mockReset()
+    forgetHrZoneLimits()
   })
 
-  it('starts at the defaults', () => {
+  it('starts at the defaults and asks the server nothing when not logged in', () => {
     const { limits, isDefault } = useHrZoneLimits()
+
     expect(limits.value).toEqual(DEFAULT_HR_ZONE_LIMITS)
     expect(isDefault.value).toBe(true)
+    expect(apiFetch).not.toHaveBeenCalled()
   })
 
-  it('stores changed limits, shares them between callers, and survives logout', () => {
-    const first = useHrZoneLimits()
+  it('takes the limits kept on the server once logged in', async () => {
+    const { limits, isDefault } = await loggedIn(served(LIMITS, false))
+
+    expect(vi.mocked(apiFetch).mock.calls[0]?.[0]).toBe('/profile/hr_zones')
+    expect(limits.value).toEqual(LIMITS)
+    expect(isDefault.value).toBe(false)
+  })
+
+  it("moves this browser's old limits to the server when the server has none", async () => {
+    setStorageItem('hrZoneLimits', LIMITS)
+    forgetHrZoneLimits()
+
+    // The server has none, then answers the save with what it stored.
+    const { limits } = await loggedIn(served(DEFAULT_HR_ZONE_LIMITS, true), served(LIMITS, false))
+
+    const put = vi.mocked(apiFetch).mock.calls[1]
+    expect(put?.[0]).toBe('/profile/hr_zones')
+    expect(put?.[1]).toEqual({ method: 'PUT', body: JSON.stringify({ limits: LIMITS }) })
+    expect(getStorageItem('hrZoneLimits')).toBeNull()
+    expect(limits.value).toEqual(LIMITS)
+  })
+
+  it("lets the server's own limits win over this browser's old ones", async () => {
+    setStorageItem('hrZoneLimits', [90, 100, 110, 120])
+    forgetHrZoneLimits()
+
+    const { limits } = await loggedIn(served(LIMITS, false))
+
+    expect(vi.mocked(apiFetch).mock.calls).toHaveLength(1)
+    expect(limits.value).toEqual(LIMITS)
+    expect(getStorageItem('hrZoneLimits')).toBeNull()
+  })
+
+  it('shows changed limits at once, shares them between callers, and saves them', async () => {
+    const first = await loggedIn(served(DEFAULT_HR_ZONE_LIMITS, true))
+    vi.mocked(apiFetch).mockResolvedValue(served(LIMITS, false))
+
     first.setLimits(LIMITS)
 
     expect(useHrZoneLimits().limits.value).toEqual(LIMITS)
     expect(first.isDefault.value).toBe(false)
-    expect(getStorageItem('hrZoneLimits')).toEqual(LIMITS)
-
-    clearUserScopedStorage()
-    expect(getStorageItem('hrZoneLimits')).toEqual(LIMITS)
+    expect(lastCall()?.[1]).toEqual({
+      method: 'PUT',
+      body: JSON.stringify({ limits: LIMITS }),
+    })
   })
 
-  it('forgets the stored limits on reset', () => {
-    const { setLimits, resetLimits, limits } = useHrZoneLimits()
+  it('goes back to the defaults on reset and tells the server', async () => {
+    const { setLimits, resetLimits, limits } = await loggedIn(served(LIMITS, false))
     setLimits(LIMITS)
     resetLimits()
 
     expect(limits.value).toEqual(DEFAULT_HR_ZONE_LIMITS)
-    expect(getStorageItem('hrZoneLimits')).toBeNull()
+    expect(lastCall()?.[1]).toEqual({
+      method: 'PUT',
+      body: JSON.stringify({ limits: null }),
+    })
+  })
+
+  it('forgets the limits on logout, so the next user gets their own', async () => {
+    const { limits } = await loggedIn(served(LIMITS, false))
+
+    useAuthStore().isAuthenticated = false
+    await flushPromises()
+
+    expect(limits.value).toEqual(DEFAULT_HR_ZONE_LIMITS)
   })
 })

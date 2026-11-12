@@ -21,7 +21,8 @@ MODEL = "claude-sonnet-5-5"
 # 4: heart-rate counts only where comparable, no source fields; never more than four sentences.
 # 5: time lost per half given outright.
 # 6: the user's own notes, as the one source of reasons.
-PROMPT_VERSION = 6
+# 7: moving time in the user's own heart-rate zones.
+PROMPT_VERSION = 7
 
 # The text is a few sentences; the rest is room for the model's own thinking.
 MAX_TOKENS = 8000
@@ -58,6 +59,8 @@ round time, the fastest this year, back on a segment after a long break (days_si
 pace to halfway and dropped off after. Say it as a picture of the climb, not as percentages.
 - The tour among their own tours this year (compared_with_your_other_tours), a long gap since \
 the previous tour, a lot of new ground.
+- How hard it was (heart_rate_zones, moving time in their own zones): mostly easy, or a long \
+time high up. Say it in words, not as a list of percentages.
 - The year, only when year.milestones is not empty. Otherwise leave the year out entirely.
 
 What the numbers mean:

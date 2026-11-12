@@ -8,6 +8,7 @@ root_packages =
     core
     coverage_map
     google_health
+    hr_zones
     segments
     server_settings
     strava
@@ -24,6 +25,7 @@ source_modules =
     core
     coverage_map
     google_health
+    hr_zones
     segments
     server_settings
     strava
@@ -44,6 +46,7 @@ source_modules =
     core
     coverage_map
     google_health
+    hr_zones
     segments
     server_settings
     strava
