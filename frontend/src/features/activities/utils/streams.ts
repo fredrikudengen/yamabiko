@@ -40,6 +40,8 @@ import {
   hasLongStopInfo,
   longStopsOf,
   paceAxisRange,
+  positionsAlong,
+  type PaceProfileOptions,
   type TimedPoint,
   type TimedValue,
 } from './paceProfile'
@@ -416,6 +418,30 @@ export interface StreamChart {
   render: ChartRenderOptions
   /** Summary stats shown beneath the chart. */
   stats: StreamStat[]
+  /**
+   * Where on the route each point of the chart lies, for charts on the track's distance axis. Lets
+   * hovering the chart move a marker on the map, and the other way round. Absent for charts over
+   * samples or time, which cannot be placed.
+   */
+  positions?: GeoPoint[]
+}
+
+/**
+ * The map position of the middle of each bin, on the same axis the bins were built on.
+ *
+ * @returns One point per bin, or `undefined` when the track cannot be measured.
+ */
+function binPositions(
+  points: readonly TimedPoint[],
+  bins: readonly { startM: number; endM: number }[],
+  options: PaceProfileOptions,
+): GeoPoint[] | undefined {
+  const at = positionsAlong(
+    points,
+    bins.map((bin) => (bin.startM + bin.endM) / 2),
+    options,
+  )
+  return at?.map((p) => ({ lat: p.lat, lng: p.lon }))
 }
 
 /**
@@ -555,10 +581,11 @@ export function buildPaceProfileChart(
         }) ?? [])
     : []
 
-  const profile = buildPaceProfile(points, heights, {
+  const options: PaceProfileOptions = {
     stops: longStopsOf(activity.importInfo),
     activityDistanceM: activity.distance,
-  })
+  }
+  const profile = buildPaceProfile(points, heights, options)
   if (!profile) {
     return null
   }
@@ -603,6 +630,7 @@ export function buildPaceProfileChart(
       zoom: true,
     },
     stats: buildStreamStats('pace', activity, units),
+    positions: binPositions(points, profile.bins, options),
   }
 }
 
@@ -656,12 +684,11 @@ export function buildDistanceValueChart(
     return null
   }
 
-  const profile = buildValueProfile(
-    track.points,
-    samples,
-    { stops: longStopsOf(activity.importInfo), activityDistanceM: activity.distance },
-    metric === 'elevation',
-  )
+  const options: PaceProfileOptions = {
+    stops: longStopsOf(activity.importInfo),
+    activityDistanceM: activity.distance,
+  }
+  const profile = buildValueProfile(track.points, samples, options, metric === 'elevation')
   if (!profile) {
     return null
   }
@@ -682,6 +709,7 @@ export function buildDistanceValueChart(
       zoom: true,
     },
     stats: buildStreamStats(metric, activity, units),
+    positions: binPositions(track.points, profile.bins, options),
   }
 }
 

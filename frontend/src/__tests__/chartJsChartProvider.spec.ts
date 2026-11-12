@@ -7,6 +7,7 @@ import {
   bandGradientStops,
   buildChartConfiguration,
   createChartJsChartProvider,
+  cursorPlugin,
   DEFAULT_CHART_PALETTE,
 } from '@/providers/chartJsChartProvider'
 
@@ -454,5 +455,59 @@ describe('series coloured by value bands', () => {
     expect(plain.backgroundColor).toBe('rgba(226, 75, 74, 0.15)')
     expect(bar.borderColor).toBe('#e24b4a')
     expect(bar.backgroundColor).toBe('#e24b4a')
+  })
+})
+
+describe('following another view', () => {
+  it('reports the index under the pointer, and null when it leaves', () => {
+    const seen: (number | null)[] = []
+    const config = buildChartConfiguration({
+      kind: 'line',
+      labels: ['a', 'b', 'c'],
+      series: [{ label: 'Pace', data: [1, 2, 3] }],
+      onHoverIndex: (index) => seen.push(index),
+    })
+    const onHover = config.options?.onHover as (
+      event: unknown,
+      elements: unknown,
+      chart: unknown,
+    ) => void
+    const chart = { getElementsAtEventForMode: () => [{ index: 2 }] }
+
+    onHover({ type: 'mousemove', native: {} }, [], chart)
+    onHover({ type: 'mouseout', native: {} }, [], chart)
+
+    expect(seen).toEqual([2, null])
+  })
+
+  it('reports nothing when no one listens', () => {
+    const config = buildChartConfiguration({ kind: 'line', series: [{ label: 'Pace', data: [1] }] })
+
+    expect(config.options?.onHover).toBeUndefined()
+  })
+
+  it('draws the cursor line at the chosen index, and nothing without one', () => {
+    const lines: number[] = []
+    const ctx = {
+      save: () => undefined,
+      restore: () => undefined,
+      beginPath: () => undefined,
+      stroke: () => undefined,
+      moveTo: (x: number) => lines.push(x),
+      lineTo: () => undefined,
+      strokeStyle: '',
+      lineWidth: 0,
+    }
+    const chart = {
+      ctx,
+      chartArea: { top: 0, bottom: 100, left: 0, right: 300 },
+      scales: { x: { getPixelForValue: (index: number) => index * 100 } },
+    } as unknown as Parameters<typeof cursorPlugin.afterDatasetsDraw>[0]
+
+    cursorPlugin.afterDatasetsDraw(chart)
+    ;(chart as unknown as { $cursorIndex: number }).$cursorIndex = 2
+    cursorPlugin.afterDatasetsDraw(chart)
+
+    expect(lines).toEqual([200])
   })
 })

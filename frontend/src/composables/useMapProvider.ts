@@ -49,6 +49,11 @@ export interface MapRenderOptions {
   track: MapTrack
   /** Whether the map responds to pan/zoom. Defaults to provider preference. */
   interactive?: boolean
+  /**
+   * Called with the point on the track nearest the pointer while it moves along the route, and
+   * with `null` when it leaves. Lets the charts follow the map.
+   */
+  onHoverPoint?: (point: GeoPoint | null) => void
 }
 
 /** Imperative handle to a mounted map, returned by {@link MapProvider.mount}. */
@@ -57,6 +62,11 @@ export interface MapInstance {
   update(options: MapRenderOptions): void
   /** Re-fits the viewport to the current track (e.g. after the user panned). */
   recenter(): void
+  /**
+   * Shows a marker at a point on the route, or hides it with `null`: where the charts point, or
+   * where the route playback has got to. Providers without support ignore it.
+   */
+  setMarker?(point: GeoPoint | null): void
   /** Tears down the map and releases resources. */
   destroy(): void
 }
@@ -82,6 +92,7 @@ const noopMapProvider: MapProvider = {
     return {
       update() {},
       recenter() {},
+      setMarker() {},
       destroy() {},
     }
   },

@@ -61,7 +61,9 @@
   },
   "map": {
     "label": "Kart over aktivitetsrute",
-    "recenter": "Sentrer kartet på nytt"
+    "recenter": "Sentrer kartet på nytt",
+    "play": "Spill av ruten",
+    "stop": "Stopp"
   },
   "metrics": {
     "title": "Måltall",

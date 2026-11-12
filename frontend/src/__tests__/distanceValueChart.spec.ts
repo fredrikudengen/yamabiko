@@ -267,3 +267,36 @@ describe('buildValueProfile', () => {
     expect(height.bins.find((b) => b.stop)!.value).toBe(150)
   })
 })
+
+describe('chart points placed on the route', () => {
+  it('gives every bin of a distance chart a point on the map, northwards along the walk', () => {
+    const { streams, stopStart } = hike()
+    const chart = buildDistanceValueChart(
+      'hr',
+      streams,
+      activity({ importInfo: withStop(stopStart) }),
+      'metric',
+    )!
+
+    const positions = chart.positions!
+    expect(positions).toHaveLength(chart.render.series[0]!.data.length)
+    expect(positions.every((p) => p.lng === 5)).toBe(true)
+    expect(positions.every((p, i) => i === 0 || p.lat > positions[i - 1]!.lat)).toBe(true)
+  })
+
+  it('puts the middle of the axis halfway up the walk, the stand-still left out', () => {
+    const { streams, stopStart } = hike()
+    const chart = buildDistanceValueChart(
+      'elevation',
+      streams,
+      activity({ importInfo: withStop(stopStart) }),
+      'metric',
+    )!
+    const positions = chart.positions!
+    const middle = positions[Math.floor(positions.length / 2)]!
+
+    // 600 m walked before the stop; the middle bin sits around there, not shifted by the wobble.
+    expect((middle.lat - 60) * M_PER_DEG).toBeGreaterThan(500)
+    expect((middle.lat - 60) * M_PER_DEG).toBeLessThan(720)
+  })
+})

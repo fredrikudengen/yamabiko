@@ -194,6 +194,43 @@ function bandPaint(
  * @param palette - Optional colour palette for series without explicit colours.
  * @returns A Chart.js configuration object.
  */
+/** The x index the cursor line is drawn at, kept on the chart between redraws. */
+const CURSOR_KEY = '$cursorIndex'
+/** The cursor line: dark enough to read over every series colour, in both themes. */
+const CURSOR_COLOR = 'rgba(30, 41, 59, 0.75)'
+
+/** Chart instances with the cursor index the plugin reads. */
+type WithCursor = Chart & { [CURSOR_KEY]?: number | null }
+
+/**
+ * Draws a vertical line at the chart's cursor index, if one is set. The index is set from outside
+ * (`setCursor`), for example when the pointer is over the same place on the map.
+ */
+export const cursorPlugin = {
+  id: 'yamabikoCursor',
+  afterDatasetsDraw(chart: Chart): void {
+    const index = (chart as WithCursor)[CURSOR_KEY]
+    const x = chart.scales.x
+    if (index === null || index === undefined || !x) {
+      return
+    }
+    const pixel = x.getPixelForValue(index)
+    const { top, bottom, left, right } = chart.chartArea
+    if (!Number.isFinite(pixel) || pixel < left || pixel > right) {
+      return
+    }
+    const { ctx } = chart
+    ctx.save()
+    ctx.strokeStyle = CURSOR_COLOR
+    ctx.lineWidth = 1.5
+    ctx.beginPath()
+    ctx.moveTo(pixel, top)
+    ctx.lineTo(pixel, bottom)
+    ctx.stroke()
+    ctx.restore()
+  },
+}
+
 export function buildChartConfiguration(
   options: ChartRenderOptions,
   palette: readonly string[] = DEFAULT_CHART_PALETTE,
@@ -261,16 +298,34 @@ export function buildChartConfiguration(
     }
   })
 
+  const onHoverIndex = options.onHoverIndex
   return {
     type,
     data: {
       labels: options.labels ?? [],
       datasets,
     },
+    plugins: [cursorPlugin],
     options: {
       responsive: true,
       maintainAspectRatio: false,
       animation: false,
+      // Reports the x index under the pointer, so a map can follow the chart.
+      onHover: onHoverIndex
+        ? (event, _elements, chart) => {
+            if (event.type === 'mouseout' || !event.native) {
+              onHoverIndex(null)
+              return
+            }
+            const [hit] = chart.getElementsAtEventForMode(
+              event.native,
+              'index',
+              { intersect: false },
+              false,
+            )
+            onHoverIndex(hit ? hit.index : null)
+          }
+        : undefined,
       plugins: {
         legend: { display: options.series.length > 1 },
         tooltip: {
@@ -367,6 +422,10 @@ export function createChartJsChartProvider(config: ChartJsChartProviderConfig = 
           }
           chart.data = nextConfig.data
           chart.update()
+        },
+        setCursor(index: number | null): void {
+          ;(chart as WithCursor)[CURSOR_KEY] = index
+          chart.draw()
         },
         destroy(): void {
           chart.destroy()

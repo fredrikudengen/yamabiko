@@ -3,7 +3,7 @@ import { describe, expect, it, vi } from 'vitest'
 import type { ActivityStream } from '@/features/activities/types'
 import type { SegmentEffort } from '@/features/segments/types'
 
-import { createLeafletMapProvider } from '@/providers/leafletMapProvider'
+import { createLeafletMapProvider, nearestPoint } from '@/providers/leafletMapProvider'
 import {
   segmentHighlights,
   stretchOf,
@@ -196,5 +196,51 @@ describe('the Leaflet provider', () => {
 
     expect(drawn.filter((layer) => layer.kind === 'polyline')[0]?.options.color).toBe('#2f5d8c')
     map.destroy()
+  })
+})
+
+describe('following the charts', () => {
+  const track = [
+    { lat: 60, lng: 5 },
+    { lat: 60.01, lng: 5.01 },
+    { lat: 60.02, lng: 5.02 },
+  ]
+
+  function mountMap(onHoverPoint?: (point: unknown) => void) {
+    drawn.length = 0
+    const target = document.createElement('div')
+    document.body.append(target)
+    return createLeafletMapProvider().mount(target, { track: { points: track }, onHoverPoint })
+  }
+
+  it('lays an invisible, wide band over the route to catch the pointer, only when asked', () => {
+    const listening = mountMap(() => undefined)
+    const lines = drawn.filter((layer) => layer.kind === 'polyline')
+    expect(lines).toHaveLength(2)
+    expect(lines[1]?.options).toMatchObject({ opacity: 0, weight: 20 })
+    listening.destroy()
+
+    const quiet = mountMap()
+    expect(drawn.filter((layer) => layer.kind === 'polyline')).toHaveLength(1)
+    quiet.destroy()
+  })
+
+  it('shows one marker, moves it, and takes it away', () => {
+    const map = mountMap()
+
+    map.setMarker?.(track[1]!)
+    map.setMarker?.(track[2]!)
+    const markers = drawn.filter(
+      (layer) => layer.kind === 'circleMarker' && layer.options.fillColor === '#18344f',
+    )
+    map.setMarker?.(null)
+
+    expect(markers).toHaveLength(1)
+    map.destroy()
+  })
+
+  it('finds the track point nearest a position', () => {
+    expect(nearestPoint(track, 60.011, 5.009)).toEqual(track[1])
+    expect(nearestPoint([], 60, 5)).toBeNull()
   })
 })
