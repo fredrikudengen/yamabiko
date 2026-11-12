@@ -97,12 +97,22 @@ export interface ChartRenderOptions {
   zoom?: boolean
   /** The tooltip lists every series at the hovered x, not just the nearest point. */
   hoverAll?: boolean
+  /**
+   * Called with the x index under the pointer while it moves over the chart, and with `null` when
+   * it leaves. Lets another view (a map) follow the chart.
+   */
+  onHoverIndex?: (index: number | null) => void
 }
 
 /** Imperative handle to a mounted chart, returned by {@link ChartProvider.mount}. */
 export interface ChartInstance {
   /** Re-renders the chart with new options (e.g. after data refresh). */
   update(options: ChartRenderOptions): void
+  /**
+   * Draws a vertical line at an x index, or removes it with `null`, without re-rendering the data.
+   * Used to show where another view (the map) points. Providers without support ignore it.
+   */
+  setCursor?(index: number | null): void
   /** Tears down the chart and releases resources. */
   destroy(): void
 }
@@ -127,6 +137,7 @@ const noopChartProvider: ChartProvider = {
   mount() {
     return {
       update() {},
+      setCursor() {},
       destroy() {},
     }
   },

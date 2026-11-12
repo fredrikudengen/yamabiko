@@ -61,7 +61,9 @@
   },
   "map": {
     "label": "Activity route map",
-    "recenter": "Recenter map"
+    "recenter": "Recenter map",
+    "play": "Play route",
+    "stop": "Stop"
   },
   "metrics": {
     "title": "Metrics",

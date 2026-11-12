@@ -466,3 +466,44 @@ export function longStopsOf(importInfo: Record<string, unknown> | null): StopWin
       : []
   })
 }
+
+/** A position on the map, as the track records it. */
+export interface TrackPosition {
+  lat: number
+  lon: number
+}
+
+/**
+ * Where on the track each distance lies, on the same distance axis as the profiles above (stops
+ * left out, the path scaled to the activity's distance). Used to put a chart's bins on the map.
+ *
+ * @param points - GPS fixes in time order.
+ * @param distancesM - Distances along the profile's axis, in metres.
+ * @param options - The same stops and distance the profile was built with.
+ * @returns One position per distance, or `null` when the track is too short to measure.
+ */
+export function positionsAlong(
+  points: readonly TimedPoint[],
+  distancesM: readonly number[],
+  options: PaceProfileOptions = {},
+): TrackPosition[] | null {
+  const track = buildTrack(points, options)
+  if (!track) {
+    return null
+  }
+  const fixes = points.filter((p, i) => i === 0 || p.t > points[i - 1]!.t)
+  const { cumulative, scale } = track
+  return distancesM.map((distance) => {
+    const along = distance / scale
+    let i = 1
+    while (i < cumulative.length - 1 && cumulative[i]! < along) {
+      i += 1
+    }
+    const before = cumulative[i - 1]!
+    const after = cumulative[i]!
+    const share = after > before ? Math.min(Math.max((along - before) / (after - before), 0), 1) : 0
+    const a = fixes[i - 1]!
+    const b = fixes[i]!
+    return { lat: a.lat + share * (b.lat - a.lat), lon: a.lon + share * (b.lon - a.lon) }
+  })
+}

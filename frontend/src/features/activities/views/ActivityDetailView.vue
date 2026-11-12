@@ -1,9 +1,10 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { RouterLink, useRoute } from 'vue-router'
 import { ArrowLeft } from '@lucide/vue'
 
+import type { GeoPoint } from '@/composables/useMapProvider'
 import type { ActivityOwner, HrZoneBucket } from '@/features/activities/types'
 import type { StreamChart } from '@/features/activities/utils/streams'
 
@@ -43,6 +44,7 @@ import {
   streamMetricVisibility,
 } from '@/features/activities/utils/privacy'
 import { useHrZoneLimits } from '@/features/activities/composables/useHrZoneLimits'
+import { useRoutePlayback } from '@/features/activities/composables/useRoutePlayback'
 import { extractHrZones } from '@/features/activities/utils/hrZones'
 import {
   buildMovingHrZones,
@@ -123,6 +125,26 @@ const segmentLines = computed(() => {
     return [effort.segmentName, standing, formatSeconds(effort.movingS)].filter(Boolean).join(' · ')
   })
 })
+
+// One point on the route that the map and the distance charts share: hovering a chart puts a
+// marker on the map, hovering the route puts a line in the charts, and playback walks it along.
+const routePoint = ref<GeoPoint | null>(null)
+const playback = useRoutePlayback(
+  () => trackPoints.value,
+  (point) => {
+    routePoint.value = point
+  },
+)
+
+/** The pointer is over a chart or the route. While playing, leaving one does not clear the point. */
+function onRouteHover(point: GeoPoint | null): void {
+  if (point) {
+    playback.stop()
+    routePoint.value = point
+  } else if (!playback.playing.value) {
+    routePoint.value = null
+  }
+}
 
 const streamCharts = computed(() => {
   if (!activity.value) {
@@ -312,7 +334,14 @@ const notFound = computed(() => !isPending.value && !isError.value && activity.v
       <!-- The map and the photos are separate cards: the photos used to be slides after the map. -->
       <div v-if="showMap" class="flex flex-col gap-1.5">
         <div class="h-72 overflow-hidden rounded-card border border-border lg:h-150">
-          <ActivityMap :points="trackPoints" :highlights="segmentLines" />
+          <ActivityMap
+            :points="trackPoints"
+            :highlights="segmentLines"
+            :marker="routePoint"
+            :playing="playback.playing.value"
+            @hover="onRouteHover"
+            @toggle-play="playback.toggle()"
+          />
         </div>
         <ActivityNewCells
           v-if="isOwner"
@@ -332,6 +361,9 @@ const notFound = computed(() => !isPending.value && !isError.value && activity.v
             :title="t(panel.chart.titleKey)"
             :render="panel.chart.render"
             :stats="panel.chart.stats"
+            :positions="showMap ? panel.chart.positions : undefined"
+            :cursor="routePoint"
+            @hover="onRouteHover"
           />
           <Card v-else class="flex min-w-0 flex-col gap-3">
             <div class="flex items-center gap-2">

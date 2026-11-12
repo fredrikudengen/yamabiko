@@ -6,7 +6,15 @@
  * The pure {@link toLatLngs} and {@link boundsOf} helpers are exported so the
  * seam → Leaflet data translation can be unit-tested without a real map.
  */
-import { circleMarker, map as createMap, polyline, tileLayer, type Layer } from 'leaflet'
+import {
+  circleMarker,
+  map as createMap,
+  polyline,
+  tileLayer,
+  type CircleMarker,
+  type Layer,
+  type LeafletMouseEvent,
+} from 'leaflet'
 import 'leaflet/dist/leaflet.css'
 
 import type {
@@ -50,6 +58,10 @@ const START_MARKER_COLOR = themeColor('--color-goal')
  * both themes. They are the light and dark ends of the brand scale in `assets/main.css`.
  */
 const MUTED_TRACK_COLOR = '#8fb3dc'
+/** How wide a band around the route reacts to the pointer (px): the line itself is hard to hit. */
+const HOVER_WEIGHT = 20
+/** The marker that follows the charts and the playback: the darkest brand indigo, as the segments. */
+const POSITION_MARKER_COLOR = '#18344f'
 const HIGHLIGHT_COLOR = '#18344f'
 /** Finish-marker fill — the `--color-hr` design token (red). */
 const FINISH_MARKER_COLOR = themeColor('--color-hr')
@@ -108,6 +120,35 @@ export function boundsOf(track: MapTrack): [LatLngTuple, LatLngTuple] | null {
  * @param color - The fill colour.
  * @returns A Leaflet circle-marker layer.
  */
+/**
+ * The track point nearest a position. Compared in degrees with longitude scaled by latitude, which
+ * is close enough over the few kilometres a tour covers.
+ *
+ * @param points - The track.
+ * @param lat - Latitude of the position.
+ * @param lng - Longitude of the position.
+ * @returns The nearest point, or `null` for an empty track.
+ */
+export function nearestPoint(
+  points: readonly GeoPoint[],
+  lat: number,
+  lng: number,
+): GeoPoint | null {
+  const scale = Math.cos((lat * Math.PI) / 180)
+  let best: GeoPoint | null = null
+  let bestDistance = Number.POSITIVE_INFINITY
+  for (const point of points) {
+    const dLat = point.lat - lat
+    const dLng = (point.lng - lng) * scale
+    const distance = dLat * dLat + dLng * dLng
+    if (distance < bestDistance) {
+      bestDistance = distance
+      best = point
+    }
+  }
+  return best
+}
+
 function emphasisMarker(point: GeoPoint, color: string): Layer {
   return circleMarker([point.lat, point.lng], {
     radius: 7,
@@ -146,6 +187,8 @@ export function createLeafletMapProvider(config: LeafletMapProviderConfig = {}):
 
       let overlays: Layer[] = []
       let currentTrack: MapTrack = options.track
+      let positionMarker: CircleMarker | null = null
+      const onHoverPoint = options.onHoverPoint
 
       /** Re-fits the viewport to a track's bounds (or the world when empty). */
       const fit = (track: MapTrack): void => {
@@ -197,6 +240,17 @@ export function createLeafletMapProvider(config: LeafletMapProviderConfig = {}):
               .addTo(map),
           )
         }
+        if (onHoverPoint && linePoints.length > 1) {
+          // An invisible, wider copy of the route that reports the point under the pointer.
+          overlays.push(
+            polyline(linePoints, { color: '#000000', opacity: 0, weight: HOVER_WEIGHT })
+              .on('mousemove', (event: LeafletMouseEvent) => {
+                onHoverPoint(nearestPoint(track.points, event.latlng.lat, event.latlng.lng))
+              })
+              .on('mouseout', () => onHoverPoint(null))
+              .addTo(map),
+          )
+        }
         if (track.start) {
           overlays.push(emphasisMarker(track.start, START_MARKER_COLOR).addTo(map))
         }
@@ -215,6 +269,26 @@ export function createLeafletMapProvider(config: LeafletMapProviderConfig = {}):
         },
         recenter(): void {
           fit(currentTrack)
+        },
+        setMarker(point: GeoPoint | null): void {
+          if (!point) {
+            positionMarker?.remove()
+            positionMarker = null
+            return
+          }
+          if (!positionMarker) {
+            positionMarker = circleMarker([point.lat, point.lng], {
+              radius: 7,
+              color: '#ffffff',
+              weight: 3,
+              fillColor: POSITION_MARKER_COLOR,
+              fillOpacity: 1,
+              interactive: false,
+            }).addTo(map)
+          } else {
+            positionMarker.setLatLng([point.lat, point.lng])
+          }
+          positionMarker.bringToFront()
         },
         destroy(): void {
           map.remove()

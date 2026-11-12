@@ -3,6 +3,7 @@ import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 
 import type { ChartInstance, ChartRenderOptions } from '@/composables/useChartProvider'
+import type { GeoPoint } from '@/composables/useMapProvider'
 import type { StreamStat } from '@/features/activities/utils/streams'
 
 import { Card } from '@/components/ui/card'
@@ -17,9 +18,41 @@ const props = withDefaults(
     render: ChartRenderOptions
     /** Summary stats shown beneath the chart. */
     stats?: StreamStat[]
+    /** Where on the route each point of the chart lies; without it the chart does not follow the map. */
+    positions?: GeoPoint[]
+    /** The point on the route to mark with a vertical line, or `null` for none. */
+    cursor?: GeoPoint | null
   }>(),
-  { stats: () => [] },
+  { stats: () => [], positions: undefined, cursor: null },
 )
+
+const emit = defineEmits<{
+  /** The point on the route under the pointer, or `null` when it leaves the chart. */
+  hover: [point: GeoPoint | null]
+}>()
+
+/**
+ * The chart index nearest a point on the route. Compared in degrees with longitude scaled by
+ * latitude, which is close enough over the few kilometres a tour covers.
+ */
+function nearestIndex(positions: readonly GeoPoint[], point: GeoPoint): number | null {
+  const scale = Math.cos((point.lat * Math.PI) / 180)
+  let best: number | null = null
+  let bestDistance = Number.POSITIVE_INFINITY
+  positions.forEach((p, index) => {
+    const distance = (p.lat - point.lat) ** 2 + ((p.lng - point.lng) * scale) ** 2
+    if (distance < bestDistance) {
+      bestDistance = distance
+      best = index
+    }
+  })
+  return best
+}
+
+/** Reports the route point under the pointer; set once, at mount, since the provider keeps it. */
+function onHoverIndex(index: number | null): void {
+  emit('hover', index === null ? null : (props.positions?.[index] ?? null))
+}
 
 const { t } = useI18n()
 
@@ -40,7 +73,16 @@ const swatchColor = computed(() => props.render.series[0]?.color ?? 'var(--color
 const chartRender = computed<ChartRenderOptions>(() => ({
   ...props.render,
   series: props.render.series.map((series) => ({ ...series, label: t(series.label) })),
+  onHoverIndex: props.positions ? onHoverIndex : undefined,
 }))
+
+/** Moves the vertical line to where the map (or the playback, or another chart) points. */
+function drawCursor(): void {
+  if (!instance || !props.positions) {
+    return
+  }
+  instance.setCursor?.(props.cursor ? nearestIndex(props.positions, props.cursor) : null)
+}
 
 /** Mounts the chart once the provider is ready and the container exists. */
 function mountChart(): void {
@@ -49,6 +91,7 @@ function mountChart(): void {
   }
   const { provider } = useChartProvider()
   instance = provider.mount(container.value, chartRender.value)
+  drawCursor()
 }
 
 onMounted(mountChart)
@@ -60,6 +103,8 @@ watch(chartRender, (render) => {
   }
   instance.update(render)
 })
+
+watch(() => props.cursor, drawCursor)
 
 onBeforeUnmount(() => {
   instance?.destroy()

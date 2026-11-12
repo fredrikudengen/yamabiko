@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { onBeforeUnmount, onMounted, ref, watch } from 'vue'
-import { LocateFixed } from '@lucide/vue'
+import { LocateFixed, Pause, Play } from '@lucide/vue'
+import { useI18n } from 'vue-i18n'
 
 import type { GeoPoint, MapHighlight, MapInstance } from '@/composables/useMapProvider'
 
@@ -15,9 +16,26 @@ const props = withDefaults(
     interactive?: boolean
     /** Stretches drawn over the route, such as the segments the tour passed. */
     highlights?: MapHighlight[]
+    /** A point on the route to mark: where the charts point, or where playback has got to. */
+    marker?: GeoPoint | null
+    /** Whether the route is being played back; shows the play button when not undefined. */
+    playing?: boolean
   }>(),
-  { interactive: true, highlights: () => [] },
+  { interactive: true, highlights: () => [], marker: null, playing: undefined },
 )
+
+const emit = defineEmits<{
+  /** The point on the route under the pointer, or `null` when it leaves the route. */
+  hover: [point: GeoPoint | null]
+  /** The play button was pressed (to start or to stop). */
+  togglePlay: []
+}>()
+
+const { t } = useI18n()
+
+function onHoverPoint(point: GeoPoint | null): void {
+  emit('hover', point)
+}
 
 const ready = useRenderProvidersReady()
 const container = ref<HTMLElement | null>(null)
@@ -39,7 +57,9 @@ function mountMap(): void {
   instance = provider.mount(container.value, {
     track: { points: props.points, ...endpoints(props.points), highlights: props.highlights },
     interactive: props.interactive,
+    onHoverPoint: props.interactive ? onHoverPoint : undefined,
   })
+  instance.setMarker?.(props.marker)
 }
 
 /** Re-fits the map to the whole track after the user has panned or zoomed. */
@@ -61,6 +81,11 @@ watch(
       interactive: props.interactive,
     })
   },
+)
+
+watch(
+  () => props.marker,
+  (point) => instance?.setMarker?.(point),
 )
 
 onBeforeUnmount(() => {
@@ -86,6 +111,18 @@ onBeforeUnmount(() => {
       @click="recenter"
     >
       <LocateFixed class="size-4" />
+    </button>
+    <button
+      v-if="interactive && playing !== undefined && points.length > 1"
+      type="button"
+      class="absolute bottom-3 left-3 z-[1100] flex h-9 items-center gap-1.5 rounded-full bg-card/80 px-3 text-sm text-foreground backdrop-blur transition-colors hover:bg-card"
+      :aria-pressed="playing"
+      data-testid="route-play"
+      @click="emit('togglePlay')"
+    >
+      <Pause v-if="playing" class="size-4" aria-hidden="true" />
+      <Play v-else class="size-4" aria-hidden="true" />
+      {{ playing ? t('activities.map.stop') : t('activities.map.play') }}
     </button>
   </div>
 </template>
