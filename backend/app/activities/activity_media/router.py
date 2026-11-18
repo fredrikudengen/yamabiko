@@ -1,17 +1,22 @@
 """API routes for activity media uploads and management."""
 
+import io
 import uuid
 from collections.abc import Callable
 from pathlib import PurePosixPath
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException, Security, UploadFile, status
+from fastapi.concurrency import run_in_threadpool
 from sqlalchemy.orm import Session
+from starlette.datastructures import Headers
 
 import activities.activity.crud as activity_crud
 import activities.activity.dependencies as activities_dependencies
 import activities.activity_media.crud as activity_media_crud
 import activities.activity_media.dependencies as activities_media_dependencies
+import activities.activity_media.images as activity_media_images
+import activities.activity_media.models as activity_media_models
 import activities.activity_media.schema as activity_media_schema
 import auth.dependencies as auth_dependencies
 import core.config as core_config
@@ -23,6 +28,9 @@ router = APIRouter()
 
 # Allow-list of safe image extensions for activity media uploads.
 _ALLOWED_MEDIA_EXTENSIONS: frozenset[str] = frozenset({".jpg", ".jpeg", ".png", ".webp", ".heic", ".heif"})
+
+# The largest photo that is converted, the same ceiling the upload checks use for images.
+_MAX_CONVERTED_BYTES = 20 * 1024 * 1024
 
 
 def _build_safe_media_filename(activity_id: int, original_name: str | None) -> str:
@@ -58,6 +66,41 @@ def _build_safe_media_filename(activity_id: int, original_name: str | None) -> s
     return f"{activity_id}_{uuid.uuid4().hex}{ext}"
 
 
+async def _converted_to_jpeg(file: UploadFile, activity_id: int) -> tuple[UploadFile, str]:
+    """The upload decoded and re-encoded as JPEG, with a matching stored name.
+
+    Raises:
+        HTTPException: 413 when the upload is larger than images may be, 400 when
+            it is not a readable photo.
+    """
+    data = await file.read(_MAX_CONVERTED_BYTES + 1)
+    if len(data) > _MAX_CONVERTED_BYTES:
+        raise HTTPException(status_code=status.HTTP_413_CONTENT_TOO_LARGE, detail="Photo is too large")
+    try:
+        jpeg = await run_in_threadpool(activity_media_images.to_jpeg, data)
+    except activity_media_images.UnreadablePhotoError as err:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Not a readable photo") from err
+    name = activity_media_images.jpeg_name(file.filename)
+    converted = UploadFile(file=io.BytesIO(jpeg), filename=name, headers=Headers({"content-type": "image/jpeg"}))
+    return converted, _build_safe_media_filename(activity_id, name)
+
+
+def _with_thumbnail(media: activity_media_models.ActivityMedia) -> activity_media_schema.ActivityMedia:
+    """The media as the API answers it, with its thumbnail when one has been written."""
+    out = activity_media_schema.ActivityMedia.model_validate(media)
+    if media.media_path:
+        out.thumbnail_path = activity_media_images.existing_thumbnail(media.media_path)
+    return out
+
+
+def _with_thumbnails(media: list[activity_media_models.ActivityMedia]) -> list[activity_media_schema.ActivityMedia]:
+    """The media with their thumbnails, writing any that are missing (photos from before thumbnails)."""
+    for item in media:
+        if item.media_path and activity_media_images.existing_thumbnail(item.media_path) is None:
+            activity_media_images.make_thumbnail(item.media_path)
+    return [_with_thumbnail(item) for item in media]
+
+
 @router.get(
     "/activity_id/{activity_id}",
     response_model=list[activity_media_schema.ActivityMedia] | None,
@@ -89,7 +132,10 @@ async def read_activities_media_user(
         List of ActivityMedia records, or None if there are no media or
         the activity is not accessible to the user.
     """
-    return activity_media_crud.get_activity_media(activity_id, token_user_id, db)
+    media = activity_media_crud.get_activity_media(activity_id, token_user_id, db)
+    if media is None:
+        return None
+    return await run_in_threadpool(_with_thumbnails, list(media))
 
 
 @router.post(
@@ -149,6 +195,12 @@ async def upload_media(
 
     new_file_name = _build_safe_media_filename(activity_id, file.filename)
 
+    # HEIC (iPhone) and WebP become JPEG first: browsers other than Safari cannot
+    # show HEIC, and the checks below accept JPEG and PNG only. What is checked is
+    # then exactly what is stored.
+    if activity_media_images.needs_conversion(file.filename):
+        file, new_file_name = await _converted_to_jpeg(file, activity_id)
+
     # SafeUploads validates magic number and size before writing to disk.
     file_path = await core_file_uploads.save_validated_upload(
         file,
@@ -157,8 +209,11 @@ async def upload_media(
         filename=new_file_name,
     )
 
+    # The grid's small copy; a failure only means the grid loads the full photo.
+    await run_in_threadpool(activity_media_images.make_thumbnail, str(file_path))
+
     try:
-        return activity_media_crud.create_activity_media(activity_id, file_path, db)
+        return _with_thumbnail(activity_media_crud.create_activity_media(activity_id, file_path, db))
     except HTTPException:
         # Best-effort cleanup of the orphaned file on DB failure.
         await core_file_uploads.delete_files_by_pattern(core_config.settings.ACTIVITY_MEDIA_DIR, new_file_name)

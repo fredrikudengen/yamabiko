@@ -12,3 +12,5 @@ class ActivityMedia(BaseModel):
     activity_id: StrictInt = Field(ge=1)
     media_path: str = Field(min_length=1, max_length=250)
     media_type: StrictInt = Field(ge=1, le=1)
+    # The small copy for the photo grid, next to the photo; None until it has been written.
+    thumbnail_path: str | None = None

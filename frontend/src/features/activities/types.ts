@@ -252,6 +252,8 @@ export interface ActivityMedia {
   activityId: number
   mediaPath: string
   url: string
+  /** A small copy for grids, or `null` when there is none: use `url` then. */
+  thumbnailUrl: string | null
 }
 
 /** Minimal owner identity shown in the activity header. */
