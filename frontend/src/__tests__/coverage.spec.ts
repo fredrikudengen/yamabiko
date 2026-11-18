@@ -42,6 +42,27 @@ describe('the coverage service', () => {
     mocked.mockReset()
   })
 
+  it('asks for a year and a type only when they are picked', async () => {
+    mocked.mockResolvedValue(DTO)
+
+    await fetchCoverage(15, undefined, { year: 2025, activityType: 12 })
+    await fetchCoverage(15, undefined, { year: null, activityType: 1 })
+    mocked.mockResolvedValueOnce([])
+    await fetchCellTours({ x: 3, y: 4, zoom: 15 }, undefined, { year: 2026, activityType: null })
+
+    expect(mocked.mock.calls[0]?.[0]).toBe('/coverage?zoom=15&year=2025&type=12')
+    expect(mocked.mock.calls[1]?.[0]).toBe('/coverage?zoom=15&type=1')
+    expect(mocked.mock.calls[2]?.[0]).toBe('/coverage/cells/3/4?zoom=15&year=2026')
+  })
+
+  it('reads the filter choices, and none from an older server', () => {
+    expect(mapCoverage({ ...DTO, years: [2026, 2025], activity_types: [12] })).toMatchObject({
+      years: [2026, 2025],
+      activityTypes: [12],
+    })
+    expect(mapCoverage(DTO)).toMatchObject({ years: [], activityTypes: [] })
+  })
+
   it('asks for the cell size the page is showing', async () => {
     mocked.mockResolvedValue(DTO)
 
@@ -75,6 +96,8 @@ describe('the coverage service', () => {
       zoom: 16,
       cells: [],
       maxCount: 0,
+      years: [],
+      activityTypes: [],
     })
   })
 

@@ -429,6 +429,12 @@
       "new": "First time in 1 of {cells} cells (about {metres} m). | First time in {count} of {cells} cells (about {metres} m).",
       "none": "No new ground: you had been in the 1 cell before. | No new ground: you had been in all {cells} cells before.",
       "link": "See the map"
+    },
+    "filter": {
+      "year": "Year",
+      "allYears": "All years",
+      "type": "Activity type",
+      "allTypes": "All types"
     }
   },
   "feedback": {

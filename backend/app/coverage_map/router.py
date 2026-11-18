@@ -29,6 +29,9 @@ _Db = Annotated[Session, Depends(core_database.get_db)]
 # The zoom the map shows by default: about 300 m cells in southern Norway.
 DEFAULT_ZOOM = coverage_tiles.STORE_ZOOM - 1
 
+_Year = Annotated[int | None, Query(ge=1900, le=2200, description="Only tours started in this year")]
+_Type = Annotated[int | None, Query(alias="type", description="Only tours of this activity type code")]
+
 
 @router.get("", response_model=coverage_schema.CoverageOut)
 def get_coverage(
@@ -37,12 +40,17 @@ def get_coverage(
     token_user_id: _UserId,
     db: _Db,
     zoom: Annotated[int, Query(ge=coverage_tiles.MIN_ZOOM, le=coverage_tiles.MAX_ZOOM)] = DEFAULT_ZOOM,
+    year: _Year = None,
+    activity_type: _Type = None,
 ) -> coverage_schema.CoverageOut:
     """Where the user has been, counted in cells, with how many tours passed through each."""
     try:
-        counts = coverage_crud.cell_counts(token_user_id, zoom, db)
+        counts = coverage_crud.cell_counts(
+            token_user_id, zoom, db, coverage_crud.TourFilter(year=year, activity_type=activity_type)
+        )
     except ValueError as err:
         raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_CONTENT, detail=str(err)) from err
+    years, activity_types = coverage_crud.tour_choices(token_user_id, db)
     return coverage_schema.CoverageOut(
         zoom=zoom,
         cells=[
@@ -50,6 +58,8 @@ def get_coverage(
             for cell in counts
         ],
         max_count=max((cell.count for cell in counts), default=0),
+        years=years,
+        activity_types=activity_types,
     )
 
 
@@ -62,10 +72,14 @@ def get_cell_tours(
     token_user_id: _UserId,
     db: _Db,
     zoom: Annotated[int, Query(ge=coverage_tiles.MIN_ZOOM, le=coverage_tiles.MAX_ZOOM)] = DEFAULT_ZOOM,
+    year: _Year = None,
+    activity_type: _Type = None,
 ) -> list[coverage_schema.CellTourOut]:
     """The user's tours that passed through one cell, newest first, for the map's cell popup."""
     try:
-        tours = coverage_crud.tours_in_cell(token_user_id, zoom, x, y, db)
+        tours = coverage_crud.tours_in_cell(
+            token_user_id, zoom, x, y, db, coverage_crud.TourFilter(year=year, activity_type=activity_type)
+        )
     except ValueError as err:
         raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_CONTENT, detail=str(err)) from err
     return [coverage_schema.CellTourOut(id=tour.id, name=tour.name, start_time=tour.start_time) for tour in tours]

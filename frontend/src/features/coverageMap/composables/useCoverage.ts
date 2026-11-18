@@ -1,7 +1,7 @@
 import { keepPreviousData, useQuery } from '@tanstack/vue-query'
 import { computed, toValue, type MaybeRefOrGetter } from 'vue'
 
-import type { CellRef } from '@/features/coverageMap/types'
+import { NO_COVERAGE_FILTER, type CellRef, type CoverageFilter } from '@/features/coverageMap/types'
 
 import { useInvalidatingMutation } from '@/composables/useInvalidatingMutation'
 import {
@@ -22,10 +22,16 @@ import { queryKeys } from '@/services/queryKeys'
  *
  * @param zoom - The grid to count at (a ref, getter or plain number).
  */
-export function useCoverageQuery(zoom: MaybeRefOrGetter<number>) {
+export function useCoverageQuery(
+  zoom: MaybeRefOrGetter<number>,
+  filter: MaybeRefOrGetter<CoverageFilter> = NO_COVERAGE_FILTER,
+) {
   return useQuery({
-    queryKey: computed(() => queryKeys.coverage.grid(toValue(zoom))),
-    queryFn: ({ signal }) => fetchCoverage(toValue(zoom), signal),
+    queryKey: computed(() => {
+      const { year, activityType } = toValue(filter)
+      return queryKeys.coverage.grid(toValue(zoom), year, activityType)
+    }),
+    queryFn: ({ signal }) => fetchCoverage(toValue(zoom), signal, toValue(filter)),
     placeholderData: keepPreviousData,
     staleTime: 10 * 60 * 1000,
   })
@@ -36,15 +42,19 @@ export function useCoverageQuery(zoom: MaybeRefOrGetter<number>) {
  *
  * @param cell - The picked cell, or `null`.
  */
-export function useCellToursQuery(cell: MaybeRefOrGetter<CellRef | null>) {
+export function useCellToursQuery(
+  cell: MaybeRefOrGetter<CellRef | null>,
+  filter: MaybeRefOrGetter<CoverageFilter> = NO_COVERAGE_FILTER,
+) {
   return useQuery({
     queryKey: computed(() => {
       const picked = toValue(cell)
+      const { year, activityType } = toValue(filter)
       return picked
-        ? queryKeys.coverage.cell(picked.zoom, picked.x, picked.y)
+        ? queryKeys.coverage.cell(picked.zoom, picked.x, picked.y, year, activityType)
         : queryKeys.coverage.cell(0, 0, 0)
     }),
-    queryFn: ({ signal }) => fetchCellTours(toValue(cell) as CellRef, signal),
+    queryFn: ({ signal }) => fetchCellTours(toValue(cell) as CellRef, signal, toValue(filter)),
     enabled: computed(() => toValue(cell) !== null),
     staleTime: 10 * 60 * 1000,
   })

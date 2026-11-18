@@ -2,7 +2,7 @@ import { describe, expect, it, vi } from 'vitest'
 import { defineComponent, ref, toValue, type MaybeRefOrGetter } from 'vue'
 import { mount } from '@vue/test-utils'
 
-import type { Coverage, CoverageCell } from '@/features/coverageMap/types'
+import type { Coverage, CoverageCell, CoverageFilter } from '@/features/coverageMap/types'
 
 import i18n from '@/i18n'
 import CoverageMapView from '@/features/coverageMap/views/CoverageMapView.vue'
@@ -14,11 +14,13 @@ import { NEW_CELL_COLOR, OLD_CELL_COLOR, colorOf } from '@/features/coverageMap/
  * previous grid while a new zoom is asked for, as `keepPreviousData` does.
  */
 let askedZoom: MaybeRefOrGetter<number> = 0
+let askedFilter: MaybeRefOrGetter<CoverageFilter> = { year: null, activityType: null }
 const data = ref<Coverage | undefined>(undefined)
 
 vi.mock('@/features/coverageMap/composables/useCoverage', () => ({
-  useCoverageQuery: (zoom: MaybeRefOrGetter<number>) => {
+  useCoverageQuery: (zoom: MaybeRefOrGetter<number>, filter: MaybeRefOrGetter<CoverageFilter>) => {
     askedZoom = zoom
+    askedFilter = filter
     return {
       data,
       isPending: ref(false),
@@ -42,7 +44,7 @@ const MapStub = defineComponent({
 /** Stands in for the list of tours, so the test sees which cell it was given. */
 const ToursStub = defineComponent({
   name: 'CoverageCellTours',
-  props: { cell: Object },
+  props: { cell: Object, filter: Object },
   emits: ['close'],
   template: '<div data-testid="tours" />',
 })
@@ -56,6 +58,8 @@ function grid(zoom: number): Coverage {
       { x: 3, y: 1, count: 2, firstVisit: '2026-07-01T08:00:00' },
     ],
     maxCount: 3,
+    years: [2026, 2025],
+    activityTypes: [1, 12],
   }
 }
 
@@ -160,6 +164,45 @@ describe('CoverageMapView', () => {
     expect(colors()).toEqual([OLD_CELL_COLOR, NEW_CELL_COLOR, NEW_CELL_COLOR])
     expect(wrapper.text()).toContain('2026')
     expect(wrapper.text()).toMatch(/\b2\b.*2026/)
+    wrapper.unmount()
+  })
+
+  it('counts every tour until a year or a type is picked, then only those', async () => {
+    data.value = grid(16)
+    const wrapper = mountView()
+    expect(toValue(askedFilter)).toEqual({ year: null, activityType: null })
+
+    const years = wrapper.find('[data-testid="coverage-year"]').element as HTMLSelectElement
+    expect([...years.options].map((option) => option.value)).toEqual(['all', '2026', '2025'])
+    await wrapper.find('[data-testid="coverage-year"]').setValue('2025')
+    await wrapper.find('[data-testid="coverage-type"]').setValue('12')
+
+    expect(toValue(askedFilter)).toEqual({ year: 2025, activityType: 12 })
+    await wrapper.find('[data-testid="coverage-year"]').setValue('all')
+    expect(toValue(askedFilter)).toEqual({ year: null, activityType: 12 })
+    wrapper.unmount()
+  })
+
+  it('hands the filter to the list of tours in a picked cell', async () => {
+    data.value = grid(16)
+    const wrapper = mountView()
+    await wrapper.find('[data-testid="coverage-year"]').setValue('2026')
+
+    wrapper.findComponent(MapStub).vm.$emit('select', { x: 1, y: 1, zoom: 16 })
+    await wrapper.vm.$nextTick()
+
+    expect(wrapper.findComponent(ToursStub).props('filter')).toEqual({
+      year: 2026,
+      activityType: null,
+    })
+    wrapper.unmount()
+  })
+
+  it('offers no type filter when every tour is of one type', () => {
+    data.value = { ...grid(16), activityTypes: [12] }
+    const wrapper = mountView()
+
+    expect(wrapper.find('[data-testid="coverage-type"]').exists()).toBe(false)
     wrapper.unmount()
   })
 })
