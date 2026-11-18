@@ -252,3 +252,28 @@ export interface EffortProfile {
   /** Without long stops and GPS gaps, as the pass's moving time. */
   movingS: number[]
 }
+
+/** A suggested segment as the API sends it. */
+export interface SegmentSuggestionDto {
+  key: string
+  zoom: number
+  cells: number[][]
+  tours: { id: number; name: string | null; start_time: string }[]
+  start: SegmentNodeDto
+  end: SegmentNodeDto
+  straight_m: number
+}
+
+/**
+ * A stretch walked often without a segment on it, with where its ends would go: on the newest
+ * tour's track, ordered the way most tours walked it.
+ */
+export interface SegmentSuggestion {
+  key: string
+  /** The tours that walked it, newest first. */
+  tours: { id: number; name: string | null; startTime: string }[]
+  start: SegmentNode
+  end: SegmentNode
+  /** Distance between the two ends as the crow flies. */
+  straightM: number
+}

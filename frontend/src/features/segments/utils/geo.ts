@@ -84,6 +84,29 @@ export function formatCoordinates(node: Pick<SegmentNode, 'lat' | 'lon'>): strin
 }
 
 /**
+ * A node from the address, as a suggested segment passes it: `?start=60.39, 5.32`. Plain decimal
+ * degrees only; anything else gives `null`, and the node is placed by hand as usual.
+ *
+ * @param value - The query value.
+ * @param radiusM - The radius to give the node.
+ * @returns The node, or `null`.
+ */
+export function nodeFromQuery(value: unknown, radiusM: number): SegmentNode | null {
+  if (typeof value !== 'string') {
+    return null
+  }
+  const parts = value.split(',').map((part) => part.trim())
+  if (parts.length !== 2 || parts.some((part) => part === '')) {
+    return null
+  }
+  const [lat, lon] = parts.map(Number) as [number, number]
+  if (!Number.isFinite(lat) || !Number.isFinite(lon) || Math.abs(lat) > 90 || Math.abs(lon) > 180) {
+    return null
+  }
+  return { lat, lon, radiusM }
+}
+
+/**
  * Formats seconds as `m:ss` or `h:mm:ss`.
  *
  * @param seconds - Duration in seconds.

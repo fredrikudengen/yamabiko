@@ -12,6 +12,7 @@ import {
   fetchEffortProfile,
   fetchSegment,
   fetchSegmentEfforts,
+  fetchSegmentSuggestions,
   fetchSegments,
   previewSegment,
   refreshSegment,
@@ -194,6 +195,20 @@ export function useEffortProfileQuery(
     queryFn: ({ signal }) =>
       fetchEffortProfile(toValue(segmentId), toValue(effortId) as number, signal),
     enabled: computed(() => toValue(effortId) !== null),
+    staleTime: 10 * 60 * 1000,
+  })
+}
+
+/**
+ * Stretches walked often without a segment on them.
+ *
+ * @param minTours - How many different tours must have walked a stretch.
+ */
+export function useSegmentSuggestionsQuery(minTours: MaybeRefOrGetter<number>) {
+  return useQuery({
+    queryKey: computed(() => queryKeys.segments.suggestions(toValue(minTours))),
+    queryFn: ({ signal }) => fetchSegmentSuggestions(toValue(minTours), signal),
+    placeholderData: keepPreviousData,
     staleTime: 10 * 60 * 1000,
   })
 }

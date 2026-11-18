@@ -150,6 +150,29 @@ class EffortProfileOut(BaseModel):
     moving_s: list[float]
 
 
+class SuggestedTourOut(BaseModel):
+    id: int
+    name: str | None
+    start_time: datetime
+
+
+class SuggestionOut(BaseModel):
+    """A stretch walked often without a segment on it, with where its ends would go.
+
+    ``start`` and ``end`` lie on the newest tour's track, ordered the way most
+    tours walked the stretch. ``cells`` are cells of the coverage grid at
+    ``zoom``, for drawing the stretch on a map.
+    """
+
+    key: str
+    zoom: int
+    cells: list[list[int]]
+    tours: list[SuggestedTourOut]
+    start: NodeOut
+    end: NodeOut
+    straight_m: float
+
+
 class PreviewMatchOut(BaseModel):
     activity_id: int
     activity_name: str | None

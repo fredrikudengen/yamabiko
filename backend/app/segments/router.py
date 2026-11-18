@@ -9,19 +9,22 @@ them in its thread pool: matching reads the streams of every activity.
 from collections.abc import Callable
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, HTTPException, Security, status
+from fastapi import APIRouter, Depends, HTTPException, Query, Security, status
 from sqlalchemy.orm import Session
 
 import auth.dependencies as auth_dependencies
 import core.database as core_database
+import coverage_map.tiles as coverage_tiles
 import segments.coordinates as segments_coordinates
 import segments.crud as segments_crud
+import segments.matching as segments_matching
 import segments.models as segments_models
 import segments.quality as segments_quality
 import segments.ranking as segments_ranking
 import segments.schema as segments_schema
 import segments.service as segments_service
 import segments.source as segments_source
+import segments.suggestions as segments_suggestions
 
 router = APIRouter()
 
@@ -234,6 +237,36 @@ def get_activity_efforts(
         )
         for effort in segments_crud.get_efforts_for_activity(activity_id, db)
         if effort.segment_id in segment_names
+    ]
+
+
+@router.get("/suggestions", response_model=list[segments_schema.SuggestionOut])
+def get_segment_suggestions(
+    _validate_access_token: _Validated,
+    _check_scopes: _CanRead,
+    token_user_id: _UserId,
+    db: _Db,
+    min_tours: Annotated[int, Query(ge=2, le=20)] = segments_suggestions.MIN_TOURS,
+) -> list[segments_schema.SuggestionOut]:
+    """Stretches the user walks often without a segment on them, the most walked first.
+
+    Declared before ``/{segment_id}`` so the path is not read as an id.
+    """
+    radius = segments_matching.DEFAULT_NODE_RADIUS_M
+    return [
+        segments_schema.SuggestionOut(
+            key=suggestion.key,
+            zoom=coverage_tiles.STORE_ZOOM,
+            cells=[[x, y] for x, y in suggestion.cells],
+            tours=[
+                segments_schema.SuggestedTourOut(id=tour.id, name=tour.name, start_time=tour.start_time)
+                for tour in suggestion.tours
+            ],
+            start=segments_schema.NodeOut(lat=suggestion.start[0], lon=suggestion.start[1], radius_m=radius),
+            end=segments_schema.NodeOut(lat=suggestion.end[0], lon=suggestion.end[1], radius_m=radius),
+            straight_m=round(suggestion.straight_m),
+        )
+        for suggestion in segments_suggestions.suggest(token_user_id, db, min_tours)
     ]
 
 

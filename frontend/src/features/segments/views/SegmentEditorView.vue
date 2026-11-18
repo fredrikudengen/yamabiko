@@ -25,7 +25,12 @@ import {
 } from '@/features/segments/composables/useSegments'
 import { parseCoordinates } from '@/features/segments/services/segments'
 import { DEFAULT_NODE_RADIUS_M } from '@/features/segments/types'
-import { clampRadius, formatCoordinates, nodeProblem } from '@/features/segments/utils/geo'
+import {
+  clampRadius,
+  formatCoordinates,
+  nodeFromQuery,
+  nodeProblem,
+} from '@/features/segments/utils/geo'
 import { HttpError } from '@/services/http'
 
 const { t } = useI18n()
@@ -63,6 +68,17 @@ watch(
   },
   { immediate: true },
 )
+
+// A new segment from a suggestion: both ends are placed already, and the matches show at once.
+if (editingId.value === null) {
+  const suggestedStart = nodeFromQuery(route.query.start, DEFAULT_NODE_RADIUS_M)
+  const suggestedEnd = nodeFromQuery(route.query.end, DEFAULT_NODE_RADIUS_M)
+  if (suggestedStart && suggestedEnd) {
+    start.value = suggestedStart
+    end.value = suggestedEnd
+    placing.value = null
+  }
+}
 
 // Keep the coordinate fields in step with the map.
 watch(start, (node) => (startText.value = node ? formatCoordinates(node) : ''), { immediate: true })
