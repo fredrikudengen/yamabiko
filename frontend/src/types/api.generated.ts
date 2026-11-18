@@ -2086,6 +2086,28 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/segments/suggestions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Segment Suggestions
+         * @description Stretches the user walks often without a segment on them, the most walked first.
+         *
+         *     Declared before ``/{segment_id}`` so the path is not read as an id.
+         */
+        get: operations["get_segment_suggestions_api_v1_segments_suggestions_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/segments/{segment_id}": {
         parameters: {
             query?: never;
@@ -4327,6 +4349,40 @@ export interface components {
              * @description TOTP or backup code, required when MFA is enabled
              */
             mfa_code?: string | null;
+        };
+        /** SuggestedTourOut */
+        SuggestedTourOut: {
+            /** Id */
+            id: number;
+            /** Name */
+            name: string | null;
+            /**
+             * Start Time
+             * Format: date-time
+             */
+            start_time: string;
+        };
+        /**
+         * SuggestionOut
+         * @description A stretch walked often without a segment on it, with where its ends would go.
+         *
+         *     ``start`` and ``end`` lie on the newest tour's track, ordered the way most
+         *     tours walked the stretch. ``cells`` are cells of the coverage grid at
+         *     ``zoom``, for drawing the stretch on a map.
+         */
+        SuggestionOut: {
+            /** Cells */
+            cells: number[][];
+            end: components["schemas"]["NodeOut"];
+            /** Key */
+            key: string;
+            start: components["schemas"]["NodeOut"];
+            /** Straight M */
+            straight_m: number;
+            /** Tours */
+            tours: components["schemas"]["SuggestedTourOut"][];
+            /** Zoom */
+            zoom: number;
         };
         /**
          * TileMapsTemplate
@@ -7717,6 +7773,37 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["PreviewOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_segment_suggestions_api_v1_segments_suggestions_get: {
+        parameters: {
+            query?: {
+                min_tours?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SuggestionOut"][];
                 };
             };
             /** @description Validation Error */

@@ -195,6 +195,8 @@ export const queryKeys = {
     /** The clock along one pass; under `all()` so a recompute refetches it. */
     profile: (segmentId: number, effortId: number) =>
       ['segments', 'profile', segmentId, effortId] as const,
+    /** Suggested segments; under `all()` so creating a segment refreshes them. */
+    suggestions: (minTours: number) => ['segments', 'suggestions', minTours] as const,
   },
 
   /** The written feedback on tours. */

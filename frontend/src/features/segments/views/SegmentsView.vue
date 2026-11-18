@@ -10,6 +10,7 @@ import { Card } from '@/components/ui/card'
 import { EmptyState } from '@/components/ui/empty-state'
 import { ErrorState } from '@/components/ui/error-state'
 import { Skeleton } from '@/components/ui/skeleton'
+import SegmentSuggestions from '@/features/segments/components/SegmentSuggestions.vue'
 import { useSegmentsQuery } from '@/features/segments/composables/useSegments'
 
 const { t } = useI18n()
@@ -74,5 +75,8 @@ const empty = computed(() => !loading.value && !failed.value && segments.value.l
         </Card>
       </li>
     </ul>
+
+    <!-- Below the list: what is worth adding next. Shown with or without segments of its own. -->
+    <SegmentSuggestions v-if="!loading && !failed" />
   </section>
 </template>

@@ -651,3 +651,59 @@ class TestNotes:
         (effort,) = client.get(f"/segments/{segment['id']}/efforts").json()
 
         assert effort["activity_notes"] is None
+
+
+class TestSuggestions:
+    """Stretches walked often without a segment are suggested, with ends on the track."""
+
+    LONG_WALK = (("walk", (0, 3000)),)
+
+    def _tours(self, db, count, legs=None, start=(0.0, -150.0)):
+        import coverage_map.service as coverage_service
+
+        ids = []
+        for day in range(count):
+            activity_id = _add_activity(db, build_route(list(legs or self.LONG_WALK), start=start), day=day)
+            coverage_service.refresh_activity_cells(activity_id, db)
+            ids.append(activity_id)
+        return ids
+
+    def test_a_stretch_walked_three_times_is_suggested_south_to_north(self, client, db):
+        ids = self._tours(db, 3)
+
+        (suggestion,) = client.get("/segments/suggestions").json()
+
+        assert {tour["id"] for tour in suggestion["tours"]} == set(ids)
+        assert suggestion["tours"][0]["id"] == ids[-1]  # newest first
+        assert suggestion["start"]["lat"] < suggestion["end"]["lat"]
+        assert suggestion["straight_m"] > 1500
+        assert len(suggestion["cells"]) >= 4
+        assert suggestion["zoom"] == 17
+
+    def test_a_stretch_walked_twice_is_suggested_only_when_asked(self, client, db):
+        self._tours(db, 2)
+
+        assert client.get("/segments/suggestions").json() == []
+        assert len(client.get("/segments/suggestions?min_tours=2").json()) == 1
+
+    def test_a_stretch_with_a_segment_on_it_is_not_suggested(self, client, db):
+        self._tours(db, 3)
+        top = node(0, 3000)
+        _create(client, end={"lat": top.lat, "lon": top.lon, "radius_m": 50})
+
+        assert client.get("/segments/suggestions").json() == []
+
+    def test_where_tours_start_and_end_is_left_out(self, client, db):
+        # Out and back from the same place: the start area is home, not a climb.
+        self._tours(db, 3, legs=[("walk", (0, 300)), ("walk", (0, -150))])
+
+        assert client.get("/segments/suggestions").json() == []
+
+    def test_another_users_tours_are_not_used(self, client, db, current_user):
+        self._tours(db, 3)
+        current_user["id"] = 8
+
+        assert client.get("/segments/suggestions").json() == []
+
+    def test_the_threshold_must_be_at_least_two(self, client):
+        assert client.get("/segments/suggestions?min_tours=1").status_code == 422

@@ -374,6 +374,16 @@
       "mostWon": "Mest vunnet: {time} mellom {from} % og {to} % av veien.",
       "hint": "Langs veien i prosent, siden GPS-sporet på hver tur er litt lengre eller kortere. Opp er tid tapt, ned er tid vunnet.",
       "loadError": "Kunne ikke hente tidene langs veien."
+    },
+    "suggestions": {
+      "title": "Forslag til segmenter",
+      "includeTwice": "Ta med strekninger gått to ganger",
+      "none": "Ingen strekninger du går ofte mangler segment.",
+      "loadError": "Klarte ikke å finne forslag.",
+      "walked": "Gått {count} ganger · rundt {km} km i luftlinje",
+      "unnamed": "Tur uten navn",
+      "more": "og {count} til",
+      "create": "Lag segment"
     }
   },
   "coverage": {

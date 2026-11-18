@@ -375,6 +375,16 @@
       "mostWon": "Most won: {time} between {from} % and {to} % of the way.",
       "hint": "Along the way in percent, since the GPS path of each tour is a little longer or shorter. Up is time lost, down is time won.",
       "loadError": "Could not load the times along the way."
+    },
+    "suggestions": {
+      "title": "Suggested segments",
+      "includeTwice": "Include stretches walked twice",
+      "none": "No stretch you walk often is without a segment.",
+      "loadError": "Could not find suggestions.",
+      "walked": "Walked {count} times · about {km} km as the crow flies",
+      "unnamed": "Unnamed tour",
+      "more": "and {count} more",
+      "create": "Make segment"
     }
   },
   "coverage": {

@@ -1,4 +1,6 @@
 import type {
+  SegmentSuggestion,
+  SegmentSuggestionDto,
   EffortProfile,
   EffortProfileDto,
   NearMiss,
@@ -376,4 +378,28 @@ export async function fetchEffortProfile(
     elapsedS: dto.elapsed_s,
     movingS: dto.moving_s,
   }
+}
+
+/**
+ * Stretches the user walks often without a segment on them, the most walked first.
+ *
+ * @param minTours - How many different tours must have walked a stretch (2 or more).
+ * @param signal - Optional abort signal.
+ * @returns The suggestions.
+ */
+export async function fetchSegmentSuggestions(
+  minTours: number,
+  signal?: AbortSignal,
+): Promise<SegmentSuggestion[]> {
+  const dtos = await apiFetch<SegmentSuggestionDto[]>(
+    `/segments/suggestions?min_tours=${minTours}`,
+    { signal },
+  )
+  return dtos.map((dto) => ({
+    key: dto.key,
+    tours: dto.tours.map((tour) => ({ id: tour.id, name: tour.name, startTime: tour.start_time })),
+    start: mapNode(dto.start),
+    end: mapNode(dto.end),
+    straightM: dto.straight_m,
+  }))
 }
