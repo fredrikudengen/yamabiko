@@ -30,6 +30,7 @@ import {
   type CellRef,
   type CellSizeChoice,
   type CoverageCell,
+  type CoverageFilter,
   type CoverageMode,
 } from '@/features/coverageMap/types'
 import {
@@ -40,6 +41,7 @@ import {
   yearOf,
 } from '@/features/coverageMap/utils/scale'
 import { autoCellZoom, roundedCellSizeM } from '@/features/coverageMap/utils/tiles'
+import { presentActivityType } from '@/features/activities/utils/activityType'
 
 const { t, n, locale } = useI18n()
 
@@ -57,7 +59,17 @@ const autoZoom = computed(() =>
 )
 /** The grid to fetch. */
 const zoom = computed(() => (sizeChoice.value === 'auto' ? autoZoom.value : sizeChoice.value))
-const query = useCoverageQuery(zoom)
+/** Which tours the map counts; all of them unless a year or a type is picked. */
+const yearFilter = ref<number | 'all'>('all')
+const typeFilter = ref<number | 'all'>('all')
+const filter = computed<CoverageFilter>(() => ({
+  year: yearFilter.value === 'all' ? null : yearFilter.value,
+  activityType: typeFilter.value === 'all' ? null : typeFilter.value,
+}))
+const query = useCoverageQuery(zoom, filter)
+/** The filters' choices, from the unfiltered map so they do not shrink as you filter. */
+const yearChoices = computed(() => query.data.value?.years ?? [])
+const typeChoices = computed(() => query.data.value?.activityTypes ?? [])
 const refresh = useRefreshCoverageMutation()
 const mapRef = ref<InstanceType<typeof CoverageMap> | null>(null)
 /** The cell whose tours are listed, or `null` when the list is closed. */
@@ -155,6 +167,27 @@ function cellTooltip(cell: CoverageCell): string {
       </div>
       <div class="flex flex-wrap items-center gap-2">
         <Select
+          v-model.number="yearFilter"
+          class="w-auto"
+          :aria-label="t('activities.coverage.filter.year')"
+          data-testid="coverage-year"
+        >
+          <option value="all">{{ t('activities.coverage.filter.allYears') }}</option>
+          <option v-for="year in yearChoices" :key="year" :value="year">{{ year }}</option>
+        </Select>
+        <Select
+          v-if="typeChoices.length > 1"
+          v-model.number="typeFilter"
+          class="w-auto"
+          :aria-label="t('activities.coverage.filter.type')"
+          data-testid="coverage-type"
+        >
+          <option value="all">{{ t('activities.coverage.filter.allTypes') }}</option>
+          <option v-for="code in typeChoices" :key="code" :value="code">
+            {{ t(presentActivityType(code).labelKey) }}
+          </option>
+        </Select>
+        <Select
           v-model.number="mode"
           class="w-auto"
           :aria-label="t('activities.coverage.mode.label')"
@@ -218,6 +251,7 @@ function cellTooltip(cell: CoverageCell): string {
         <CoverageCellTours
           v-if="selectedCell"
           :cell="selectedCell"
+          :filter="filter"
           class="absolute top-3 right-3 z-10"
           @close="selectedCell = null"
         />

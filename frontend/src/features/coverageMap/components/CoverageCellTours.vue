@@ -7,7 +7,7 @@ import { X } from '@lucide/vue'
 import { onBeforeUnmount, onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
 
-import type { CellRef } from '@/features/coverageMap/types'
+import type { CellRef, CoverageFilter } from '@/features/coverageMap/types'
 
 import { Button } from '@/components/ui/button'
 import { Spinner } from '@/components/ui/spinner'
@@ -15,6 +15,8 @@ import { useCellToursQuery } from '@/features/coverageMap/composables/useCoverag
 
 const props = defineProps<{
   cell: CellRef
+  /** The tours the map counts, so the list matches the cell's count. */
+  filter?: CoverageFilter
 }>()
 
 const emit = defineEmits<{
@@ -22,7 +24,10 @@ const emit = defineEmits<{
 }>()
 
 const { t, n, locale } = useI18n()
-const query = useCellToursQuery(() => props.cell)
+const query = useCellToursQuery(
+  () => props.cell,
+  () => props.filter ?? { year: null, activityType: null },
+)
 
 /**
  * @param iso - A start time.

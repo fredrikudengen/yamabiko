@@ -1,4 +1,5 @@
 import type {
+  CoverageFilter,
   ActivityCells,
   ActivityCellsDto,
   CellRef,
@@ -9,6 +10,7 @@ import type {
   CoverageRefresh,
 } from '@/features/coverageMap/types'
 
+import { NO_COVERAGE_FILTER } from '@/features/coverageMap/types'
 import { apiFetch } from '@/services/http'
 
 /**
@@ -25,7 +27,25 @@ export function mapCoverage(dto: CoverageDto): Coverage {
       firstVisit: cell.first_visit,
     })),
     maxCount: dto.max_count,
+    years: dto.years ?? [],
+    activityTypes: dto.activity_types ?? [],
   }
+}
+
+/**
+ * @param filter - Which tours count.
+ * @returns The query string for the filter, starting with `&`, or empty for no filter.
+ */
+function filterQuery(filter: CoverageFilter): string {
+  const params = new URLSearchParams()
+  if (filter.year !== null) {
+    params.set('year', String(filter.year))
+  }
+  if (filter.activityType !== null) {
+    params.set('type', String(filter.activityType))
+  }
+  const query = params.toString()
+  return query ? `&${query}` : ''
 }
 
 /**
@@ -35,8 +55,14 @@ export function mapCoverage(dto: CoverageDto): Coverage {
  * @param signal - Optional abort signal.
  * @returns The cells with at least one tour through them.
  */
-export async function fetchCoverage(zoom: number, signal?: AbortSignal): Promise<Coverage> {
-  return mapCoverage(await apiFetch<CoverageDto>(`/coverage?zoom=${zoom}`, { signal }))
+export async function fetchCoverage(
+  zoom: number,
+  signal?: AbortSignal,
+  filter: CoverageFilter = NO_COVERAGE_FILTER,
+): Promise<Coverage> {
+  return mapCoverage(
+    await apiFetch<CoverageDto>(`/coverage?zoom=${zoom}${filterQuery(filter)}`, { signal }),
+  )
 }
 
 /**
@@ -46,9 +72,13 @@ export async function fetchCoverage(zoom: number, signal?: AbortSignal): Promise
  * @param signal - Optional abort signal.
  * @returns Each tour once.
  */
-export async function fetchCellTours(cell: CellRef, signal?: AbortSignal): Promise<CellTour[]> {
+export async function fetchCellTours(
+  cell: CellRef,
+  signal?: AbortSignal,
+  filter: CoverageFilter = NO_COVERAGE_FILTER,
+): Promise<CellTour[]> {
   const tours = await apiFetch<CellTourDto[]>(
-    `/coverage/cells/${cell.x}/${cell.y}?zoom=${cell.zoom}`,
+    `/coverage/cells/${cell.x}/${cell.y}?zoom=${cell.zoom}${filterQuery(filter)}`,
     { signal },
   )
   return tours.map((tour) => ({ id: tour.id, name: tour.name, startTime: tour.start_time }))

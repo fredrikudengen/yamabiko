@@ -29,13 +29,13 @@ def current_user():
 def add_activity(db):
     """Store an activity with the route's streams. Pass ``None`` for an activity without GPS."""
 
-    def _add(route, user_id=7, day=0, name="Fjelltur", **fields) -> int:
+    def _add(route, user_id=7, day=0, name="Fjelltur", activity_type=12, **fields) -> int:
         start = T0 + timedelta(days=day)
         activity = activities_models.Activity(
             user_id=user_id,
             name=name,
             distance=1700,
-            activity_type=12,
+            activity_type=activity_type,
             start_time=start,
             end_time=start + timedelta(hours=1),
             total_elapsed_time=3600,

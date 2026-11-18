@@ -428,6 +428,12 @@
       "new": "Første gang i 1 av {cells} celler (rundt {metres} m). | Første gang i {count} av {cells} celler (rundt {metres} m).",
       "none": "Ingenting nytt: du hadde vært i den ene cellen før. | Ingenting nytt: du hadde vært i alle {cells} cellene før.",
       "link": "Se kartet"
+    },
+    "filter": {
+      "year": "År",
+      "allYears": "Alle år",
+      "type": "Aktivitetstype",
+      "allTypes": "Alle typer"
     }
   },
   "feedback": {

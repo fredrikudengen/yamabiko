@@ -3,7 +3,8 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from datetime import datetime
+from datetime import UTC, datetime
+from typing import Any
 
 from sqlalchemy import and_, func, or_, select
 from sqlalchemy.orm import Session, aliased
@@ -11,6 +12,30 @@ from sqlalchemy.orm import Session, aliased
 import activities.activity.models as activities_models
 import coverage_map.models as coverage_models
 import coverage_map.tiles as coverage_tiles
+
+
+@dataclass(frozen=True)
+class TourFilter:
+    """Which of the user's tours count: one calendar year, one activity type, or both."""
+
+    year: int | None = None
+    activity_type: int | None = None
+
+    def conditions(self) -> list[Any]:
+        """The ``WHERE`` conditions on ``activities`` for the filter."""
+        activity = activities_models.Activity
+        found: list[Any] = []
+        if self.year is not None:
+            found += [
+                activity.start_time >= datetime(self.year, 1, 1, tzinfo=UTC),
+                activity.start_time < datetime(self.year + 1, 1, 1, tzinfo=UTC),
+            ]
+        if self.activity_type is not None:
+            found.append(activity.activity_type == self.activity_type)
+        return found
+
+
+NO_FILTER = TourFilter()
 
 
 @dataclass(frozen=True)
@@ -23,7 +48,7 @@ class CellCount:
     first_visit: datetime
 
 
-def cell_counts(user_id: int, zoom: int, db: Session) -> list[CellCount]:
+def cell_counts(user_id: int, zoom: int, db: Session, tours: TourFilter = NO_FILTER) -> list[CellCount]:
     """The user's coverage, counted per cell at a zoom.
 
     Cells are stored at :data:`coverage_map.tiles.STORE_ZOOM` and rolled up here
@@ -62,6 +87,7 @@ def cell_counts(user_id: int, zoom: int, db: Session) -> list[CellCount]:
         .where(
             activities_models.Activity.user_id == user_id,
             cell.grid_zoom == coverage_tiles.STORE_ZOOM,
+            *tours.conditions(),
         )
         .group_by(x, y)
     )
@@ -77,7 +103,9 @@ class CellTour:
     start_time: datetime
 
 
-def tours_in_cell(user_id: int, zoom: int, x: int, y: int, db: Session) -> list[CellTour]:
+def tours_in_cell(
+    user_id: int, zoom: int, x: int, y: int, db: Session, tours: TourFilter = NO_FILTER
+) -> list[CellTour]:
     """The user's tours that passed through one cell, newest first.
 
     The cell is given at ``zoom`` and covers a square block of stored cells.
@@ -116,7 +144,7 @@ def tours_in_cell(user_id: int, zoom: int, x: int, y: int, db: Session) -> list[
     )
     stmt = (
         select(activity.id, activity.name, activity.start_time)
-        .where(activity.user_id == user_id, activity.id.in_(tours_here))
+        .where(activity.user_id == user_id, activity.id.in_(tours_here), *tours.conditions())
         .order_by(activity.start_time.desc(), activity.id.desc())
     )
     return [CellTour(id=row.id, name=row.name, start_time=row.start_time) for row in db.execute(stmt)]
@@ -185,3 +213,21 @@ def new_cells_of_activity(user_id: int, activity_id: int, zoom: int, db: Session
     )
     row = db.execute(select(func.count(), func.count().filter(~earlier)).select_from(mine)).one()
     return ActivityCells(cells=row[0], new_cells=row[1])
+
+
+def tour_choices(user_id: int, db: Session) -> tuple[list[int], list[int]]:
+    """The years and activity types of the user's tours that have cells, for the map's filters.
+
+    Returns:
+        Years newest first, and activity type codes in ascending order.
+    """
+    activity = activities_models.Activity
+    cell = coverage_models.ActivityCell
+    rows = db.execute(
+        select(activity.start_time, activity.activity_type).where(
+            activity.user_id == user_id, activity.id.in_(select(cell.activity_id).distinct())
+        )
+    ).all()
+    years = sorted({row.start_time.year for row in rows}, reverse=True)
+    types = sorted({row.activity_type for row in rows if row.activity_type is not None})
+    return years, types

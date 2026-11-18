@@ -13,6 +13,8 @@ export interface CoverageDto {
   zoom: number
   cells: CoverageCellDto[]
   max_count: number
+  years?: number[]
+  activity_types?: number[]
 }
 
 /** One cell and how many tours passed through it. */
@@ -34,7 +36,20 @@ export interface Coverage {
   cells: CoverageCell[]
   /** The highest count in `cells`, or 0 when there are none. */
   maxCount: number
+  /** Years with tours on the map, newest first, whatever is filtered: the year filter's choices. */
+  years: number[]
+  /** Activity type codes with tours on the map: the type filter's choices. */
+  activityTypes: number[]
 }
+
+/** Which tours the map counts: one year, one activity type, or both; `null` for all. */
+export interface CoverageFilter {
+  year: number | null
+  activityType: number | null
+}
+
+/** Every tour counts. */
+export const NO_COVERAGE_FILTER: CoverageFilter = { year: null, activityType: null }
 
 /** A tour that passed through a cell, as the API sends it. */
 export interface CellTourDto {

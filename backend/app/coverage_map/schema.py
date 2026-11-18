@@ -27,6 +27,10 @@ class CoverageOut(BaseModel):
     zoom: int
     cells: list[CellOut]
     max_count: int
+    # What the filters can offer, whatever is filtered now: years with tours on the map
+    # (newest first) and their activity type codes.
+    years: list[int] = []
+    activity_types: list[int] = []
 
 
 class CellTourOut(BaseModel):

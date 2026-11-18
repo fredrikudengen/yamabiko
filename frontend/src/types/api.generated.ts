@@ -3109,10 +3109,20 @@ export interface components {
          *     pass over the cells to scale a legend.
          */
         CoverageOut: {
+            /**
+             * Activity Types
+             * @default []
+             */
+            activity_types: number[];
             /** Cells */
             cells: components["schemas"]["CellOut"][];
             /** Max Count */
             max_count: number;
+            /**
+             * Years
+             * @default []
+             */
+            years: number[];
             /** Zoom */
             zoom: number;
         };
@@ -6367,6 +6377,10 @@ export interface operations {
         parameters: {
             query?: {
                 zoom?: number;
+                /** @description Only tours started in this year */
+                year?: number | null;
+                /** @description Only tours of this activity type code */
+                type?: number | null;
             };
             header?: never;
             path?: never;
@@ -6431,6 +6445,10 @@ export interface operations {
         parameters: {
             query?: {
                 zoom?: number;
+                /** @description Only tours started in this year */
+                year?: number | null;
+                /** @description Only tours of this activity type code */
+                type?: number | null;
             };
             header?: never;
             path: {

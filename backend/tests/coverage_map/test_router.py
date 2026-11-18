@@ -272,3 +272,56 @@ class TestActivityCells:
         activity_id = add_activity(build_route(ASCENT))
 
         assert self._get(client, activity_id, zoom=ZOOM + 1).status_code == 422
+
+
+class TestFilters:
+    """The map can count one year's tours, or one activity type's."""
+
+    def _cells_of(self, client, query=""):
+        return _cells(client.get(f"/coverage?zoom={ZOOM}{query}").json())
+
+    def test_a_year_counts_only_the_tours_started_in_it(self, client, db, add_activity):
+        service.refresh_activity_cells(add_activity(build_route(ASCENT), day=0), db)  # 2026
+        service.refresh_activity_cells(add_activity(build_route(ASCENT), day=-400), db)  # 2025
+
+        assert set(self._cells_of(client).values()) == {2}
+        assert set(self._cells_of(client, "&year=2026").values()) == {1}
+        assert set(self._cells_of(client, "&year=2025").values()) == {1}
+        assert self._cells_of(client, "&year=2024") == {}
+
+    def test_a_type_counts_only_tours_of_it(self, client, db, add_activity):
+        service.refresh_activity_cells(add_activity(build_route(ASCENT), day=0), db)  # hike (12)
+        service.refresh_activity_cells(add_activity(build_route(ASCENT), day=1, activity_type=1), db)
+
+        assert set(self._cells_of(client, "&type=12").values()) == {1}
+        assert set(self._cells_of(client, "&type=1&year=2026").values()) == {1}
+        assert self._cells_of(client, "&type=4") == {}
+
+    def test_the_first_visit_is_the_first_within_the_filter(self, client, db, add_activity):
+        service.refresh_activity_cells(add_activity(build_route(ASCENT), day=-400), db)
+        service.refresh_activity_cells(add_activity(build_route(ASCENT), day=0), db)
+
+        body = client.get(f"/coverage?zoom={ZOOM}&year=2026").json()
+
+        assert {cell["first_visit"][:4] for cell in body["cells"]} == {"2026"}
+
+    def test_the_choices_list_every_year_and_type_whatever_is_filtered(self, client, db, add_activity):
+        service.refresh_activity_cells(add_activity(build_route(ASCENT), day=0), db)
+        service.refresh_activity_cells(add_activity(build_route(ASCENT), day=-400, activity_type=1), db)
+        add_activity(None, day=-800)  # no GPS, no cells: not a choice
+
+        body = client.get(f"/coverage?zoom={ZOOM}&year=2026").json()
+
+        assert body["years"] == [2026, 2025]
+        assert body["activity_types"] == [1, 12]
+
+    def test_the_cell_list_follows_the_filter(self, client, db, add_activity):
+        old = add_activity(build_route(ASCENT), day=-400)
+        new = add_activity(build_route(ASCENT), day=0)
+        for activity_id in (old, new):
+            service.refresh_activity_cells(activity_id, db)
+        x, y = next(iter(self._cells_of(client)))
+
+        listed = client.get(f"/coverage/cells/{x}/{y}?zoom={ZOOM}&year=2025").json()
+
+        assert [tour["id"] for tour in listed] == [old]
