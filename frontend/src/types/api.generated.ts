@@ -2839,6 +2839,8 @@ export interface components {
             media_path: string;
             /** Media Type */
             media_type: number;
+            /** Thumbnail Path */
+            thumbnail_path?: string | null;
         };
         /**
          * ActivitySetsRead

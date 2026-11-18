@@ -32,6 +32,7 @@ export function mapActivityMedia(dto: ActivityMediaDto): ActivityMedia {
     activityId: dto.activity_id,
     mediaPath: dto.media_path,
     url: resolveActivityMediaUrl(dto.media_path),
+    thumbnailUrl: dto.thumbnail_path ? resolveActivityMediaUrl(dto.thumbnail_path) : null,
   }
 }
 

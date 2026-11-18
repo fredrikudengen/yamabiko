@@ -216,6 +216,26 @@ class TestDeleteActivityMedia:
     @patch("activities.activity_media.crud.core_file_uploads.safe_remove_within")
     @patch("activities.activity_media.crud.core_config.settings")
     @patch("activities.activity_media.crud.activity_crud.get_activity_by_id_from_user_id")
+    def test_the_thumbnail_goes_with_the_photo(self, mock_get_act, mock_settings, mock_remove, mock_db, tmp_path):
+        import activities.activity_media.crud as crud
+        import activities.activity_media.models as m
+
+        photo = tmp_path / "7_abc.jpg"
+        photo.write_bytes(b"x")
+        (tmp_path / "7_abc.thumb.jpg").write_bytes(b"x")
+        mock_db.scalars.return_value.first.return_value = MagicMock(
+            spec=m.ActivityMedia, id=1, activity_id=7, media_path=str(photo)
+        )
+        mock_get_act.return_value = MagicMock(user_id=1)
+
+        crud.delete_activity_media(1, 1, mock_db)
+
+        removed = [call.args[0] for call in mock_remove.call_args_list]
+        assert removed == [str(photo), str(tmp_path / "7_abc.thumb.jpg")]
+
+    @patch("activities.activity_media.crud.core_file_uploads.safe_remove_within")
+    @patch("activities.activity_media.crud.core_config.settings")
+    @patch("activities.activity_media.crud.activity_crud.get_activity_by_id_from_user_id")
     def test_success(self, mock_get_act, mock_settings, mock_remove, mock_db):
         import activities.activity_media.crud as crud
         import activities.activity_media.models as m

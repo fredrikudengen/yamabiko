@@ -7,6 +7,7 @@ from sqlalchemy.orm import Session
 
 import activities.activity.crud as activity_crud
 import activities.activity.models as activity_models
+import activities.activity_media.images as activity_media_images
 import activities.activity_media.models as activity_media_models
 import activities.activity_media.schema as activity_media_schema
 import core.config as core_config
@@ -282,6 +283,13 @@ def delete_activity_media(activity_media_id: int, token_user_id: int, db: Sessio
                 media_path,
                 base_dir=core_config.settings.ACTIVITY_MEDIA_DIR,
             )
+            # The grid's small copy goes with it, when there is one.
+            thumbnail = activity_media_images.existing_thumbnail(media_path)
+            if thumbnail:
+                core_file_uploads.safe_remove_within(
+                    thumbnail,
+                    base_dir=core_config.settings.ACTIVITY_MEDIA_DIR,
+                )
         except HTTPException as fs_err:
             core_logger.print_to_log(
                 f"Refused to remove activity media outside media dir for id {activity_media_id}: {fs_err.detail}",

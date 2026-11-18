@@ -108,6 +108,18 @@ describe('ActivityMediaCard', () => {
     expect(wrapper.text()).toBe('')
   })
 
+  it('shows the small copy in the grid when there is one, and the photo itself otherwise', async () => {
+    const withThumbnail = {
+      ...photo(1),
+      thumbnail_path: `/app/backend/data/activity_media/${ACTIVITY_ID}_1.thumb.jpg`,
+    }
+    const wrapper = await mountCard({ isOwner: false }, [withThumbnail, photo(2)])
+
+    const sources = wrapper.findAll('li img').map((img) => img.attributes('src'))
+    expect(sources[0]).toContain(`${ACTIVITY_ID}_1.thumb.jpg`)
+    expect(sources[1]).toContain(`${ACTIVITY_ID}_2.jpg`)
+  })
+
   it('shows the photos to someone else, without add or delete buttons', async () => {
     const wrapper = await mountCard({ isOwner: false }, [photo(1), photo(2)])
 
@@ -157,6 +169,15 @@ describe('ActivityMediaCard', () => {
       const posts = vi.mocked(apiFetch).mock.calls.filter(([, o]) => o?.method === 'POST')
       expect(posts).toHaveLength(1)
       expect(toastMessages()).toContain('Please choose an image file.')
+      expect(toastMessages()).toContain('Photo uploaded')
+    })
+
+    it('uploads a HEIC photo even when the browser gives it no file type', async () => {
+      const wrapper = await mountCard({ isOwner: true })
+      await chooseFiles(wrapper, [new File(['x'], 'IMG_0001.HEIC', { type: '' })])
+
+      const posts = vi.mocked(apiFetch).mock.calls.filter(([, o]) => o?.method === 'POST')
+      expect(posts).toHaveLength(1)
       expect(toastMessages()).toContain('Photo uploaded')
     })
 

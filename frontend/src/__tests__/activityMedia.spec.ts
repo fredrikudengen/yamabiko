@@ -37,6 +37,16 @@ describe('mapActivityMedia', () => {
     const media = mapActivityMedia(mediaDto)
     expect(media).toMatchObject({ id: 3, activityId: 5, mediaPath: mediaDto.media_path })
     expect(media.url).toContain('activity_media/5_abc123.jpg')
+    expect(media.thumbnailUrl).toBeNull()
+  })
+
+  it('resolves the thumbnail too, when the server has one', () => {
+    const media = mapActivityMedia({
+      ...mediaDto,
+      thumbnail_path: '/app/backend/data/activity_media/5_abc123.thumb.jpg',
+    })
+    expect(media.thumbnailUrl).toContain('activity_media/5_abc123.thumb.jpg')
+    expect(media.thumbnailUrl).not.toContain('/data/')
   })
 
   it('defaults a missing id to 0', () => {

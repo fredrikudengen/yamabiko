@@ -49,6 +49,14 @@ function openFilePicker(): void {
 }
 
 /**
+ * Whether a chosen file is a photo. Outside Apple's systems a HEIC photo often comes with no file
+ * type at all, so it is known by its name; the server turns it into JPEG.
+ */
+function isPhoto(file: File): boolean {
+  return file.type.startsWith('image/') || /\.(heic|heif)$/i.test(file.name)
+}
+
+/**
  * Uploads the chosen images one after the other and says how it went once, for the whole batch.
  * Files that are not images are skipped, and the input is cleared so the same file can be picked again.
  */
@@ -59,7 +67,7 @@ async function onFilesSelected(event: Event): Promise<void> {
   if (files.length === 0) {
     return
   }
-  const images = files.filter((file) => file.type.startsWith('image/'))
+  const images = files.filter(isPhoto)
   if (images.length < files.length) {
     toasts.error(t('activities.media.invalidType'))
   }
@@ -147,7 +155,7 @@ async function confirmDelete(): Promise<void> {
       v-if="isOwner"
       ref="fileInput"
       type="file"
-      accept="image/*"
+      accept="image/*,.heic,.heif"
       multiple
       class="hidden"
       data-testid="media-file-input"
@@ -168,7 +176,12 @@ async function confirmDelete(): Promise<void> {
           :aria-label="t('activities.media.expand')"
           @click="openLightbox(index)"
         >
-          <Image :src="photo.url" :alt="t('activities.media.alt')" class="size-full object-cover" />
+          <!-- The small copy in the grid; the full photo opens in the lightbox. -->
+          <Image
+            :src="photo.thumbnailUrl ?? photo.url"
+            :alt="t('activities.media.alt')"
+            class="size-full object-cover"
+          />
         </button>
         <button
           v-if="isOwner"
