@@ -285,6 +285,17 @@ class TestFacts:
         assert context["same_type_tours_this_year_so_far"] == 2
         assert context["rank_this_year_by_distance"] == 1
 
+    def test_the_only_tour_of_its_type_this_year_is_not_ranked(self, db):
+        only = add_tour(db, day=0)
+
+        context = feedback_facts.build_facts(db.get(activities_models.Activity, only), db)[
+            "compared_with_your_other_tours"
+        ]
+
+        assert context["same_type_tours_this_year_so_far"] == 1
+        assert context["rank_this_year_by_distance"] is None
+        assert context["rank_this_year_by_elevation_gain"] is None
+
     def test_the_users_notes_come_with_the_tour_and_its_earlier_passes(self, db):
         add_tour(db, day=0, notes="Snø over 400 m. " + "Lang dag. " * 40)
         latest = add_tour(db, day=3, notes="Med Clara, tung sekk")
