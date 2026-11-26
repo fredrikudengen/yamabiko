@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Yamabiko privacy policy</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<main>
+  <h1>Privacy policy</h1>
+  <p class="muted">Yamabiko · last updated 26 November 2026</p>
+
+  <p>Yamabiko is a private, self-hosted app with a single user, its owner. This page describes what it
+  does with data it reads from Google Health.</p>
+
+  <h2>What is read from Google Health</h2>
+  <p>With the owner's permission, and read-only, Yamabiko reads the owner's own exercise sessions:</p>
+  <ul>
+    <li>activity and fitness data (the workouts, their times, distance and type),</li>
+    <li>location data (the GPS route of a workout),</li>
+    <li>health metrics recorded during a workout (such as heart rate).</li>
+  </ul>
+  <p>It does not write anything to Google Health, and it reads nothing else.</p>
+
+  <h2>Where it is kept</h2>
+  <p>The workouts are stored in a database on the owner's own server, reachable only from the owner's
+  private network. They are used only to show the owner their own workouts. The data is not sold, not
+  used for advertising, and not shared with anyone.</p>
+
+  <h2>Written feedback</h2>
+  <p>When the owner has switched it on, Yamabiko asks Anthropic's Claude API to write a short note about a
+  workout. For that it sends numbers computed from the workout (times, distances, rankings against the
+  owner's earlier workouts), the names of the workout and of the stretches walked, and the owner's own
+  notes on the workout. It never sends GPS coordinates or the raw heart-rate recording. This is the only
+  service outside the owner's server that receives anything derived from Google Health data, and only to
+  show the owner that note.</p>
+
+  <h2>Google API Services User Data Policy</h2>
+  <p>Yamabiko's use and transfer of information received from Google APIs adheres to the
+  <a href="https://developers.google.com/terms/api-services-user-data-policy">Google API Services User Data
+  Policy</a>, including the Limited Use requirements.</p>
+
+  <h2>Removing access and data</h2>
+  <p>Access can be removed at any time by unlinking Google Health in Yamabiko's settings, or at
+  <a href="https://myaccount.google.com/permissions">myaccount.google.com/permissions</a>. Deleting a
+  workout in Yamabiko removes it from the server's database.</p>
+
+  <h2>Contact</h2>
+  <p><a href="mailto:fredrikudengen@proton.me">fredrikudengen@proton.me</a></p>
+
+  <footer><a href="./">Yamabiko</a></footer>
+</main>
+</body>
+</html>
