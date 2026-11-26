@@ -287,11 +287,14 @@ def _tour_context(activity: activities_models.Activity, db: Session) -> dict[str
         """Calendar days, so a tour yesterday evening is one day ago, whatever the hour."""
         return (a.date() - b.date()).days
 
+    # The only tour of its type this year is first by every measure, which says nothing; the model
+    # reported it as a ranking anyway. Ranks are given only when there is something to rank against.
+    ranked = len(this_year) > 1
     return {
         "days_since_previous_tour": days_between(activity.start_time, earlier) if earlier else None,
         "same_type_tours_this_year_so_far": len(this_year),
-        "rank_this_year_by_distance": rank("distance"),
-        "rank_this_year_by_elevation_gain": rank("elevation_gain"),
+        "rank_this_year_by_distance": rank("distance") if ranked else None,
+        "rank_this_year_by_elevation_gain": rank("elevation_gain") if ranked else None,
     }
 
 
