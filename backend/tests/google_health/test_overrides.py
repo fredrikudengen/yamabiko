@@ -1,5 +1,7 @@
 """Tests for google_health.overrides on a synthetic TCX file."""
 
+from datetime import timedelta
+
 import pytest
 
 import activities.activity.schema as activities_schema
@@ -33,7 +35,7 @@ def test_distance_uses_last_trackpoint_not_the_lower_summary(tmp_path, track):
     parsed = _parsed_info(
         1079, [{"ele": p["ele"]} for p in track], summary_distance=round(track[-1]["distance"] * 0.85)
     )
-    point = data_point(exercise_id="42", distance_mm=round(track[-1]["distance"] * 0.85 * 1000))
+    point = data_point(interval_s=1079, exercise_id="42", distance_mm=round(track[-1]["distance"] * 0.85 * 1000))
 
     result = overrides.apply_google_health_overrides(parsed, point, str(path))
 
@@ -54,7 +56,7 @@ def test_timer_time_excludes_long_stop_but_elapsed_is_clock_time(tmp_path, track
     path = write_tcx(tmp_path / "a.tcx", track)
     parsed = _parsed_info(1079, [{"ele": p["ele"]} for p in track], summary_distance=1000)
 
-    activity = overrides.apply_google_health_overrides(parsed, data_point(), str(path))["activity"]
+    activity = overrides.apply_google_health_overrides(parsed, data_point(interval_s=1079), str(path))["activity"]
 
     stopped = activity.import_info["long_stops"]["stopped_seconds"]
     assert stopped == pytest.approx(480, abs=40)
@@ -68,7 +70,7 @@ def test_no_stop_leaves_timer_time_equal_to_elapsed(tmp_path):
     path = write_tcx(tmp_path / "a.tcx", walk)
     parsed = _parsed_info(599, [{"ele": p["ele"]} for p in walk], summary_distance=1)
 
-    activity = overrides.apply_google_health_overrides(parsed, data_point(), str(path))["activity"]
+    activity = overrides.apply_google_health_overrides(parsed, data_point(interval_s=599), str(path))["activity"]
 
     assert activity.total_timer_time == 599
     assert activity.import_info["long_stops"]["stops"] == []
@@ -125,8 +127,8 @@ def test_device_pauses_are_subtracted_from_timer_time(tmp_path):
     walk = make_track([("walk", 600)])
     path = write_tcx(tmp_path / "a.tcx", walk)
     parsed = _parsed_info(599, [{"ele": p["ele"]} for p in walk], summary_distance=1)
-    point = data_point()
-    point["exercise"]["activeDuration"] = "3588s"  # interval is 3600 s: 12 s paused
+    point = data_point(interval_s=599)
+    point["exercise"]["activeDuration"] = "587s"  # interval is 599 s: 12 s paused
 
     activity = overrides.apply_google_health_overrides(parsed, point, str(path))["activity"]
 
@@ -140,7 +142,7 @@ def test_missing_or_malformed_active_duration_means_no_pause(tmp_path):
     path = write_tcx(tmp_path / "a.tcx", walk)
     for broken in (None, "n/a"):
         parsed = _parsed_info(599, [{"ele": p["ele"]} for p in walk], summary_distance=1)
-        point = data_point()
+        point = data_point(interval_s=599)
         point["exercise"]["activeDuration"] = broken
         activity = overrides.apply_google_health_overrides(parsed, point, str(path))["activity"]
         assert activity.import_info["paused_seconds"] == 0
@@ -162,7 +164,7 @@ def test_average_speed_and_pace_use_timer_time_and_max_speed_is_the_fastest_minu
     path = write_tcx(tmp_path / "a.tcx", track)
     parsed = _parsed_info(1079, [{"ele": p["ele"]} for p in track], summary_distance=1)
 
-    activity = overrides.apply_google_health_overrides(parsed, data_point(), str(path))["activity"]
+    activity = overrides.apply_google_health_overrides(parsed, data_point(interval_s=1079), str(path))["activity"]
 
     assert activity.average_speed == pytest.approx(activity.distance / activity.total_timer_time)
     assert activity.pace == pytest.approx(1 / activity.average_speed)
@@ -224,3 +226,65 @@ def test_walks_with_a_real_climb_become_hikes(tmp_path, exercise_type, gain_mm, 
     assert activity.activity_type == expected_type
     assert (activity.name == overrides.HIKE_NAME) is hike
     assert activity.import_info["activity_type"]["remapped_to_hike"] is hike
+
+
+def test_a_track_that_starts_late_takes_the_exercises_start_time_and_distance(tmp_path):
+    # The watch found GPS ten minutes in: the exercise ran 07:00-07:20, the track 07:10-07:20.
+    walk = make_track([("walk", 600)])
+    late = [{**p, "time": p["time"] + timedelta(seconds=600)} for p in walk]
+    path = write_tcx(tmp_path / "a.tcx", late)
+    parsed = _parsed_info(599, [{"ele": p["ele"]} for p in late], summary_distance=1)
+    point = data_point(interval_s=1200, distance_mm=2_400_000)
+
+    activity = overrides.apply_google_health_overrides(parsed, point, str(path))["activity"]
+
+    assert activity.start_time == "2026-10-14T07:00:00"
+    assert activity.end_time == "2026-10-14T07:20:00"
+    assert activity.total_elapsed_time == 1200
+    assert activity.distance == 2400
+    assert activity.import_info["distance_m"]["used"] == "summary_partial_track"
+    assert activity.import_info["partial_track"] == {"missing_start_s": 600, "missing_end_s": 1}
+
+
+def test_a_track_that_covers_the_exercise_keeps_its_own_times_and_distance(tmp_path):
+    walk = make_track([("walk", 600)])
+    path = write_tcx(tmp_path / "a.tcx", walk)
+    parsed = _parsed_info(599, [{"ele": p["ele"]} for p in walk], summary_distance=1)
+    point = data_point(interval_s=640, distance_mm=10_000_000)  # 41 s short at the end: within the margin
+
+    activity = overrides.apply_google_health_overrides(parsed, point, str(path))["activity"]
+
+    assert activity.total_elapsed_time == 599
+    assert activity.import_info["partial_track"] is None
+    assert activity.import_info["distance_m"]["used"] == "last_trackpoint"
+
+
+def test_a_partial_track_keeps_its_distance_when_the_summary_is_lower(tmp_path):
+    walk = make_track([("walk", 600)])
+    late = [{**p, "time": p["time"] + timedelta(seconds=600)} for p in walk]
+    path = write_tcx(tmp_path / "a.tcx", late)
+    parsed = _parsed_info(599, [{"ele": p["ele"]} for p in late], summary_distance=1)
+    point = data_point(interval_s=1200, distance_mm=100_000)
+
+    activity = overrides.apply_google_health_overrides(parsed, point, str(path))["activity"]
+
+    assert activity.import_info["distance_m"]["used"] == "last_trackpoint"
+    assert activity.start_time == "2026-10-14T07:00:00"
+
+
+@pytest.mark.parametrize(
+    ("track_start", "track_end", "expected"),
+    [
+        ("2026-10-14T07:00:30Z", "2026-10-14T07:19:30Z", None),
+        ("2026-10-14T07:10:40Z", "2026-10-14T07:20:00Z", {"missing_start_s": 640, "missing_end_s": 0}),
+        ("2026-10-14T07:00:00Z", "2026-10-14T07:15:00Z", {"missing_start_s": 0, "missing_end_s": 300}),
+    ],
+)
+def test_track_coverage_flags_only_more_than_a_minute_missing(track_start, track_end, expected):
+    interval = overrides._exercise_interval(data_point(interval_s=1200)["exercise"])
+
+    assert overrides.track_coverage(interval, track_start, track_end) == expected
+
+
+def test_no_interval_means_nothing_is_flagged():
+    assert overrides.track_coverage(None, "2026-10-14T07:10:00Z", "2026-10-14T07:20:00Z") is None
