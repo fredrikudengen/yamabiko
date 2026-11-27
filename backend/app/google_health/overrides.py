@@ -13,6 +13,10 @@ because for Fitbit TCX files three of its values are not what we want:
 - timer time: the TCX importer sets it to the clock time. It is set to the
   clock time minus device pauses (PAUSE/RESUME events) and long stops (see
   ``stops.py``).
+- a track that covers only part of the exercise: when the watch has no GPS fix
+  for the first minutes, the TCX has no trackpoints for them, and the importer
+  would start the activity at the first fix. The exercise's own start, end and
+  distance (from its step count) are used instead; the streams keep their times.
 
 It also adds what the TCX file lacks: pace and average speed on timer time, the
 fastest minute as max speed, the step count, and Hike instead of Walk for walks
@@ -28,12 +32,18 @@ from typing import Any
 import tcxreader
 
 import activities.activity.utils as activities_utils
+import core.timezone as core_timezone
 import google_health.filters as google_health_filters
 import google_health.stops as google_health_stops
 
 IMPORT_SOURCE = "google_health"
 # Bump when the way values are derived changes, so old rows can be told apart.
-IMPORT_VERSION = 2
+# 3: a track that covers only part of the exercise takes the exercise's times and distance.
+IMPORT_VERSION = 3
+
+# More than this many seconds of the exercise without trackpoints, at its start or its end,
+# and the track is taken to cover only part of it.
+PARTIAL_TRACK_S = 60.0
 
 # A Fitbit "walk" that climbs at least this much (metres of gain) is a hike. The
 # band has no hike/walk switch of its own for sessions started as a plain walk.
@@ -85,6 +95,33 @@ def _steps(summary: dict) -> int | None:
         return int(summary["steps"])
     except (KeyError, TypeError, ValueError):
         return None
+
+
+def _exercise_interval(exercise: dict) -> tuple[datetime, datetime] | None:
+    """The exercise's own start and end, as the device recorded them."""
+    interval = exercise.get("interval") or {}
+    start = core_timezone.to_utc_aware(interval.get("startTime"))
+    end = core_timezone.to_utc_aware(interval.get("endTime"))
+    return (start, end) if start and end and end > start else None
+
+
+def track_coverage(
+    interval: tuple[datetime, datetime] | None, track_start: datetime | None, track_end: datetime | None
+) -> dict | None:
+    """How much of the exercise the track misses at its start and end; ``None`` when it covers it.
+
+    Returns:
+        ``missing_start_s`` and ``missing_end_s`` when either is above ``PARTIAL_TRACK_S``.
+    """
+    track_start = core_timezone.to_utc_aware(track_start)
+    track_end = core_timezone.to_utc_aware(track_end)
+    if interval is None or track_start is None or track_end is None:
+        return None
+    missing_start = max((track_start - interval[0]).total_seconds(), 0.0)
+    missing_end = max((interval[1] - track_end).total_seconds(), 0.0)
+    if max(missing_start, missing_end) <= PARTIAL_TRACK_S:
+        return None
+    return {"missing_start_s": round(missing_start), "missing_end_s": round(missing_end)}
 
 
 def choose_distance(
@@ -182,12 +219,25 @@ def apply_google_health_overrides(parsed_info: dict, exercise_data_point: dict, 
         activity.max_hr = max(hr_samples)
         hr_filled = True
 
+    # ---- a track that covers only part of the exercise ------------------
+    # No GPS fix for the first (or last) minutes leaves them without trackpoints, and the
+    # importer would start the activity at the first fix. Use the exercise's own times.
+    interval = _exercise_interval(exercise)
+    coverage = track_coverage(interval, tcx_file.start_time, tcx_file.end_time)
+    if coverage is not None and interval is not None:
+        activity.start_time = core_timezone.format_utc(interval[0])
+        activity.end_time = core_timezone.format_utc(interval[1])
+        activity.total_elapsed_time = (interval[1] - interval[0]).total_seconds()
+
     # ---- distance -------------------------------------------------------
     summary_mm = summary.get("distanceMillimeters")
     summary_m = float(summary_mm) / 1000 if summary_mm is not None else tcx_file.distance
     last_trackpoint_m = _last_trackpoint_distance(tcx_file)
     gps_path_m = _gps_path_m(points) if len(points) > 1 else None
     distance_m, distance_source = choose_distance(last_trackpoint_m, gps_path_m, summary_m)
+    # The track measures only the part it covers; the device's distance covers it all.
+    if coverage is not None and summary_m and summary_m > distance_m:
+        distance_m, distance_source = float(summary_m), "summary_partial_track"
     activity.distance = round(distance_m)
 
     # A single-lap file: keep the lap's distance consistent with the activity.
@@ -302,5 +352,7 @@ def apply_google_health_overrides(parsed_info: dict, exercise_data_point: dict, 
         "device_active_duration_s": exercise.get("activeDuration"),
         "paused_seconds": round(paused_s),
         "stream_gaps": {"count": gap_count, "seconds": round(gap_seconds)},
+        # Set when the track misses more than PARTIAL_TRACK_S of the exercise at its start or end.
+        "partial_track": coverage,
     }
     return parsed_info

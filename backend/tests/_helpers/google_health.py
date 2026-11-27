@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import math
 import random
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta, timezone
 from pathlib import Path
 
 LAT0, LON0 = 60.0, 5.0
@@ -87,8 +87,13 @@ def data_point(
     exercise_type: str = "WALKING",
     distance_mm: int | None = None,
     elevation_gain_mm: int | None = None,
+    interval_s: int = 3600,
 ) -> dict:
-    """A Google Health exercise data point shaped like the real API response."""
+    """A Google Health exercise data point shaped like the real API response.
+
+    The exercise starts when ``make_track`` does; ``interval_s`` is its length, which should
+    match the track's unless the test is about a track that covers only part of it.
+    """
     metadata = {} if has_gps is None else {"hasGps": has_gps}
     summary: dict = {}
     if distance_mm is not None:
@@ -99,12 +104,17 @@ def data_point(
         "name": f"users/0000000000000000000/dataTypes/exercise/dataPoints/{exercise_id}",
         "dataSource": {"recordingMethod": recording_method, "platform": "FITBIT"},
         "exercise": {
-            "interval": {"startTime": "2026-10-14T07:00:00Z", "endTime": "2026-10-14T08:00:00Z"},
+            "interval": {
+                "startTime": "2026-10-14T07:00:00Z",
+                "endTime": (datetime(2026, 10, 14, 7, tzinfo=UTC) + timedelta(seconds=interval_s))
+                .isoformat()
+                .replace("+00:00", "Z"),
+            },
             "exerciseType": exercise_type,
             "metricsSummary": summary,
             "exerciseMetadata": metadata,
             "displayName": "Gåing",
-            "activeDuration": "3600s",
+            "activeDuration": f"{interval_s}s",
             "exerciseEvents": [{"exerciseEventType": event} for event in events],
         },
     }
